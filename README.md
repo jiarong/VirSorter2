@@ -10,27 +10,22 @@
 
 VirSorter 2 is has made major updates to VirSorter 1:
 
-    - work with more viral groups including dsDNAphage, ssDNA, RNA, NCLDV, lavidaviridae
-    - apply machine learning to estimate viralness using genomic and taxonomic features and hallmark gene counts
-    - train with high quality virus genomes from metagenomes or other sources
+- work with more viral groups including dsDNAphage, ssDNA, RNA, NCLDV, lavidaviridae
+- apply machine learning to estimate viralness using genomic and taxonomic features and hallmark gene counts
+- train with high quality virus genomes from metagenomes or other sources
 
 
 # Installation
 
-VirSorte 2 only require python 3, snakemake, python click and ruamel package to start. If you have not them installed, conda is the easiest way (conda can install following https://docs.conda.io/projects/conda/en/latest/user-guide/install/). These can be installed in current env by:
+Conda is the easiest way to install dependencie. Conda can install following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).  
+You can create an new env by:
 
 ```bash
-conda install -c bioconda -c conda-forge snakemake click ruamel.yaml
-```
-
-Or else you can create an new env by:
-
-```bash
-conda create -n vs2 -c bioconda -c conda-forge snakemake click ruamel.yaml
+conda create -n vs2 python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed last ncbi-genome-download ruamel.yaml snakemake=5.16.0 click
 conda activate vs2
 ```
 
-Other dependencies and databases are installed by setup command:
+Then install VirSorter 2:
 
 ```bash
 git clone https://github.com/jiarong/VirSorter2.git
