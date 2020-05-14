@@ -1,0 +1,71 @@
+#####################################################################
+####  __   __(_) _ __  ___   ___   _ __ | |_  ___  _ __  |___ \  ####
+####  \ \ / /| || '__|/ __| / _ \ | '__|| __|/ _ \| '__|   __) | ####
+####   \ V / | || |   \__ \| (_) || |   | |_|  __/| |     / __/  ####
+####    \_/  |_||_|   |___/ \___/ |_|    \__|\___||_|    |_____| ####
+#####################################################################
+
+#  For more details about the config values see:
+#  github
+
+GROUP_INFO:
+  dsDNAphage:                       # must match dirname under db/group
+    MIN_GENOME_SIZE: 10000          # for provirus
+    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 1500 # hallmark required for short seqs 
+  NCLDV:
+    MIN_GENOME_SIZE: 70000
+    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 1500
+  RNA:
+    MIN_GENOME_SIZE: 1000
+    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 10000
+  ssDNA:
+    MIN_GENOME_SIZE: 1000
+    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 3000
+  lavidaviridae:
+    MIN_GENOME_SIZE: 15000
+    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 1500
+
+
+GENERAL_THREADS: 1
+
+# hmmsearch
+HMMSEARCH_THREADS: 4
+HMMSEARCH_SCORE_MIN: 30
+
+# split contig, protein seq (faa)
+CONTIG_BP_PER_SPLIT: 5000000
+FAA_BP_PER_SPLIT: 100000
+
+# gff feature extraction
+GENE_OVERLAP_MIN: 5
+
+# tax feature extration
+TAXON_LIST:
+- arc
+- bac
+- euk
+- vir
+- mixed
+
+# classify
+CLASSIFY_THREADS: 1
+PROBA_CUTOFF: 0.5
+HALLMARK_REQUIRED_ON_SHORT: false
+
+# provirus
+MIN_FRAC_OF_MAX_SCORE: 0.95  # pick longest within 95% of max score for trim
+MAX_RETRY_TIMES: 5  # extend more if pr fall below 0.5
+PROVIRUS_PEAK_PROBA_CUTOFF: 0.7  # peak proba during extension
+
+# feature list
+TOTAL_FEATURE_LIST: [contig_size, gene_size, gene_overlap_perc, density, strand_switch_perc,
+  atg_perc, gtg_perc, ttg_perc, gc_mean, gc_sd, rbs_DoubleA, rbs_DoubleT, rbs_NoA,
+  rbs_None, rbs_OnlyA, rbs_OnlyT, rbs_Other, rbs_Other_GA, rbs_SD_Bacteroidetes, rbs_SD_Canonical,
+  rbs_TATATA_3-6, arc, bac, euk, vir, mix, unaligned, hallmark]
+# attention: all model needs to be retrained if select feature changed
+SELECT_FEATURE_LIST: [gene_size, gene_overlap_perc, density, strand_switch_perc, atg_perc,
+  gtg_perc, ttg_perc, gc_mean, gc_sd, rbs_DoubleA, rbs_DoubleT, rbs_NoA, rbs_None,
+  rbs_OnlyA, rbs_OnlyT, rbs_Other, rbs_Other_GA, rbs_SD_Bacteroidetes, rbs_SD_Canonical,
+  rbs_TATATA_3-6, arc, bac, euk, vir, mix, unaligned, hallmark]
+DBDIR: /mnt/ufs18/home-111/guojiaro/Documents/dev/test/db
+

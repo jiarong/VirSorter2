@@ -1,0 +1,88 @@
+import sys
+import os
+from snakemake.utils import min_version
+
+### set minimum snakemake version ###
+min_version('5.8.1')
+
+
+Seqfile = config['SEQFILE']
+Dbdir = config['DBDIR']
+Provirus = config['PROVIRUS']
+
+Groups = config['GROUPS']
+Hmmsearch_threads = config['HMMSEARCH_THREADS']
+General_threads = config['GENERAL_THREADS']
+Hmmsearch_score_min = config['HMMSEARCH_SCORE_MIN']
+Proba_cutoff = config['PROBA_CUTOFF']
+
+Hallmark_required_on_short = config['HALLMARK_REQUIRED_ON_SHORT']
+
+Contig_bp_per_split = config['CONTIG_BP_PER_SPLIT']
+Faa_bp_per_split = config['FAA_BP_PER_SPLIT']
+Max_orf_per_seq = config['MAX_ORF_PER_SEQ']
+
+Tmpdir=config['TMPDIR']
+
+Srcdir = srcdir('.')
+Scriptdir='{}/scripts'.format(Srcdir)
+Wkdir=os.path.abspath(os.getcwd())
+Groups_str=' '.join(Groups)
+Seqfile = os.path.abspath(Seqfile)
+
+
+wildcard_constraints:
+    group='[A-Za-z]+',
+    domain='[A-Za-z]+',
+    shape='circular|linear',
+
+
+
+include: 'rules/preprocess.smk'
+include: 'rules/extract-feature.smk'
+include: 'rules/classify.smk'
+
+rule all:
+    input:
+        'Done-preprocess',
+        'Done-extract-feature',
+        'Done-classify',
+
+rule preprocess:
+    input:
+        '{Tmpdir}/all.pdg.faa'.format(Tmpdir=Tmpdir),
+        '{Tmpdir}/all.pdg.gff'.format(Tmpdir=Tmpdir),
+    output:
+        temp(touch('Done-preprocess'))
+
+rule extract_feature:
+    input:
+        expand('{Tmpdir}/{{group}}/all.pdg.ftr'.format(Tmpdir=Tmpdir),
+                group=Groups)
+    output:
+        temp(touch('Done-extract-feature'))
+
+def classify_input(wildcards):
+    if Provirus:
+        return ['final-viral-fullseq-trim.fa',
+                'final-viral-partial.fa',
+                'final-viral-boundary.tsv',]
+
+    else:
+        return ['final-viral-fullseq.fa',
+                'final-all-fullseq-proba.tsv',]
+
+rule classify:
+    input:
+        classify_input
+    output:
+        temp(touch('Done-classify'))
+
+    
+#onsuccess:
+#    print('virsorter run finished')
+onerror:
+    print('Refer the path to log file for troubleshooting')
+    print('Issues can be raised at: https://github.com/project/issues')
+
+
