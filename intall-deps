@@ -1,1 +1,0 @@
-conda create -n vs2.1 python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed last ncbi-genome-download ruamel.yaml snakemake=5.16.0 click
