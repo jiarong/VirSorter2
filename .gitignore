@@ -4,3 +4,4 @@ db
 *__pycache__
 test/test-out
 *.bak
+install-deps

@@ -82,5 +82,4 @@ dependencies:
   - xz=5.2.5
   - zlib=1.2.11
   - zstd=1.4.4
-prefix: /mnt/home/guojiaro/anaconda3/envs/vs2.1
 

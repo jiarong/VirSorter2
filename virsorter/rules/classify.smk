@@ -2,7 +2,8 @@
 rule classify_by_group:
     input: 'iter-0/{group}/all.pdg.ftr'
     output: 'iter-0/{group}/all.pdg.clf'
-    #conda: 'envs/sklearn0212.yml'
+    ##conda: 'envs/sklearn0212.yml'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step3-classify/classify-{wildcards.group}.log
@@ -14,6 +15,7 @@ rule merge_classification:
     input: expand('iter-0/{group}/all.pdg.clf', group=Groups)
     output: 
         clf='iter-0/all-fullseq-proba.tsv',
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     params:
         clf_fs_str = ' '.join(
             ['iter-0/{}/all.pdg.clf'.format(group) for group in Groups]
@@ -33,6 +35,7 @@ rule pick_viral_fullseq:
         contig='iter-0/viral-fullseq.fa',
         hmk_cnt='iter-0/all-hallmark-cnt.tsv',
         lt2gene='iter-0/viral-lt2gene-w-hallmark.fa',
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     params:
         group_str = ','.join(
             [group for group in Groups if os.path.exists('{}/group/{}/hallmark-gene.list'.format(Dbdir, group))]
@@ -68,6 +71,7 @@ if Provirus:
         output: 
             boundry='iter-0/{group}/all.pdg.prv.bdy',
             ftr='iter-0/{group}/all.pdg.prv.ftr',
+        #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             Log={Wkdir}/log/iter-0/step3-classify/classify-{wildcards.group}.log
@@ -85,6 +89,7 @@ if Provirus:
         output:
             partial='iter-0/viral-partseq.tsv',
             full='iter-0/viral-fullseq.tsv',
+        #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         params:
             prv_fs_str = ','.join(
                 ['iter-0/{}/all.pdg.prv.bdy'.format(group) for group in Groups]
@@ -107,6 +112,7 @@ if Provirus:
         output:
             fullseq='iter-0/viral-fullseq-trim.fa',
             partial='iter-0/viral-partseq.fa',
+        #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             Log={Wkdir}/log/iter-0/step3-classify/classify-merged.log

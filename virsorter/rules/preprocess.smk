@@ -5,6 +5,7 @@ checkpoint circular_linear_split:
     input: {Seqfile}
     output: 
         'iter-0/pp-seqname-length.tsv',
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell: 
         """
         # prep_logdir
@@ -59,6 +60,7 @@ localrules: split_contig_file
 checkpoint split_contig_file:
     input: 'iter-0/pp-{shape}.fna'
     output: directory('iter-0/pp-{shape}.fna.splitdir')
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step1-pp/split-contig-file-{wildcards.shape}-common.log
@@ -79,6 +81,7 @@ rule gene_call:
         gff=temp('iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitgff'),
         faa=temp('iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitfaa'),
     log: 'iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.log'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         prodigal -p meta -i {input} -a {output.faa} -o {output.gff} -f gff  &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -109,6 +112,7 @@ rule merge_split_faa_gff:
     output:
         gff='iter-0/pp-{shape}.gff',
         faa='iter-0/pp-{shape}.faa',
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         cat {input.gff} > {output.gff}
@@ -119,6 +123,7 @@ localrules: split_contig_file_by_group
 checkpoint split_contig_file_by_group:
     input: 'iter-0/{group}/pp-{shape}.fna'
     output: directory('iter-0/{group}/pp-{shape}.fna.splitdir')
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step1-pp/split-contig-file-{wildcards.shape}-{wildcards.group}.log
@@ -143,6 +148,7 @@ rule gene_call_by_group_tmp:
     output: 
         gff=temp('iter-0/{group}/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitgff'),
         faa=temp('iter-0/{group}/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitfaa'),
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/iter-0/{wildcards.group}/pp-{wildcards.shape}.fna.splitdir/pp-{wildcards.shape}.fna.{wildcards.i}.split.pdg.log
@@ -206,6 +212,7 @@ rule remove_partial_gene:
     output: 
         gff='iter-0/pp-{shape}-flt.gff',
         faa='iter-0/pp-{shape}-flt.faa'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log=log/iter-0/step1-pp/{wildcards.shape}-remove-partial-gene-common.log
@@ -228,6 +235,7 @@ rule remove_partial_gene_by_group:
     output: 
         gff='iter-0/{group}/pp-{shape}-flt.gff',
         faa='iter-0/{group}/pp-{shape}-flt.faa'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step1-pp/{wildcards.shape}-remove-partial-gene-{wildcards.group}.log

@@ -48,7 +48,7 @@ rule all:
     input: 'Done_all_setup'
 
 rule download_hmm_viral:
-    output: 'combined.hmm.gz.split_{index}'
+    output: temp('combined.hmm.gz.split_{index}')
     shell:
         """
           wget -nv -O {output} https://zenodo.org/record/3823805/files/{output}?download=1 || curl https://zenodo.org/record/3823805/files/{output}?download=1 > {output}
@@ -63,7 +63,7 @@ rule download_hmm_pfam:
         """
 
 rule download_other_db:
-    output: 'db.tgz'
+    output: temp('db.tgz')
     shell:
         """
         wget -nv -O db.tgz https://zenodo.org/record/3823805/files/db.tgz?download=1 

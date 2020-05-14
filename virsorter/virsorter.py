@@ -165,6 +165,9 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
     validate_config(config_f, workflow)
     config = load_configfile(config_f)
 
+    if db_dir == None:
+        db_dir = config['DBDIR']
+
     cmd = (
         'snakemake --snakefile {snakefile} --directory {working_dir} '
         '--jobs {jobs} '
