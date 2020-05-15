@@ -136,6 +136,7 @@ if Provirus:
             cp iter-0/viral-fullseq-trim.fa final-viral-fullseq-trim.fa
             cp iter-0/viral-partseq.fa final-viral-partseq.fa
             cp iter-0/viral-fullseq.tsv final-viral-boundary.tsv
+            cat iter-0/viral-fullseq-trim.fa iter-0/viral-partseq.fa > final-viral-combined.fa
             grep -v '^seqname' iter-0/viral-partseq.tsv >> final-viral-boundary.tsv || : 
             N_lytic=$(grep -c '^>' final-viral-fullseq-trim.fa || :)
             N_lysogenic=$(grep -c '^>' final-viral-partseq.fa || :)
@@ -164,6 +165,7 @@ else:
             """
             cp iter-0/viral-fullseq.fa final-viral-fullseq.fa
             cp iter-0/all-fullseq-proba.tsv final-all-fullseq-proba.tsv
+            ln -s iter-0/viral-fullseq.fa final-viral-combined.fa
             N_viral_fullseq=$(grep -c '^>' final-viral-fullseq.fa || :)
             echo -e "
             ====> VirSorter run (non-provirus mode) finished.
