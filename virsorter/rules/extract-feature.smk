@@ -3,6 +3,7 @@ rule gff_feature:
     input: 'iter-0/all.pdg.gff'
     output: 'iter-0/all.pdg.gff.ftr'
     log: 'log/iter-0/step2-extract-feature/extract-feature-from-gff-common.log'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         python {Scriptdir}/extract-feature-from-gff.py {Dbdir}/rbs/rbs-catetory.tsv {input} {output} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -13,6 +14,7 @@ rule gff_feature_by_group:
         ftr='iter-0/all.pdg.gff.ftr',
         gff='iter-0/{group}/all.pdg.gff'
     output: 'iter-0/{group}/all.pdg.gff.ftr'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log=log/iter-0/step2-extract-feature/extract-feature-from-gff-{wildcards.group}.log
@@ -28,6 +30,7 @@ localrules: split_faa
 checkpoint split_faa:
     input: 'iter-0/all.pdg.faa'
     output: directory('iter-0/all.pdg.faa.splitdir')
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step1-pp/split-faa-common.log
@@ -52,6 +55,7 @@ rule hmmsearch:
     output: temp('iter-0/all.pdg.faa.splitdir/all.pdg.faa.{i}.split.{domain}.splithmmtbl')
     threads: Hmmsearch_threads
     log: 'iter-0/all.pdg.faa.splitdir/all.pdg.faa.{i}.split.{domain}.hmm.log'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Domain={wildcards.domain}
@@ -88,6 +92,7 @@ localrules: split_faa_by_group
 checkpoint split_faa_by_group:
     input: 'iter-0/{group}/all.pdg.faa'
     output: directory('iter-0/{group}/all.pdg.faa.splitdir')
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         # make sure grep command below does not fail if input is empty
@@ -127,6 +132,7 @@ rule hmmsearch_by_group:
     output: temp('iter-0/{group}/all.pdg.faa.splitdir/all.pdg.faa.{i}.split.{domain}.splithmmtbl')
     threads: Hmmsearch_threads
     log: 'iter-0/{group}/all.pdg.faa.splitdir/all.pdg.faa.{i}.split.{domain}.splithmm.log'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Domain={wildcards.domain}
@@ -206,6 +212,7 @@ rule hmm_sort_to_best_hit_taxon:
         tax = 'iter-0/all.pdg.hmm.tax',
         ftr = 'iter-0/all.pdg.hmm.ftr'
     log: 'log/iter-0/step2-extract-feature/extract-feature-from-hmmout-common.log'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         python {Scriptdir}/extract-feature-from-hmmout.py {Hmmsearch_score_min} "{input.arc},{input.bac},{input.euk},{input.mix},{input.vir}" "arc,bac,euk,mixed,vir" > {output.tax} 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -223,6 +230,7 @@ rule hmm_sort_to_best_hit_taxon_by_group:
         vir = 'iter-0/{group}/all.pdg.Viruses.hmmtbl'
     output: 
         tax = 'iter-0/{group}/all.pdg.hmm.tax',
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step2-extract-feature/extract-feature-from-hmmout-{wildcards.group}.log
@@ -242,6 +250,7 @@ rule hmm_features_by_group:
         tax = 'iter-0/{group}/all.pdg.hmm.tax',
         faa = 'iter-0/{group}/all.pdg.faa'
     output: 'iter-0/{group}/all.pdg.hmm.ftr'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step2-extract-feature/merge-feature-{wildcards.group}.log
@@ -266,6 +275,7 @@ rule merge_hmm_gff_features_by_group:
         hmm_ftr = 'iter-0/{group}/all.pdg.hmm.ftr'
     output: 
         merged_ftr = 'iter-0/{group}/all.pdg.ftr'
+    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step2-extract-feature/merge-feature-{wildcards.group}.log

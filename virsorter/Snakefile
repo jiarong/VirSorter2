@@ -3,7 +3,7 @@ import os
 from snakemake.utils import min_version
 
 ### set minimum snakemake version ###
-min_version('5.8.1')
+#min_version('5.8.1')
 
 
 Seqfile = config['SEQFILE']
@@ -29,6 +29,7 @@ Scriptdir='{}/scripts'.format(Srcdir)
 Wkdir=os.path.abspath(os.getcwd())
 Groups_str=' '.join(Groups)
 Seqfile = os.path.abspath(Seqfile)
+Conda_yaml_dir = '../envs' # relative to rules/*.smk files
 
 
 wildcard_constraints:

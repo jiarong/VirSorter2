@@ -5,7 +5,6 @@ import logging
 
 from ruamel.yaml import YAML
 
-from snakemake import utils
 from snakemake.io import load_configfile
 
 user_config_dir = os.path.join(os.path.expanduser('~'), '.virsorter')
