@@ -63,24 +63,56 @@ rule pick_viral_fullseq:
         """
 
 if Provirus:
-    rule provirus_call_by_group:
+    checkpoint split_gff_by_group:
+        input: 'iter-0/{group}/all.pdg.gff'
+        output: directory('iter-0/{group}/all.pdg.gff.splitdir')
+        shell:
+            """
+            python {Scriptdir}/split-gff-even-seqnum-per-file.py {input} {output} {Gff_seqnum_per_split}
+            """
+
+    rule provirus_call_by_group_by_split:
         input: 
-            gff='iter-0/{group}/all.pdg.gff',
+            gff='iter-0/{group}/all.pdg.gff.splitdir/all.pdg.gff.{idx}.split',
             tax='iter-0/{group}/all.pdg.hmm.tax',
             clf='iter-0/all-fullseq-proba.tsv',
         output: 
-            boundry='iter-0/{group}/all.pdg.prv.bdy',
+            boundry=temp('iter-0/{group}/all.pdg.gff.splitdir/all.pdg.gff.{idx}.split.prv.bdy'),
+            ftr=temp('iter-0/{group}/all.pdg.gff.splitdir/all.pdg.gff.{idx}.split.prv.ftr'),
+        #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+        shell:
+            """
+            Log={input.gff}.prv.log
+            Hallmark_list_f={Dbdir}/group/{wildcards.group}/hallmark-gene.list
+            if [ -s $Hallmark_list_f ]; then
+                python {Scriptdir}/provirus.py {input.gff} {input.tax} {Dbdir}/rbs/rbs-catetory.tsv {Dbdir}/group/{wildcards.group}/model {output.boundry} {output.ftr} --fullseq-clf {input.clf} --group {wildcards.group} --proba {Proba_cutoff} --hallmark {Dbdir}/group/{wildcards.group}/hallmark-gene.list 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            else
+                python {Scriptdir}/prophage.py {input.gff} {input.tax} {Dbdir}/rbs/rbs-catetory.tsv {Dbdir}/group/{wildcards.group}/model {output.boundry} {output.ftr} --fullseq-clf {input.clf} --group {wildcards.group} --proba {Proba_cutoff} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            fi
+            """
+
+    def merge_provirus_call_by_group_by_split_input_agg(wildcards):
+        split_dir = checkpoints.split_gff_by_group.get(
+                        **wildcards).output[0]
+        idx_lis = glob_wildcards(
+                '{}/all.pdg.gff.{{idx}}.split'.format(split_dir)).idx
+        bdy_str = '{}/all.pdg.gff.{{idx}}.split.prv.bdy'.format(split_dir)
+        ftr_str = '{}/all.pdg.gff.{{idx}}.split.prv.bdy'.format(split_dir)
+        bdy_lis = expand(bdy_str, idx=idx_lis)
+        ftr_lis = expand(ftr_str, idx=idx_lis)
+        return {'bdy': bdy_lis, 'ftr': ftr_lis}
+
+    localrules: merge_provirus_call_by_group_by_split
+    rule merge_provirus_call_by_group_by_split:
+        input: unpack(merge_provirus_call_by_group_by_split_input_agg)
+        output: 
+            bdy='iter-0/{group}/all.pdg.prv.bdy',
             ftr='iter-0/{group}/all.pdg.prv.ftr',
         #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            Log={Wkdir}/log/iter-0/step3-classify/classify-{wildcards.group}.log
-            Hallmark_list_f={Dbdir}/group/{wildcards.group}/hallmark-gene.list
-            if [ -s $Hallmark_list_f ]; then
-                python {Scriptdir}/provirus.py {input.gff} {input.tax} {Dbdir}/rbs/rbs-catetory.tsv {Dbdir}/group/{wildcards.group}/model {output.boundry} {output.ftr} --fullseq-clf {input.clf} --group {wildcards.group} --proba {Proba_cutoff} --hallmark {Dbdir}/group/{wildcards.group}/hallmark-gene.list 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
-            else
-                python {Scriptdir}/prophage.py {input.gff} {input.tax} {Dbdir}/rbs/rbs-catetory.tsv {Dbdir}/group/{wildcards.group}/model {output.boundry} {output.ftr} --fullseq-clf {input.clf} --group {wildcards.group} --proba {Proba_cutoff} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
-            fi
+            cat {input.bdy} | awk '!/^seqname\t/ || !f++' > {output.bdy}
+            cat {input.ftr} | awk '!/^seqname\t/ || !f++' > {output.ftr}
             """
 
     localrules: merge_provirus_call_from_groups

@@ -20,6 +20,7 @@ Hallmark_required_on_short = config['HALLMARK_REQUIRED_ON_SHORT']
 
 Contig_bp_per_split = config['CONTIG_BP_PER_SPLIT']
 Faa_bp_per_split = config['FAA_BP_PER_SPLIT']
+Gff_seqnum_per_split = config['GFF_SEQNUM_PER_SPLIT']
 Max_orf_per_seq = config['MAX_ORF_PER_SEQ']
 
 Tmpdir=config['TMPDIR']
@@ -66,7 +67,7 @@ rule extract_feature:
 def classify_input(wildcards):
     if Provirus:
         return ['final-viral-fullseq-trim.fa',
-                'final-viral-partial.fa',
+                'final-viral-partseq.fa',
                 'final-viral-boundary.tsv',]
 
     else:
