@@ -56,6 +56,11 @@ rule preprocess:
         '{Tmpdir}/all.pdg.gff'.format(Tmpdir=Tmpdir),
     output:
         temp(touch('Done-preprocess'))
+    shell:
+        """
+        echo "Step 1 - preprocess finished." | python {Scriptdir}/echo.py
+        """
+
 
 rule extract_feature:
     input:
@@ -63,6 +68,10 @@ rule extract_feature:
                 group=Groups)
     output:
         temp(touch('Done-extract-feature'))
+    shell:
+        """
+        echo "Step 2 - exract-feature finished." | python {Scriptdir}/echo.py
+        """
 
 def classify_input(wildcards):
     if Provirus:
@@ -79,6 +88,10 @@ rule classify:
         classify_input
     output:
         temp(touch('Done-classify'))
+    shell:
+        """
+        echo "Step 3 - classify finished." | python {Scriptdir}/echo.py
+        """
 
     
 #onsuccess:
