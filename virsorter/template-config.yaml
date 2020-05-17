@@ -29,7 +29,7 @@ GROUP_INFO:
 GENERAL_THREADS: 1
 
 # hmmsearch
-HMMSEARCH_THREADS: 4
+HMMSEARCH_THREADS: 1
 HMMSEARCH_SCORE_MIN: 30
 
 # split contig, protein seq (faa), gff

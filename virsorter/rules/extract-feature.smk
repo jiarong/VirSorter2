@@ -64,7 +64,7 @@ rule hmmsearch:
         else
             Hmmdb={Dbdir}/hmm/pfam/Pfam-A-{wildcards.domain}.hmm
         fi
-        hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} -o /dev/null $Hmmdb {input} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
         """
 
 def merge_split_hmmtbl_input_agg(wildcards):
@@ -150,7 +150,7 @@ rule hmmsearch_by_group:
         fi
 
         if [ -s $Rbs_pdg_db ] || [ -s $Group_specific_hmmdb ]; then
-            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} -o /dev/null $Hmmdb {input} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
         else
             touch {output}
         fi
