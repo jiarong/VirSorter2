@@ -22,9 +22,9 @@ def get_version(relpath):
 setup(
     name='virsorter',
     version=get_version("virsorter/__init__.py"),
-    url='https://github.com/jiarong/virsorter',
+    url='https://github.com/jiarong/VirSorter2',
     license='BSD-3',
-    author='Jiarong Guo, Simon Roux',
+    author='Guo et al.',
     author_email='guojiaro@gmail.com',
     description='Virsorter2 - tool for mining viral signal form metaG/T data.',
     long_description=long_description,

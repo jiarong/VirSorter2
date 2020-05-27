@@ -81,6 +81,13 @@ def get_snakefile(f="Snakefile"):
     help='use at most this many jobs in parallel (see cluster submission for mor details).',
 )
 @click.option(
+    '--min-score',
+    default=0.5,
+    type=float,
+    show_default=True,
+    help='minimal score to be identified as viral',
+)
+@click.option(
     '--provirus',
     default=False,
     is_flag=True,
@@ -100,6 +107,13 @@ def get_snakefile(f="Snakefile"):
     type=int,
     show_default=True,
     help='Max # of orf used for computing taxonomic features; if # of orf in a seq exceeds the max limit, it is sub-sampled to this # to reduce computation; to turn off this, set it to -1; this option is ignored when --provirus is enabled'
+)
+@click.option(
+    '--min-length',
+    default=0,
+    type=int,
+    show_default=True,
+    help='minimal seq length required; all seqs shorter than this will be removed',
 )
 @click.option(
     '--tmpdir',
@@ -131,7 +145,7 @@ def get_snakefile(f="Snakefile"):
     nargs=-1, 
     type=click.UNPROCESSED, 
 )
-def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  provirus, hallmark_required_on_short, max_orf_per_seq, tmpdir, verbose, profile, dryrun, snakemake_args):
+def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  min_score, provirus, hallmark_required_on_short, max_orf_per_seq, min_length, tmpdir, verbose, profile, dryrun, snakemake_args):
     ''' Runs the virsorter main function: to classify viral sequences
 
     By default all steps are executed. The "classify" rerun classify
@@ -141,6 +155,13 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
     '''
     os.makedirs(working_dir, exist_ok=True)
     config_f = os.path.join(working_dir,'config.yaml')
+
+    if min_score > 1 or min_score < 0:
+        logging.critical('--min-score needs to be between 0 and 1')
+    if min_length < 0:
+        logging.critical('--min-length needs to be >= 0')
+    if jobs < 0:
+        logging.critical('--jobs needs to be >= 0')
 
     if provirus:
         max_orf_per_seq = -1
@@ -160,7 +181,8 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
             db_dir=db_dir, seqfile=seqfile, include_groups=include_groups,
             threads=jobs, config_f=config_f, provirus=provirus,
             hallmark_required_on_short=hallmark_required_on_short,
-            max_orf_per_seq=max_orf_per_seq, tmpdir=tmpdir,
+            max_orf_per_seq=max_orf_per_seq, 
+            tmpdir=tmpdir, min_length=min_length, min_score=min_score,
     )
     validate_config(config_f, workflow)
     config = load_configfile(config_f)

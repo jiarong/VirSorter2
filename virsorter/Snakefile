@@ -15,6 +15,7 @@ Hmmsearch_threads = config['HMMSEARCH_THREADS']
 General_threads = config['GENERAL_THREADS']
 Hmmsearch_score_min = config['HMMSEARCH_SCORE_MIN']
 Proba_cutoff = config['PROBA_CUTOFF']
+Min_length = config['MIN_LENGTH']
 
 Hallmark_required_on_short = config['HALLMARK_REQUIRED_ON_SHORT']
 
@@ -23,7 +24,10 @@ Faa_bp_per_split = config['FAA_BP_PER_SPLIT']
 Gff_seqnum_per_split = config['GFF_SEQNUM_PER_SPLIT']
 Max_orf_per_seq = config['MAX_ORF_PER_SEQ']
 
-Tmpdir=config['TMPDIR']
+#Tmpdir=config['TMPDIR']
+#Local_scratch=config['LOCAL_SCRATCH']
+Tmpdir='iter-0'
+Local_scratch='/tmp'
 
 Srcdir = srcdir('.')
 Scriptdir='{}/scripts'.format(Srcdir)
@@ -93,7 +97,8 @@ rule classify:
         echo "Step 3 - classify finished." | python {Scriptdir}/echo.py
         """
 
-    
+container: "docker://continuumio/miniconda3:4.4.10"    
+
 #onsuccess:
 #    print('virsorter run finished')
 onerror:

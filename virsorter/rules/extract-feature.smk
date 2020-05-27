@@ -64,7 +64,23 @@ rule hmmsearch:
         else
             Hmmdb={Dbdir}/hmm/pfam/Pfam-A-{wildcards.domain}.hmm
         fi
-        hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        To_scratch=false
+        # move the heavy IO of hmmsearch in local scratch
+        if [ -d "{Local_scratch}" ]; then
+            Tmp=$(mktemp -d {Local_scratch}/vs2-XXXXXXXXXXXX) && To_scratch=true
+            Avail=$(df -P {Local_scratch} | awk 'END{{print $4}}')
+            Fsize=$(du -k {input} | awk '{{print $1*5}}')
+            if [ "$Avail" -gt "$Fsize" ] && [ "$To_scratch" = "true" ]; then
+                Bname=$(basename {input})
+                cp {input} $Tmp/$Bname || To_scratch=false
+            fi
+        fi
+        if [ "$To_scratch" = false ]; then
+            # local scratch not set or not enough space in local scratch
+            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        else
+            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname &>> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        fi
         """
 
 def merge_split_hmmtbl_input_agg(wildcards):
@@ -150,7 +166,23 @@ rule hmmsearch_by_group:
         fi
 
         if [ -s $Rbs_pdg_db ] || [ -s $Group_specific_hmmdb ]; then
-            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            To_scratch=false
+            # move the heavy IO of hmmsearch in local scratch
+            if [ -d "{Local_scratch}" ]; then
+                Tmp=$(mktemp -d {Local_scratch}/vs2-XXXXXXXXXXXX) && To_scratch=true
+                Avail=$(df -P {Local_scratch} | awk 'END{{print $4}}')
+                Fsize=$(du -k {input} | awk '{{print $1*5}}')
+                if [ "$Avail" -gt "$Fsize" ] && [ "$To_scratch" = "true" ]; then
+                    Bname=$(basename {input})
+                    cp {input} $Tmp/$Bname || To_scratch=false
+                fi
+            fi
+            if [ "$To_scratch" = false ]; then
+                # local scratch not set or not enough space in local scratch
+                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            else
+                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname &>> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            fi
         else
             touch {output}
         fi

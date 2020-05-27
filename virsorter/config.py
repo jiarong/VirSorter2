@@ -36,7 +36,7 @@ def set_logger():
 # validate_config
 # No make_sample_table function is needed for virsorter
 
-def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, provirus=True, hallmark_required_on_short=False, threads=None, max_orf_per_seq=20):
+def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5, min_length=0, provirus=True, hallmark_required_on_short=False, threads=None, max_orf_per_seq=20):
     '''
     read config params from template-config.yaml
     then update the some params provided by command line
@@ -60,6 +60,8 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, provirus=True
     config['HALLMARK_REQUIRED_ON_SHORT'] = hallmark_required_on_short
     config['MAX_ORF_PER_SEQ'] = max_orf_per_seq
     config['TMPDIR'] = tmpdir
+    config['PROBA_CUTOFF'] = min_score
+    config['MIN_LENGTH'] = min_length
 
     config['THREADS'] = multiprocessing.cpu_count() if not threads else threads
 

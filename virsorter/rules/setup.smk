@@ -55,7 +55,7 @@ rule download_hmm_viral:
         """
 
 rule download_hmm_pfam:
-    output: 'Pfam-A-{domain}.hmm'
+    output: temp('Pfam-A-{domain}.hmm')
     shell:
         """
         wget -nv -O {output}.gz https://zenodo.org/record/3823805/files/{output}.gz?download=1 
@@ -100,6 +100,7 @@ rule setup:
         """
         tar -xzf db.tgz
         mv db/* .
+        rmdir db
         mv Pfam-A-*.hmm hmm/pfam
         cat combined.hmm.gz.split_* | gunzip -c > hmm/viral/combined.hmm
         """

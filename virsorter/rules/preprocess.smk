@@ -23,7 +23,8 @@ checkpoint circular_linear_split:
           iter-0/pp-circular.fna.preext\
           iter-0/pp-linear.fna \
           {output[0]} \
-          "||rbs:common"
+          "||rbs:common" \
+          {Min_length}
 
         if [ ! -s iter-0/pp-circular.fna.preext ]; then
             echo "No circular seqs found in contig file" \
