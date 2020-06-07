@@ -26,7 +26,11 @@ GROUP_INFO:
     MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 1500
 
 
+# cluster resources
+DEFAULT_MEM: 20G
+DEFAULT_TIME: 4:00:00
 GENERAL_THREADS: 1
+
 # preprocess
 MIN_LENGTH: 0
 
@@ -35,9 +39,9 @@ HMMSEARCH_THREADS: 1
 HMMSEARCH_SCORE_MIN: 30
 
 # split contig, protein seq (faa), gff
-CONTIG_BP_PER_SPLIT: 10000000
-FAA_BP_PER_SPLIT: 3000000
-GFF_SEQNUM_PER_SPLIT: 3000
+CONTIG_BP_PER_SPLIT: 300000
+FAA_BP_PER_SPLIT: 100000
+GFF_SEQNUM_PER_SPLIT: 30
 
 # gff feature extraction
 GENE_OVERLAP_MIN: 5
@@ -60,6 +64,8 @@ MIN_FRAC_OF_MAX_SCORE: 0.95  # pick longest within 95% of max score for trim
 MAX_RETRY_TIMES: 5  # extend more if pr fall below 0.5
 PROVIRUS_PEAK_PROBA_CUTOFF: 0.7  # peak proba during extension
 
+RANDOM_STATE: 99
+
 # feature list
 TOTAL_FEATURE_LIST: [contig_size, gene_size, gene_overlap_perc, density, strand_switch_perc,
   atg_perc, gtg_perc, ttg_perc, gc_mean, gc_sd, rbs_DoubleA, rbs_DoubleT, rbs_NoA,
@@ -70,5 +76,5 @@ SELECT_FEATURE_LIST: [gene_size, gene_overlap_perc, density, strand_switch_perc,
   gtg_perc, ttg_perc, gc_mean, gc_sd, rbs_DoubleA, rbs_DoubleT, rbs_NoA, rbs_None,
   rbs_OnlyA, rbs_OnlyT, rbs_Other, rbs_Other_GA, rbs_SD_Bacteroidetes, rbs_SD_Canonical,
   rbs_TATATA_3-6, arc, bac, euk, vir, mix, unaligned, hallmark]
-DBDIR: /mnt/ufs18/rs-026/gpgc/temp/projects/vs2/VirSorter2/db
+DBDIR: /mnt/ufs18/rs-026/gpgc/temp/projects/vs2/db
 

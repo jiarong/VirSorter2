@@ -1,6 +1,4 @@
-cd /mnt/home/guojiaro/Documents/dev/VirSorter2/test
 
 Outdir=test-out
-rm -rf $Outdir
-#/usr/bin/time -v virsorter run -w $Outdir -i 4seq.fa -j 8 --hallmark-required-on-short all
-/usr/bin/time -v virsorter run -w $Outdir -i 4seq.fa -j 8 --hallmark-required-on-short --provirus all
+#rm -rf $Outdir
+/usr/bin/time -v virsorter run -w $Outdir -i 8seq.fa -j 4 --hallmark-required-on-short all

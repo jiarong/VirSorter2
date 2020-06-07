@@ -51,14 +51,37 @@ rule download_hmm_viral:
     output: temp('combined.hmm.gz.split_{index}')
     shell:
         """
-          wget -nv -O {output} https://zenodo.org/record/3823805/files/{output}?download=1 || curl https://zenodo.org/record/3823805/files/{output}?download=1 > {output}
+        for i in {{1..5}}; do
+            Ret=$(wget --tries 2 --retry-connrefused --waitretry=60 --timeout=60 -q -O {output} https://zenodo.org/record/3823805/files/{output}?download=1 || echo "404 Not Found")
+            if echo $Ret | grep -i -q "404 Not Found"; then
+                if [ $i = 5 ]; then
+                    exit 1
+                fi
+                echo "*** Server not responding for {output}; try $i/5.."
+                continue
+            else
+                break
+            fi
+        done
         """
+
 
 rule download_hmm_pfam:
     output: temp('Pfam-A-{domain}.hmm')
     shell:
         """
-        wget -nv -O {output}.gz https://zenodo.org/record/3823805/files/{output}.gz?download=1 
+        for i in {{1..5}}; do
+            Ret=$(wget --tries 2 --retry-connrefused --waitretry=60 --timeout=60 -q -O {output}.gz https://zenodo.org/record/3823805/files/{output}.gz?download=1 || echo "404 Not Found")
+            if echo $Ret | grep -i -q "404 Not Found"; then
+                if [ $i = 5 ]; then
+                    exit 1
+                fi
+                echo "*** Server not responding for {output}; try $i/5.."
+                continue
+            else
+                break
+            fi
+        done
         gunzip Pfam-A-{wildcards.domain}.hmm.gz
         """
 
@@ -66,14 +89,36 @@ rule download_other_db:
     output: temp('db.tgz')
     shell:
         """
-        wget -nv -O db.tgz https://zenodo.org/record/3823805/files/db.tgz?download=1 
+        for i in {{1..5}}; do
+            Ret=$(wget --tries 2 --retry-connrefused --waitretry=60 --timeout=60 -q -O db.tgz https://zenodo.org/record/3823805/files/db.tgz?download=1 || echo "404 Not Found")
+            if echo $Ret | grep -i -q "404 Not Found"; then
+                if [ $i = 5 ]; then
+                    exit 1
+                fi
+                echo "*** Server not responding for {output}; try $i/5.."
+                continue
+            else
+                break
+            fi
+        done
         """
 
 rule download_plamid_genomes:
     output: 'genomes-plasmid.fna.gz'
     shell:
         """
-        wget -nv -O {output} https://zenodo.org/record/3823805/files/{output}?download=1 
+        for i in {{1..5}}; do
+            Ret=$(wget --tries 2 --retry-connrefused --waitretry=60 --timeout=60 -q -O {output} https://zenodo.org/record/3823805/files/{output}?download=1 || echo "404 Not Found")
+            if echo $Ret | grep -i -q "404 Not Found"; then
+                if [ $i = 5 ]; then
+                    exit 1
+                fi
+                echo "*** Server not responding for {output}; try $i/5.."
+                continue
+            else
+                break
+            fi
+        done
         """
 
 rule install_dependencies:
@@ -98,6 +143,7 @@ rule setup:
     run:
         shell(
         """
+        rm -rf group hmm rbs
         tar -xzf db.tgz
         mv db/* .
         rmdir db
@@ -114,3 +160,7 @@ rule setup:
             bname = 'Pfam-A-{}.hmm'.format(domain)
             assert md5(f) == D_FILE2MD5[bname], \
                 '*** Invalid checksum in for {}'.format(bname)
+
+
+onsuccess:
+    print('*** All setup finished')

@@ -4,6 +4,7 @@ import os
 import warnings
 from collections import OrderedDict, Counter
 import logging
+import io
 
 import joblib
 import click
@@ -37,6 +38,38 @@ def load_rbs_category(f):
             d[site] = cat
 
     return d
+
+def df_tax_per_config(tax_f, seqname):
+    '''parse .tax file
+    
+    parse .tax file (tab separated with three columns, 1) orf seqname, 2) gene name of best hit hmm, 3) bit score cutoff); and then select rows with seqname and turn pandas DataFrame
+    '''
+    fw = io.BytesIO()
+    seqname_b = seqname.encode()      # convert str to bytes
+    with open(tax_f, 'rb') as fp:     # 'rb' mode for faster read
+        for line in fp:
+            if not line.startswith(seqname_b):
+                continue
+            fw.write(line)
+
+    fw.seek(0)
+    # pd.read_csv can read Bytes directly
+    df_tax_all = pd.read_csv(fw, sep='\t', header=None, 
+        names=['orfname', 'tax', 'hmm', 'score'])
+    #print(df_tax_all.head())
+    if len(df_tax_all) != 0:
+        seqnames, indice = zip(
+            *[orfname.rsplit('_', 1) for orfname in df_tax_all['orfname']]
+        )
+    else:
+        seqnames = []
+        indice = []
+
+    df_tax_all['seqname'] = seqnames
+    # convert to int to match orf_index in df_gff
+    indice = [ int(i) for i in indice ]
+    df_tax_all['orf_index'] = indice
+    return df_tax_all
 
 def parse_hallmark_hmm(hallmark_f):
     '''map hmm name to gene name and hmmsearch bit score cutoff
@@ -306,7 +339,7 @@ class provirus(object):
 
         Args:
 
-        rbs_cat_d (dict): mapping hmm name to gene name and hmmsearch bit score
+            rbs_cat_d (dict): mapping hmm name to gene name and hmmsearch bit score
             cutoff from rbs_cat_d
             gff_f (str): gff file from prodigal
             tax_f (str): info loaded from .tax file (output of extract-feature-from-hmmout.py
@@ -333,17 +366,6 @@ class provirus(object):
 
     def load_data(self):
         self.gff_gen = parse_gff(self.gff_f)
-
-        df_tax_all = pd.read_csv(self.tax_f, sep='\t', header=None, 
-                names=['orfname', 'tax', 'hmm', 'score'])
-        seqnames, indice = zip(
-                *[orfname.rsplit('_', 1) for orfname in df_tax_all['orfname']]
-        )
-        df_tax_all['seqname'] = seqnames
-        # convert to int to match orf_index in df_gff
-        indice = [ int(i) for i in indice ]
-        df_tax_all['orf_index'] = indice
-        self.df_tax_all = df_tax_all
 
         self.rbs_cat_d = load_rbs_category(self.rbs_cat_f)
 
@@ -441,7 +463,7 @@ class provirus(object):
     def trim_ends(self, df_gff, df_tax, sel_index_w_hallmark, seqname, 
             prox_pr, prox_pr_max, partial, 
             full_orf_index_start, full_orf_index_end,
-            full_bp_start, full_bp_end, pr_full):
+            full_bp_start, full_bp_end, pr_full, hallmark_cnt):
         '''Trim the ends of viral candidate regions
 
         The function writes the boudary info to output file, including 
@@ -451,7 +473,7 @@ class provirus(object):
             prox_bp_start, prox_bp_end,
             prox_pr, prox_pr_max,
             partial, full_orf_index_start, full_orf_index_end,
-            full_bp_start, full_bp_end, pr_full
+            full_bp_start, full_bp_end, pr_full, hallmark_cnt,
 
         '''
         # trim ends 5 or 10% of total genes
@@ -492,7 +514,7 @@ class provirus(object):
         final_bp_end = df_gff['end'].loc[indice == final_ind_end].iloc[0]
         mes = ('{}\t{}\t{}\t{}\t{}\t{:.3f}\t{:.3f}'
                 '\t{}\t{}\t{}\t{}\t{:.3f}\t{:.3f}'
-                '\t{}\t{}\t{}\t{}\t{}\t{:.3f}\n')
+                '\t{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\n')
         self.fw.write(
                 mes.format(
                     seqname, final_ind_start, final_ind_end,
@@ -501,7 +523,7 @@ class provirus(object):
                     prox_bp_start, prox_bp_end,
                     prox_pr, prox_pr_max,
                     partial, full_orf_index_start, full_orf_index_end,
-                    full_bp_start, full_bp_end, pr_full
+                    full_bp_start, full_bp_end, pr_full, int(hallmark_cnt)
                 )
         )
 
@@ -526,8 +548,7 @@ class provirus(object):
 
         '''
         df_gff = pd.DataFrame(mat, columns=self.gff_mat_colnames)
-        sel = (self.df_tax_all['seqname'] == seqname)
-        df_tax = self.df_tax_all.loc[sel,:]
+        df_tax = df_tax_per_config(self.tax_f, seqname)
         if self.d_hallmark_hmm != None:
             hmms = df_tax['hmm']
             indice = df_tax['orf_index']
@@ -540,6 +561,14 @@ class provirus(object):
             sel_index_w_hallmark = indice.loc[sel_score].tolist()
         else:
             sel_index_w_hallmark = []
+
+        l = get_feature(df_gff, df_tax, self.rbs_cat_d, 
+                sel_index_w_hallmark)
+        if len(l) == 0:
+            # does not meet 1) >= 2 genes; 2) at least 1 full gene
+            return
+
+        hallmark_cnt = l[-1]
 
         # if proba table to get proba of whole seq is provided
         if self.fullseq_clf_f != None:
@@ -562,14 +591,7 @@ class provirus(object):
 
         else:
             # redo prediction here
-            l = get_feature(df_gff, df_tax, self.rbs_cat_d, 
-                    sel_index_w_hallmark)
-            if len(l) == 0:
-                # does not meet 1) >= 2 genes; 2) at least 1 full gene
-                return
-
             # classify
-
             res_lis = self.model.predict_proba([l,]) # [[0.84 0.16]]
             res = res_lis[0]  #[0.84 0.16]
             pr_full = res[1]       # 0.16
@@ -588,7 +610,7 @@ class provirus(object):
                     sel_index_w_hallmark, seqname, 
                     np.nan, np.nan,
                     partial, full_orf_index_start, full_orf_index_end, 
-                    full_bp_start, full_bp_end, pr_full)
+                    full_bp_start, full_bp_end, pr_full, hallmark_cnt)
         else:
             # sliding windows
             MIN_GENOME_SIZE = GROUP_DICT[self.group]['MIN_GENOME_SIZE']
@@ -612,7 +634,7 @@ class provirus(object):
                         self.rbs_cat_d, sel_index_w_hallmark
                 )
 
-                hallmark_exist= False
+                hallmark_cnt = 0
                 if len(l) == 0:
                     # do not meet 1) > 2 genes and 2) 1 full gene
                     #  this can happen if there are large genes
@@ -621,8 +643,7 @@ class provirus(object):
                     res_lis = self.model.predict_proba([l,])
                     res = res_lis[0]
                     pr = res[1]
-                    if l[-1] > 0:
-                        hallmark_exist = True
+                    hallmark_cnt = l[-1]
 
                 if trigger == False and pr < self.proba:
                     ind_start += 1
@@ -653,13 +674,14 @@ class provirus(object):
                         df_tax_sel = df_tax.loc[sel,:]
                         partial = 1
                         # require hallmark gene for provirus
-                        if hallmark_exist:
+                        if hallmark_cnt > 0:
                             self.trim_ends(df_gff_sel, df_tax_sel, 
                                     sel_index_w_hallmark, seqname,
                                     pr_last_valid, pr_max,
                                     partial, 
                                     full_orf_index_start, full_orf_index_end, 
-                                    full_bp_start, full_bp_end, pr_full)
+                                    full_bp_start, full_bp_end, 
+                                    pr_full, hallmark_cnt)
 
                         # set up for next provirus in the same contig
                         ind_start = ind_end + 1
@@ -683,13 +705,13 @@ class provirus(object):
             df_tax_sel = df_tax.loc[sel,:]
             partial = 1
             # require hallmark gene for provirus
-            if hallmark_exist:
+            if hallmark_cnt > 0:
                 self.trim_ends(df_gff_sel, df_tax_sel,
                         sel_index_w_hallmark, seqname,
                         pr_last_valid, pr_max,
                         partial,
                         full_orf_index_start, full_orf_index_end, 
-                        full_bp_start, full_bp_end, pr_full)
+                        full_bp_start, full_bp_end, pr_full, hallmark_cnt)
 
 
     def find_boundary(self):
@@ -706,7 +728,7 @@ class provirus(object):
                     'prox_bp_start', 'prox_bp_end',
                     'prox_pr', 'prox_pr_max',
                     'partial', 'full_orf_index_start', 'full_orf_index_end',
-                    'full_bp_start', 'full_bp_end', 'pr_full',
+                    'full_bp_start', 'full_bp_end', 'pr_full', 'hallmark_cnt'
             ]
             self.fw.write('{}\n'.format('\t'.join(header_lis)))
 

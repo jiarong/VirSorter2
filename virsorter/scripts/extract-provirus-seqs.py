@@ -62,24 +62,29 @@ def main():
                 full_start_ind = ser.iloc[-6]
                 full_end_ind = ser.iloc[-5]
                 group = ser.iloc[-1]
+                hallmark = ser.iloc[-2]
+                score = ser.iloc[4]
                 
                 if (trim_start_ind == full_start_ind and 
                         trim_end_ind == full_end_ind):
                     # not trimmed; save to lytic
                     mes = ('>{}||full  '
-                            'shape:{}||start:{}||end:{}||group:{}\n{}\n')
+                        'shape:{}||start:{}||end:{}||'
+                        'group:{}||score:{}||hallmark:{}\n{}\n')
                     fw_lytic.write(
                             mes.format(seqname, shape, trim_start_bp, 
-                                trim_end_bp, group, rec.sequence)
+                                trim_end_bp, group, score, hallmark, 
+                                rec.sequence)
                     )
                 else:
                     # trimmed; save to lytic; decided not to 
                     #   interpret lytic or lyso here
                     mes = ('>{}||full  '
-                           'shape:{}||start:{}||end:{}||group:{}\n{}\n')
+                        'shape:{}||start:{}||end:{}||'
+                        'group:{}||score:{}||hallmark:{}\n{}\n')
                     fw_lytic.write(
                             mes.format(seqname, shape, trim_start_bp, 
-                                trim_end_bp, group,
+                                trim_end_bp, group, score, hallmark, 
                                 rec.sequence[trim_start_bp:trim_end_bp+1])
                     )
 
@@ -94,12 +99,15 @@ def main():
                     full_start_ind = ser.iloc[-6]
                     full_end_ind = ser.iloc[-5]
                     group = ser.iloc[-1]
+                    hallmark = ser.iloc[-2]
+                    score = ser.iloc[4]
                     #save to lyso
                     mes = ('>{}||{}index_partial  '
-                           'shape:{}||start:{}||end:{}||group:{}\n{}\n')
+                            'shape:{}||start:{}||end:{}||'
+                            'group:{}||score:{}||hallmark:{}\n{}\n')
                     fw_lyso.write(
                             mes.format(seqname, i, shape, trim_start_bp, 
-                                trim_end_bp, group, 
+                                trim_end_bp, group, score, hallmark,
                                 rec.sequence[trim_start_bp:trim_end_bp+1])
                     )
 

@@ -55,6 +55,7 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
 
     if db_dir != None:
         config['DBDIR'] = db_dir
+    db_dir = config['DBDIR']
     config['SEQFILE'] = seqfile
     config['PROVIRUS'] = provirus
     config['HALLMARK_REQUIRED_ON_SHORT'] = hallmark_required_on_short
@@ -66,6 +67,15 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
     config['THREADS'] = multiprocessing.cpu_count() if not threads else threads
 
     groups = [i.strip() for i in include_groups.split(',')]
+    groups_avail = os.listdir(f'{db_dir}/group')
+    groups_unavail = set(group).difference(set(groups_avail))
+    if len(groups_unavail) != 0:
+        mes = (
+                'Following two viral groups are not available: {}\n'
+                'Make sure viral group names match with direcotry '
+                'under {}/group\n'
+        )
+        logging.critical(mes.format(', '.join(groups_unavail), db_dir))
     config['GROUPS'] = groups
 
     with open(config_f, 'w') as fw:

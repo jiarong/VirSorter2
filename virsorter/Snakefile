@@ -69,7 +69,8 @@ rule preprocess:
 rule extract_feature:
     input:
         expand('{Tmpdir}/{{group}}/all.pdg.ftr'.format(Tmpdir=Tmpdir),
-                group=Groups)
+                group=Groups),
+        'Done-preprocess',
     output:
         temp(touch('Done-extract-feature'))
     shell:
@@ -77,19 +78,11 @@ rule extract_feature:
         echo "Step 2 - exract-feature finished." | python {Scriptdir}/echo.py
         """
 
-def classify_input(wildcards):
-    if Provirus:
-        return ['final-viral-fullseq-trim.fa',
-                'final-viral-partseq.fa',
-                'final-viral-boundary.tsv',]
-
-    else:
-        return ['final-viral-fullseq.fa',
-                'final-all-fullseq-proba.tsv',]
-
 rule classify:
     input:
-        classify_input
+        'final-viral-score.tsv',
+        'final-viral-combined.fa',
+        'Done-extract-feature'
     output:
         temp(touch('Done-classify'))
     shell:

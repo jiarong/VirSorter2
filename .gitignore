@@ -2,7 +2,9 @@
 *.snakemake
 db
 *__pycache__
-test/test-out
 *.bak
 install-deps
 *.swp
+test/*
+!test/test.sh
+!test/8seq.fa

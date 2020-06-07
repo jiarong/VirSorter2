@@ -1,9 +1,8 @@
-name: vs2.1
+name: vs2
 channels:
   - bioconda
   - conda-forge
   - defaults
-  - r
 dependencies:
   - _libgcc_mutex=0.1
   - _openmp_mutex=4.5
@@ -17,6 +16,7 @@ dependencies:
   - chardet=3.0.4
   - cryptography=2.9.2
   - cycler=0.10.0
+  - click=7.1.2
   - enum34=1.1.10
   - freetype=2.10.1
   - hmmer=3.3
