@@ -24,20 +24,20 @@ setup(
     version=get_version("virsorter/__init__.py"),
     url='https://github.com/jiarong/VirSorter2',
     license='GPL-2',
-    author='Guo et al.',
+    author='Jiarong Guo',
     author_email='guojiaro@gmail.com',
     description=('VirSorter2: A multi-classifier, expert-guided approach to '
         'detect diverse DNA and RNA virus genomes'),
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=['virsorter'],
-    package_data={
-        #'': ["virsorter/*", ]  
-        # include anything under virsorter; 
-        'virsorter': ['*']
-    },
+    #package_data={
+    #    #'': ["virsorter/*", ]  
+    #    # include anything under virsorter; 
+    #    'virsorter': ['*']
+    #},
+    include_package_data=True,  # include all files in MANIFEST.in
     data_files=[(".", ["README.md", "LICENSE"])],
-    include_package_data=True,
     install_requires= [
     ],
     # install via conda: click, ruamel.yaml, snakemake
