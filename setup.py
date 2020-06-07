@@ -32,9 +32,9 @@ setup(
     long_description_content_type='text/markdown',
     packages=['virsorter'],
     package_data={
-        '': ["virsorter/*", ]  
+        #'': ["virsorter/*", ]  
         # include anything under virsorter; 
-        # same as virsorter: ['*']
+        'virsorter': ['*']
     },
     data_files=[(".", ["README.md", "LICENSE"])],
     include_package_data=True,
