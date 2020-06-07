@@ -36,7 +36,7 @@ setup(
         # include anything under virsorter; 
         # same as virsorter: ['*']
     },
-    data_files=[(".", ["README.md", "LICENSE.txt"])],
+    data_files=[(".", ["README.md", "LICENSE"])],
     include_package_data=True,
     install_requires= [
     ],
