@@ -68,7 +68,7 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
 
     groups = [i.strip() for i in include_groups.split(',')]
     groups_avail = os.listdir(f'{db_dir}/group')
-    groups_unavail = set(group).difference(set(groups_avail))
+    groups_unavail = set(groups).difference(set(groups_avail))
     if len(groups_unavail) != 0:
         mes = (
                 'Following two viral groups are not available: {}\n'

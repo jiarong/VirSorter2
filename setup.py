@@ -23,10 +23,11 @@ setup(
     name='virsorter',
     version=get_version("virsorter/__init__.py"),
     url='https://github.com/jiarong/VirSorter2',
-    license='BSD-3',
+    license='GPL-2',
     author='Guo et al.',
     author_email='guojiaro@gmail.com',
-    description='Virsorter2 - tool for mining viral signal form metaG/T data.',
+    description=('VirSorter2: A multi-classifier, expert-guided approach to '
+        'detect diverse DNA and RNA virus genomes'),
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=['virsorter'],
