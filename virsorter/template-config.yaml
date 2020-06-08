@@ -76,5 +76,5 @@ SELECT_FEATURE_LIST: [gene_size, gene_overlap_perc, density, strand_switch_perc,
   gtg_perc, ttg_perc, gc_mean, gc_sd, rbs_DoubleA, rbs_DoubleT, rbs_NoA, rbs_None,
   rbs_OnlyA, rbs_OnlyT, rbs_Other, rbs_Other_GA, rbs_SD_Bacteroidetes, rbs_SD_Canonical,
   rbs_TATATA_3-6, arc, bac, euk, vir, mix, unaligned, hallmark]
-DBDIR: /mnt/ufs18/rs-026/gpgc/temp/projects/vs2/db
+DBDIR: /mnt/ufs18/home-111/guojiaro/Documents/dev/test/vs2
 

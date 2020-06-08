@@ -1,7 +1,13 @@
 import hashlib
+import os
+import shutil
+import glob
 from ruamel.yaml import YAML
 
+
 ENV_YAML_DIR = '../envs'
+Srcdir = os.path.dirname(os.path.dirname(workflow.snakefile))
+Scriptdir='{}/scripts'.format(Srcdir)
 
 
 def md5(fname):
@@ -26,7 +32,9 @@ rule download_db:
     output: temp('db.tgz')
     shell:
         """
+        rm -f db.tgz
         wget -nv -O db.tgz https://osf.io/v46sc/download 
+        echo "Download from osf finished.." | python {Scriptdir}/echo.py
         """
 
 rule install_dependencies:
@@ -36,7 +44,7 @@ rule install_dependencies:
         '{}/vs2.yaml'.format(ENV_YAML_DIR)
     shell:
         """
-        echo "*** Dependencies installed"
+        echo "Dependencies installed" | python {Scriptdir}/echo.py
         """
 
 rule setup:
@@ -48,15 +56,30 @@ rule setup:
     run:
         shell(
         """
-        rm -rf db/group db/hmm db/rbs
+        rm -rf db
         tar -xzf db.tgz
         mv db/group db/hmm db/rbs .
         rm -rf db
+        echo "All setup finished.." | python {Scriptdir}/echo.py
         """
         )
         assert md5('db.tgz') == D_FILE2MD5['db.tgz'], \
                 '*** Invalid checksum in for db.tgz'
-        print('*** All setup finished..')
+
+onstart:
+    if not os.path.exists('Done-install-dependencies'):
+        shutil.rm('conda-envs')
+        os.makedirs('conda-envs')
+
+    fs = glob.glob('combined.hmm.gz.split*')
+    fs.extend(glob.glob('Pfam-A-*.hmm'))
+    fs.extend(['db.tgz'])
+    for f in fs:
+        if os.path.exists(f):
+            os.remove(f)
+    for di in ['group', 'hmm', 'rbs']:
+        if os.path.exists(di):
+            shutil.rmtree(di)
 
 onerror:
     dbdir=os.path.abspath(os.getcwd())

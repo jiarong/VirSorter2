@@ -9,8 +9,8 @@ ENV_YAML_DIR = '../envs'
 # following DONOT work in Snakefile!!
 #src_config_dir = os.path.dirname(os.path.abspath(__file__)) 
 
-src_config_dir = os.path.dirname(srcdir('.'))
-src_config_dir = os.path.dirname(src_config_dir)
+src_config_dir = os.path.dirname(os.path.dirname(workflow.snakefile))
+Scriptdir=os.path.join(src_config_dir, 'scripts')
 
 #print(srcdir('.'))
 #print(workflow.basedir)
@@ -57,7 +57,7 @@ rule download_hmm_viral:
                 if [ $i = 5 ]; then
                     exit 1
                 fi
-                echo "*** Server not responding for {output}; try $i/5.."
+                echo "Server not responding for {output}; try $i/5.." | python {Scriptdir}/echo.py
                 continue
             else
                 break
@@ -76,7 +76,7 @@ rule download_hmm_pfam:
                 if [ $i = 5 ]; then
                     exit 1
                 fi
-                echo "*** Server not responding for {output}; try $i/5.."
+                echo "Server not responding for {output}; try $i/5.." | python {Scriptdir}/echo.py
                 continue
             else
                 break
@@ -95,7 +95,7 @@ rule download_other_db:
                 if [ $i = 5 ]; then
                     exit 1
                 fi
-                echo "*** Server not responding for {output}; try $i/5.."
+                echo "*** Server not responding for {output}; try $i/5.." | python {Scriptdir}/echo.py
                 continue
             else
                 break
@@ -113,7 +113,7 @@ rule download_plamid_genomes:
                 if [ $i = 5 ]; then
                     exit 1
                 fi
-                echo "*** Server not responding for {output}; try $i/5.."
+                echo "Server not responding for {output}; try $i/5.." | python {Scriptdir/echo.py
                 continue
             else
                 break
@@ -128,7 +128,7 @@ rule install_dependencies:
         '{}/vs2.yaml'.format(ENV_YAML_DIR)
     shell:
         """
-        echo "*** Dependencies installed"
+        echo "Dependencies installed" | python {Scriptdir}/echo.py
         """
 
 rule setup:
@@ -149,7 +149,6 @@ rule setup:
         rmdir db
         mv Pfam-A-*.hmm hmm/pfam
         cat combined.hmm.gz.split_* | gunzip -c > hmm/viral/combined.hmm
-        echo "All setup finished" | python ${Scriptdir}/echo.py
         """
         )
         assert md5('db.tgz') == D_FILE2MD5['db.tgz'], \
@@ -162,6 +161,23 @@ rule setup:
             assert md5(f) == D_FILE2MD5[bname], \
                 '*** Invalid checksum in for {}'.format(bname)
 
+onerror:
+    # clean up 
+    if not os.path.exists('Done-install-dependencies'):
+        shutil.rm('conda-envs')
+        os.makedirs('conda-envs')
 
-#onsuccess:
-#    print('*** All setup finished')
+    fs = glob.glob('combined.hmm.gz.split*')
+    fs.extend(glob.glob('Pfam-A-*.hmm'))
+    fs.extend(['db.tgz'])
+    for f in fs:
+        if os.path.exists(f):
+            os.remove(f)
+    for di in ['group', 'hmm', 'rbs', 'db']:
+        if os.path.exists(di):
+            shutil.rmtree(di)
+
+onsuccess:
+    shell("""
+        echo "All setup finished" | python {Scriptdir}/echo.py
+        """)
