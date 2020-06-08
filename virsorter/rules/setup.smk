@@ -149,6 +149,7 @@ rule setup:
         rmdir db
         mv Pfam-A-*.hmm hmm/pfam
         cat combined.hmm.gz.split_* | gunzip -c > hmm/viral/combined.hmm
+        echo "All setup finished" | python ${Scriptdir}/echo.py
         """
         )
         assert md5('db.tgz') == D_FILE2MD5['db.tgz'], \
@@ -162,5 +163,5 @@ rule setup:
                 '*** Invalid checksum in for {}'.format(bname)
 
 
-onsuccess:
-    print('*** All setup finished')
+#onsuccess:
+#    print('*** All setup finished')
