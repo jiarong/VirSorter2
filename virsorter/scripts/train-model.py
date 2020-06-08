@@ -4,6 +4,11 @@ import multiprocessing
 import click
 import pandas as pd
 import joblib
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+snakefile_dir = os.path.dirname(script_dir)
+pkg_dir = os.path.dirname(snakefile_dir)
+sys.path.append(pkg_dir)
 from virsorter.config import set_logger, DEFAULT_CONFIG
 
 from sklearn.preprocessing import MinMaxScaler

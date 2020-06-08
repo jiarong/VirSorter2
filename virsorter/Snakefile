@@ -37,6 +37,11 @@ Seqfile = os.path.abspath(Seqfile)
 Conda_yaml_dir = '../envs' # relative to rules/*.smk files
 
 
+pkg_dir = os.path.dirname(Srcdir)          
+sys.path.append(os.path.abspath(pkg_dir))  # add virsorter 
+sys.path.append(os.path.abspath(Scriptdir))   # add Scriptdir
+
+
 wildcard_constraints:
     group='[A-Za-z]+',
     domain='[A-Za-z]+',

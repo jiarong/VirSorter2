@@ -35,7 +35,7 @@ cd VirSorter2
 pip install -e .
 ```
 
-Then download all databases (takes 10+ mins, but this only need to be done once). Please be patience and wait..
+Then download all databases and install dependencies (takes 10+ mins, but this only need to be done once). Please be patience and wait..
 
 ```bash
 virsorter setup -d db -j 4

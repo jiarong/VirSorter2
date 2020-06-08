@@ -3,6 +3,11 @@
 
 import sys
 import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+snakefile_dir = os.path.dirname(script_dir)
+pkg_dir = os.path.dirname(snakefile_dir)
+sys.path.append(pkg_dir)
 from virsorter.config import DEFAULT_CONFIG
 
 TOTAL_FEATURE_LIST=DEFAULT_CONFIG['TOTAL_FEATURE_LIST']

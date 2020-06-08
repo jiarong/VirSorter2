@@ -5,7 +5,7 @@ import logging
 
 from ruamel.yaml import YAML
 
-from snakemake.io import load_configfile
+#from snakemake.io import load_configfile
 
 user_config_dir = os.path.join(os.path.expanduser('~'), '.virsorter')
 user_template = os.path.join(user_config_dir, 'template-config.yaml')
@@ -84,6 +84,7 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
     logging.info(mes.format(config_f))
 
 def validate_config(config_f, workflow):
-    config = load_configfile(config_f)
+    pass
+    #config = load_configfile(config_f)
     # validate_sample_defs(config, workflow)
     # low priority; could later add more validation steps

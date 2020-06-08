@@ -6,9 +6,9 @@ import subprocess
 import glob
 import click
 
+from snakemake import load_configfile
 from virsorter import __version__
-from virsorter.config import (set_logger, make_config, 
-        load_configfile, validate_config, DEFAULT_CONFIG)
+from virsorter.config import (set_logger, make_config, DEFAULT_CONFIG)
 
 set_logger()
 
@@ -195,7 +195,6 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
             max_orf_per_seq=max_orf_per_seq, 
             tmpdir=tmpdir, min_length=min_length, min_score=min_score,
     )
-    validate_config(config_f, workflow)
     config = load_configfile(config_f)
 
     if db_dir == None:
