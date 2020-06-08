@@ -81,7 +81,7 @@ localrules: prep_fragments_from_genome
 rule prep_fragments_from_genome:
     #input: Viral_seqfiles
     output: f'{Tmpdir}/fragments.fasta'
-    #conda: f'{Conda_yaml_dir}/vs2.yaml'
+    conda: f'{Conda_yaml_dir}/vs2.yaml'
     shell:
         """
         mkdir -p log
@@ -101,7 +101,7 @@ localrules: split_contig_file
 checkpoint split_contig_file:
     input: f'{Tmpdir}/fragments.fasta'
     output: directory(f'{Tmpdir}/fragments.fasta.splitdir')
-    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+    conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log=log/split-contig-file.log
@@ -121,7 +121,7 @@ rule gene_call:
         gff=temp(f'{Tmpdir}/fragments.fasta.splitdir/fragments.fasta.{{i}}.split.pdg.splitgff'),
         faa=temp(f'{Tmpdir}/fragments.fasta.splitdir/fragments.fasta.{{i}}.split.pdg.splitfaa'),
     log: f'{Tmpdir}/fragments.fasta.splitdir/fragments.fasta.{{i}}.split.pdg.log'
-    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+    conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Rbs_pdg_db={Rbs}
@@ -157,7 +157,7 @@ rule merge_split_faa_gff:
     output:
         gff=f'{Tmpdir}/all.pdg.gff',
         faa=f'{Tmpdir}/all.pdg.faa',
-    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+    conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         cat {input.gff} > {output.gff}
@@ -168,7 +168,7 @@ rule gff_feature:
     input: f'{Tmpdir}/all.pdg.gff'
     output: f'{Tmpdir}/all.pdg.gff.ftr'
     log: 'log/extract-feature-from-gff.log'
-    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+    conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         python {Scriptdir}/extract-feature-from-gff.py {Dbdir}/rbs/rbs-catetory.tsv {input} {output} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -178,7 +178,7 @@ localrules: split_faa
 checkpoint split_faa:
     input: f'{Tmpdir}/all.pdg.faa'
     output: directory(f'{Tmpdir}/all.pdg.faa.splitdir')
-    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+    conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Tmpdir}/log/split-faa.log
@@ -203,7 +203,7 @@ rule hmmsearch:
     output: temp(f'{Tmpdir}/all.pdg.faa.splitdir/all.pdg.faa.{{i}}.split.{{domain}}.splithmmtbl')
     threads: Hmmsearch_threads
     log: f'{Tmpdir}/all.pdg.faa.splitdir/all.pdg.faa.{{i}}.split.{{domain}}.hmm.log'
-    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+    conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Domain={wildcards.domain}
@@ -265,7 +265,7 @@ rule hmm_sort_to_best_hit_taxon:
         tax = f'{Tmpdir}/all.pdg.hmm.tax',
         ftr = f'{Tmpdir}/all.pdg.hmm.ftr'
     log: 'log/extract-feature-from-hmmout.log'
-    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+    conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         python {Scriptdir}/extract-feature-from-hmmout.py {Hmmsearch_score_min} "{input.arc},{input.bac},{input.euk},{input.mix},{input.vir}" "arc,bac,euk,mixed,vir" > {output.tax} 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -285,7 +285,7 @@ rule merge_hmm_gff_features:
         hmm_ftr = f'{Tmpdir}/all.pdg.hmm.ftr'
     output: 
         merged_ftr = f'{Tmpdir}/all.pdg.ftr'
-    #conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+    conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log=log/merge-feature.log

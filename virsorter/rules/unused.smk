@@ -35,7 +35,7 @@
 #        clf='viral-contig-proba-final.tsv',
 #        contig='viral-contig-final.fa'
 #    threads: General_threads
-#    #conda: 'env/vfam.yml'
+#    conda: 'env/vfam.yml'
 #    shell:
 #        """
 #        if [ {Iter_max} -eq 0 ]; then

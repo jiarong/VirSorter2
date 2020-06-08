@@ -141,12 +141,19 @@ def get_snakefile(f="Snakefile"):
     show_default=True,
     help='Check rules to run and files to produce',
 )
+@click.option(
+    '--use-conda-off',
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help='Stop using the conda envs (vs2.yaml) that come with this package and use what are installed in current system; Only useful when you want to install dependencies on your own with your own prefer versions',
+)
 @click.argument(
     'snakemake_args', 
     nargs=-1, 
     type=click.UNPROCESSED, 
 )
-def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  min_score, provirus_off, hallmark_required_on_short, max_orf_per_seq, min_length, tmpdir, verbose, profile, dryrun, snakemake_args):
+def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  min_score, provirus_off, hallmark_required_on_short, max_orf_per_seq, min_length, tmpdir, verbose, profile, dryrun, use_conda_off, snakemake_args):
     ''' Runs the virsorter main function: to classify viral sequences
 
     By default all steps are executed. The "classify" rerun classify
@@ -198,7 +205,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
         'snakemake --snakefile {snakefile} --directory {working_dir} '
         '--jobs {jobs} '
         '--configfile {config_file} --conda-prefix {conda_prefix} '
-        '--rerun-incomplete --use-conda --nolock --latency-wait 600'
+        '--rerun-incomplete {use_conda_off} --nolock --latency-wait 600'
         ' {profile} {dryrun} {verbose} '
         ' {target_rule} '
         ' {args} '
@@ -209,6 +216,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
         config_file=config_f,
         profile='' if (profile is None) else '--profile {}'.format(profile),
         dryrun='--dryrun' if dryrun else '',
+        use_conda_off='' if use_conda_off else '--use-conda',
         verbose='' if verbose else '--quiet',
         args=' '.join(snakemake_args),
         target_rule='-R {}'.format(workflow) if workflow!='all' else workflow,
@@ -360,8 +368,15 @@ def run_setup(db_dir,jobs, snakemake_args):
     show_default=True,
     help='if applied, each file (genome bin) is a genome in --seqfile, else each sequence is a genome',
 )
+@click.option(
+    '--use-conda-off',
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help='Stop using the conda envs (vs2.yaml) that come with this package and use what are installed in current system; Only useful when you want to install dependencies on your own with your own prefer versions',
+)
 @click.argument('snakemake_args', nargs=-1, type=click.UNPROCESSED)
-def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per_genome, min_length, max_orf_per_seq, genome_as_bin, jobs, snakemake_args):
+def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per_genome, min_length, max_orf_per_seq, genome_as_bin, jobs, use_conda_off, snakemake_args):
     '''Training features for customized classifier.
     
     Executes a snakemake workflow to do the following:
@@ -409,7 +424,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
             'Viral_genome_as_bin={genome_as_bin} '
             'Fragments_per_genome={frags_per_genome} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
-        '--nolock  --use-conda --quiet --conda-prefix {conda_prefix} '
+        '--nolock  {use_conda_off} --quiet --conda-prefix {conda_prefix} '
         '{add_args} {args}'
     ).format(
         snakefile=get_snakefile('rules/train-feature.smk'),
@@ -423,6 +438,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
         genome_as_bin=genome_as_bin,
         frags_per_genome=frags_per_genome, 
         jobs=jobs,
+        use_conda_off='' if use_conda_off else '--use-conda',
         conda_prefix=os.path.join(DEFAULT_CONFIG['DBDIR'],'conda_envs'),
         add_args='' if snakemake_args and snakemake_args[0].startswith('-') else '--',
         args=' '.join(snakemake_args),
@@ -476,8 +492,15 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
     type=bool,
     help='random undersample the larger to the size of the smaller feature file'
 )
+@click.option(
+    '--use-conda-off',
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help='Stop using the conda envs (vs2.yaml) that come with this package and use what are installed in current system; Only useful when you want to install dependencies on your own with your own prefer versions',
+)
 @click.argument('snakemake_args', nargs=-1, type=click.UNPROCESSED)
-def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, snakemake_args):
+def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, use_conda_off, snakemake_args):
     '''Training customized classifier model.
     '''
 
@@ -492,7 +515,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, sn
             'Balanced={balanced} '
             'Jobs={jobs} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
-        '--nolock --use-conda --quiet --conda-prefix {conda_prefix} '
+        '--nolock {use_conda_off} --quiet --conda-prefix {conda_prefix} '
         '{add_args} {args}'
     ).format(
         snakefile=get_snakefile('rules/train-model.smk'),
@@ -501,6 +524,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, sn
         nonviral_ftrfile=nonviral_ftrfile,
         balanced=balanced,
         jobs=jobs,
+        use_conda_off='' if use_conda_off else '--use-conda',
         conda_prefix=os.path.join(DEFAULT_CONFIG['DBDIR'],'conda_envs'),
         add_args='' if snakemake_args and snakemake_args[0].startswith('-') else '--',
         args=' '.join(snakemake_args),

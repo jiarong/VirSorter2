@@ -58,7 +58,7 @@ rule prep_fragments_from_genome:
         viral={Viral_ftrfile},
         nonviral={Nonviral_ftrfile},
     output: 'model'
-    #conda: f'{Conda_yaml_dir}/vs2.yaml
+    conda: f'{Conda_yaml_dir}/vs2.yaml
     threads: Jobs
     shell:
         """
