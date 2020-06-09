@@ -39,7 +39,7 @@ HMMSEARCH_THREADS: 1
 HMMSEARCH_SCORE_MIN: 30
 
 # split contig, protein seq (faa), gff
-CONTIG_BP_PER_SPLIT: 30000000
+CONTIG_BP_PER_SPLIT: 3000
 FAA_BP_PER_SPLIT: 10000000
 GFF_SEQNUM_PER_SPLIT: 1000
 
@@ -76,5 +76,5 @@ SELECT_FEATURE_LIST: [gene_size, gene_overlap_perc, density, strand_switch_perc,
   gtg_perc, ttg_perc, gc_mean, gc_sd, rbs_DoubleA, rbs_DoubleT, rbs_NoA, rbs_None,
   rbs_OnlyA, rbs_OnlyT, rbs_Other, rbs_Other_GA, rbs_SD_Bacteroidetes, rbs_SD_Canonical,
   rbs_TATATA_3-6, arc, bac, euk, vir, mix, unaligned, hallmark]
-DBDIR: /mnt/ufs18/home-111/guojiaro/Documents/dev/test/vs2
+DBDIR: /mnt/ufs18/home-111/guojiaro/Documents/dev/VirSorter2/db
 
