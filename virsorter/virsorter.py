@@ -79,7 +79,7 @@ def get_snakefile(f="Snakefile"):
     default=multiprocessing.cpu_count(),
     type=int,
     show_default=True,
-    help='use at most this many jobs in parallel (see cluster submission for mor details).',
+    help='max # of jobs allowed in parallel.',
 )
 @click.option(
     '--min-score',
@@ -344,7 +344,7 @@ def run_setup(db_dir,jobs, snakemake_args):
     default=multiprocessing.cpu_count(),
     type=int,
     show_default=True,
-    help='max number of threads',
+    help='max # of jobs in parallel',
 )
 @click.option(
     '--min-length',
