@@ -21,7 +21,7 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 
 # Installation (tested on CentOS linux; should work in all linux)
 
-## Option 1
+## Option 1 (not available, waiting for approval)
 
 Conda is the easiest way to install VirSorter2. Conda can install by following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
@@ -34,7 +34,7 @@ conda intall virsorter
 To install the development version (most updated but may not work all the time):
 
 ```bash
-conda create -n vs2 python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed last ncbi-genome-download ruamel.yaml snakemake=5.16.0 click
+conda create -n vs2 python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ncbi-genome-download ruamel.yaml snakemake=5.16.0 click
 conda activate vs2
 git clone https://github.com/jiarong/VirSorter2.git
 cd VirSorter2
