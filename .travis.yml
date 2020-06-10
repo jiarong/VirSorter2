@@ -8,9 +8,8 @@ python:
   - "3.6"
 before_install:
   - |
-    if [ -d "$HOME/miniconda" ]; then
+    if [ -s "$HOME/miniconda/bin/activate" ]; then
       echo "conda exist already";
-      ls "$HOME"/miniconda
       source "$HOME"/miniconda/bin/activate
       conda list
     else
