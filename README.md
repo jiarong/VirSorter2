@@ -67,7 +67,7 @@ Due to large HMM database that VirSorter2 uses, this small dataset takes a few m
 - `final-viral-score.tsv`:    table with score of each viral sequences across groups
 - `final-viral-boundary.tsv`: table with boundary information
 
-More details of output can be found [here](#-detailed-description-on-output-files).
+More details of output can be found [here](#detailed-description-on-output-files).
 
 ---
 **NOTE**
@@ -139,16 +139,15 @@ Note that classifiers of different viral groups are not exclusive from each othe
 
 - final-viral-boundary.tsv
 
-
   > only some of the columns in this file might be useful:
   >   - seqname: original sequence name
   >   - trim\_orf\_index\_start, trim\_orf\_index\_end:  start and end ORF index on orignal sequence of identified viral sequence
   >   - trim\_bp\_start, trim\_bp\_end:  start and end position on orignal sequence of identified viral sequence
   >   - trim\_pr: score of final trimmed viral sequence
   >   - partial:  full sequence as viral or partial sequence as viral; this defined when a full sequence has score > score cutoff, it is full (0), or else any viral sequence extracted within it is partial (1) 
-  - pr\_full:  score of the original sequence
-  - hallmark\_cnt:  hallmark gene count
-  - group: the classifier of viral group that gives high score; this should **NOT** be used as reliable classification
+  >   - pr\_full:  score of the original sequence
+  >   - hallmark\_cnt:  hallmark gene count
+  >   - group: the classifier of viral group that gives high score; this should **NOT** be used as reliable classification
 
 ---
 **NOTE**
@@ -159,7 +158,7 @@ VirSorter2 tends overestimate the size of viral sequence during provirus extract
 
 # Training customized classifiers (still under construction)
 
-VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RNA, ssNA virus, and *lavidaviridae*). It's designed for easy addition of more classifiers. The information of classifiers are store in the database (`-d`) specified during [setup step](#-download-database-and-dependencies). For each viral group, it needs four folowing files:
+VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RNA, ssNA virus, and *lavidaviridae*). It's designed for easy addition of more classifiers. The information of classifiers are store in the database (`-d`) specified during [setup step](#download-database-and-dependencies). For each viral group, it needs four folowing files:
 
 - model
 
