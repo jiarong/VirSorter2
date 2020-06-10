@@ -8,9 +8,9 @@ python:
   - "3.6"
 before_install:
   - |
-    if [ -s "$HOME/miniconda/bin/activate" ]; then
+    if [ -d "$HOME/miniconda" ]; then
       echo "conda exist already";
-      source "$HOME"/miniconda/bin/activate
+      export PATH="$HOME/miniconda/bin:$PATH"
       conda list
     else
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
