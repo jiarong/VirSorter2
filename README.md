@@ -75,7 +75,7 @@ More details of output can be found [here](#detailed-description-on-output-files
 ---
 **NOTE**
 
-Note that suffix `||full` and `||{i}index\_partial` (`{i}` can be numbers starting from 0 to max number of viral fragments found in that contig) have been added to original sequence names to differentiate sub-sequences in case of multiple viral subsequences found in one contig.
+Note that suffix `||full` and `||{i}index_partial` (`{i}` can be numbers starting from 0 to max number of viral fragments found in that contig) have been added to original sequence names to differentiate sub-sequences in case of multiple viral subsequences found in one contig.
 
 ---
 
@@ -147,7 +147,7 @@ Note that classifiers of different viral groups are not exclusive from each othe
   >   - trim\_orf\_index\_start, trim\_orf\_index\_end:  start and end ORF index on orignal sequence of identified viral sequence
   >   - trim\_bp\_start, trim\_bp\_end:  start and end position on orignal sequence of identified viral sequence
   >   - trim\_pr: score of final trimmed viral sequence
-  >   - partial:  full sequence as viral or partial sequence as viral; this defined when a full sequence has score > score cutoff, it is full (0), or else any viral sequence extracted within it is partial (1) 
+  >   - partial:  full sequence as viral or partial sequence as viral; this is defined when a full sequence has score > score cutoff, it is full (0), or else any viral sequence extracted within it is partial (1) 
   >   - pr\_full:  score of the original sequence
   >   - hallmark\_cnt:  hallmark gene count
   >   - group: the classifier of viral group that gives high score; this should **NOT** be used as reliable classification
