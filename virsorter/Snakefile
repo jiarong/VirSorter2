@@ -100,7 +100,10 @@ container: "docker://continuumio/miniconda3:4.4.10"
 #onsuccess:
 #    print('virsorter run finished')
 onerror:
-    print('Refer the path to log file for troubleshooting')
-    print('Issues can be raised at: https://github.com/project/issues')
-
+    print('\n\n')
+    print('An error occurred. Detailed errors may not be printed '
+            'for certain rules. Refer to the log file of the failed command '
+            'for troubleshooting')
+    print('Issues can be raised at: '
+            'https://github.com/jiarong/VirSorter2/issues')
 

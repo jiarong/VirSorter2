@@ -11,10 +11,10 @@
 GROUP_INFO:
   dsDNAphage:                       # must match dirname under db/group
     MIN_GENOME_SIZE: 10000          # for provirus
-    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 1500 # hallmark required for short seqs 
+    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 3000 # hallmark required for short seqs 
   NCLDV:
     MIN_GENOME_SIZE: 70000
-    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 1500
+    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 3000
   RNA:
     MIN_GENOME_SIZE: 1000
     MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 10000
@@ -23,7 +23,7 @@ GROUP_INFO:
     MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 3000
   lavidaviridae:
     MIN_GENOME_SIZE: 15000
-    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 1500
+    MIN_SIZE_ALLOWED_WO_HALLMARK_GENE: 3000
 
 
 # cluster resources
