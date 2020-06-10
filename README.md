@@ -9,7 +9,9 @@
 # VirSorter 2 
 
 [![Version](https://anaconda.org/bioconda/virsorter/badges/version.svg)](https://anaconda.org/bioconda/virsorter)
+<!--
 [![Bioconda](https://img.shields.io/conda/dn/bioconda/virsorter.svg?label=Bioconda )](https://anaconda.org/bioconda/virsorter)
+-->
 [![Build Status](https://travis-ci.org/jiarong/VirSorter2.svg?branch=master)](https://travis-ci.org/jiarong/VirSorter2)
 
 VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse DNA and RNA virus genomes. It has made major updates to its [previous version](https://github.com/simroux/VirSorter):
