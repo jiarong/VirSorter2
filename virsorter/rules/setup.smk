@@ -1,27 +1,53 @@
+import sys
+import os
+import shutil
 import hashlib
 from ruamel.yaml import YAML
+from virsorter.config import DEFAULT_CONFIG, set_logger
+
+set_logger()
 
 ENV_YAML_DIR = '../envs'
 
-# update DBDIR in template-config.yaml (not in the same dir as setup.smk)
-#   need to go up 2 levels
+# update DBDIR in template-config.yaml
+user_config_dir = os.path.join(os.path.expanduser('~'), '.virsorter')
+user_template = os.path.join(user_config_dir, 'template-config.yaml')
 
 # following DONOT work in Snakefile!!
 #src_config_dir = os.path.dirname(os.path.abspath(__file__)) 
 
+# not in the same dir as setup.smk, need to go up 2 levels
 src_config_dir = os.path.dirname(os.path.dirname(workflow.snakefile))
 Scriptdir=os.path.join(src_config_dir, 'scripts')
+
+if os.access(src_template, os.W_OK):
+    # check .virsorter in user home direcory first
+    template = src_template
+    #os.makedirs(user_config_dir, exist_ok=True)
+else:
+    os.makedirs(user_config_dir, exist_ok=True)
+    shutil.copyfile(src_template, user_template)
+    mes = ('Attention: template-config.yaml in source directory '
+            'is not writable:\n'
+            f'{src_template}\n'
+            'makeing a copy to user home direcotry:\n'
+            f'{user_template}\n')
+
+    logging.warning(mes)
+    template = user_template
 
 #print(srcdir('.'))
 #print(workflow.basedir)
 #print(workflow.snakefile)
 
-src_template = os.path.join(src_config_dir, 'template-config.yaml')
+dbdir = os.path.abspath(os.getcwd())
 yaml = YAML()
-with open(src_template) as fp:
+with open(template) as fp:
     config = yaml.load(fp)
-    config['DBDIR'] = os.path.abspath(os.getcwd())
-with open(src_template, 'w') as fw:
+    config['DBDIR'] = dbdir
+    logging.info(f'saving to {dbdir} as DBDIR to config file {template}')
+
+with open(template, 'w') as fw:
     yaml.dump(config, fw)
 
 
