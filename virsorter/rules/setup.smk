@@ -35,7 +35,7 @@ else:
             'makeing a copy to user home direcotry:\n'
             f'{user_template}\n')
 
-    logging.warning(mes)
+    logging.info(mes)
     template = user_template
 
 #print(srcdir('.'))
