@@ -18,6 +18,7 @@ user_template = os.path.join(user_config_dir, 'template-config.yaml')
 
 # not in the same dir as setup.smk, need to go up 2 levels
 src_config_dir = os.path.dirname(os.path.dirname(workflow.snakefile))
+src_template = os.path.join(src_config_dir, 'template-config.yaml')
 Scriptdir=os.path.join(src_config_dir, 'scripts')
 
 if os.access(src_template, os.W_OK):
@@ -49,7 +50,6 @@ with open(template) as fp:
 
 with open(template, 'w') as fw:
     yaml.dump(config, fw)
-
 
 def md5(fname):
     # https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file
@@ -177,20 +177,20 @@ rule setup:
         cat combined.hmm.gz.split_* | gunzip -c > hmm/viral/combined.hmm
         """
         )
-        assert md5('db.tgz') == D_FILE2MD5['db.tgz'], \
-                '*** Invalid checksum in for db.tgz'
-        assert md5('hmm/viral/combined.hmm') == D_FILE2MD5['combined.hmm'], \
-                '*** Invalid checksum in for combined.hmm'
+        if md5('db.tgz') == D_FILE2MD5['db.tgz']:
+            logging.error('Invalid checksum in for db.tgz')
+        if md5('hmm/viral/combined.hmm') == D_FILE2MD5['combined.hmm']:
+            logging.error('Invalid checksum in for combined.hmm')
         for domain in ['Archaea', 'Bacteria', 'Eukaryota', 'Mixed']:
             f = 'hmm/pfam/Pfam-A-{}.hmm'.format(domain)
             bname = 'Pfam-A-{}.hmm'.format(domain)
-            assert md5(f) == D_FILE2MD5[bname], \
-                '*** Invalid checksum in for {}'.format(bname)
+            if md5(f) == D_FILE2MD5[bname]:
+                logging.error('Invalid checksum in for {}'.format(bname))
 
 onerror:
     # clean up 
     if not os.path.exists('Done-install-dependencies'):
-        shutil.rm('conda-envs')
+        shutil.rmtree('conda-envs')
         os.makedirs('conda-envs')
 
     fs = glob.glob('combined.hmm.gz.split*')
