@@ -178,15 +178,18 @@ rule setup:
         cat combined.hmm.gz.split_* | gunzip -c > hmm/viral/combined.hmm
         """
         )
-        if md5('db.tgz') == D_FILE2MD5['db.tgz']:
+        if md5('db.tgz') != D_FILE2MD5['db.tgz']:
             logging.error('Invalid checksum in for db.tgz')
-        if md5('hmm/viral/combined.hmm') == D_FILE2MD5['combined.hmm']:
+            sys.exit(1)
+        if md5('hmm/viral/combined.hmm') != D_FILE2MD5['combined.hmm']:
             logging.error('Invalid checksum in for combined.hmm')
+            sys.exit(1)
         for domain in ['Archaea', 'Bacteria', 'Eukaryota', 'Mixed']:
             f = 'hmm/pfam/Pfam-A-{}.hmm'.format(domain)
             bname = 'Pfam-A-{}.hmm'.format(domain)
-            if md5(f) == D_FILE2MD5[bname]:
+            if md5(f) != D_FILE2MD5[bname]:
                 logging.error('Invalid checksum in for {}'.format(bname))
+                sys.exit(1)
 
 onerror:
     # clean up 
