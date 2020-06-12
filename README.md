@@ -29,7 +29,7 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 Conda is the easiest way to install VirSorter2. Conda can install by following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
 ```bash
-conda intall -c bioconda virsorter
+conda install -c bioconda virsorter
 ```
 
 ## Option 2
@@ -46,7 +46,7 @@ pip install -e .
 
 # Download database and dependencies
 
-Then download all databases and install dependencies (takes 10+ mins, but this only need to be done once). The following command line downloads databases and dependencies to `db` directory, and its location is recorded in the tool configuration as a default, so you do not need to type `--db-dir` of other `virsorter` subcommands.
+Before running VirSorter2, users must download all databases and install dependencies (takes 10+ mins, but this only need to be done once). The following command line downloads databases and dependencies to `db` directory, and its location is recorded in the tool configuration as a default, so you do not need to type `--db-dir` for other `virsorter` subcommands.
 
 ```bash
 virsorter setup -d db -j 4
@@ -54,7 +54,7 @@ virsorter setup -d db -j 4
 
 # Quick run
 
-To run viral sequence identification:
+To run viral sequence identification on a test dataset:
 
 ```bash
 # fetch testing data
@@ -64,7 +64,7 @@ virsorter run -w test.out -i test.fa -j 4
 ls test.out
 ```
 
-Due to large HMM database that VirSorter2 uses, this small dataset takes a few mins to finish. In the output directory (test.out), three files are useful:
+Due to the large HMM database that VirSorter2 uses, this small dataset takes a few mins to finish. In the output directory (test.out), three files are useful:
 
 - `final-viral-combined.fa`:  identified viral sequences
 - `final-viral-score.tsv`:    table with score of each viral sequences across groups
@@ -83,7 +83,7 @@ Note that suffix `||full` and `||{i}index_partial` (`{i}` can be numbers startin
 
 ## choosing viral groups (`--include-groups`)
 
-VirSorter2 finds all viral groups currently included (ssDNAphage, NCLDV , RNA, ssDNA virus, and *lavidavirida*) by default. You can use `--include-groups` to chose specific groups:
+VirSorter2 finds all viral groups currently included (ssDNAphage, NCLDV , RNA, ssDNA virus, and *lavidaviridae*) by default. You can use `--include-groups` to select only specific groups:
 ```
 rm -rf test.out
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4
@@ -98,7 +98,7 @@ virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --
 
 ## speed up a run (`--provirus-off`) 
 
-In case you need to have some results quickly, there are two options: 1) turn off provirus step with `--provirus-off`; this reduces sensitivity on sequences that are only partially virus; 2) subsample ORFs from each sequence with `--max-orf-per-seq`; This option subsamples ORFs to a cutoff if a sequence has more ORFs than that. Note that this option is only availale when `--provirus-off` is used. 
+In case you need to have some results quickly, there are two options: 1) turn off provirus step with `--provirus-off`; this reduces sensitivity on sequences that are only partially viral; 2) subsample ORFs from each sequence with `--max-orf-per-seq`; This option subsamples ORFs to a cutoff if a sequence has more ORFs than that. Note that this option is only availale when `--provirus-off` is used. 
 ```
 rm -rf test.out
 virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20
@@ -106,7 +106,7 @@ virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20
 
 ## Other options
 
-You can run `virsorter run -h` to see all options. VirSorter2 is a wrapper around [snakemake](https://snakemake.readthedocs.io/en/stable/), a great pipeline management tool designed for reproducibility, and running on computer clusters. All snakemake options still works here. You just need to append those snakemake option to virsorter options (after `all` or `classify`). For example, the `--forceall` snakemake option can be used to re-run the pipeline.
+You can run `virsorter run -h` to see all options. VirSorter2 is a wrapper around [snakemake](https://snakemake.readthedocs.io/en/stable/), a great pipeline management tool designed for reproducibility, and running on computer clusters. All snakemake options still work with VirSorter2, and users can simply append those snakemake option to virsorter options (after `all` or `classify`). For example, the `--forceall` snakemake option can be used to re-run the pipeline.
 ```
 virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20 --forceall
 ```
@@ -155,7 +155,7 @@ Note that classifiers of different viral groups are not exclusive from each othe
 ---
 **NOTE**
 
-VirSorter2 tends overestimate the size of viral sequence during provirus extraction procedure in order to achieve better sensitity.
+VirSorter2 tends to sometimes overestimate the size of viral sequence during provirus extraction procedure in order to achieve better sensitity. We recommend cleaning these provirus predictions to remove potential host genes on the edge of the predicted viral region, e.g. using a tool like CheckV (https://bitbucket.org/berkeleylab/checkv).
 
 ---
 
