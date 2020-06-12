@@ -14,8 +14,8 @@ set_logger()
 
 def log_exception(msg):
     logging.critical(msg)
-    logging.info("Documentation is available at: https://project.readthedocs.io")
-    logging.info("Issues can be raised at: https://github.com/project/project/issues")
+    logging.info("Documentation is available at: https://github.com/jiarong/VirSorter2")
+    logging.info("Issues can be raised at: https://github.com/jiarong/VirSorter2/issues")
     sys.exit(1)
 
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
