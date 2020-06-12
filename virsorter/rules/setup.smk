@@ -2,6 +2,7 @@ import sys
 import os
 import shutil
 import hashlib
+import logging
 from ruamel.yaml import YAML
 from virsorter.config import DEFAULT_CONFIG, set_logger
 
