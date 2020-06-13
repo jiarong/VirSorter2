@@ -90,7 +90,7 @@ Note that suffix `||full` and `||{i}index_partial` (`{i}` can be numbers startin
 ## choosing viral groups (`--include-groups`)
 
 VirSorter2 finds all viral groups currently included (ssDNAphage, NCLDV , RNA, ssDNA virus, and *lavidavirida*) by default. You can use `--include-groups` to chose specific groups:
-```
+```bash
 rm -rf test.out
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4
 ```
@@ -98,14 +98,14 @@ virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4
 ## re-run with different score cutoff (`--min-score`)
 
 VirSorter2 takes one positional argument, `all` or `classify`. The default is `all`, which means running the whole pipeline, including 1) preprocessing, 2) annotation (feature extraction), and 3) classification. The main computational bottleneck is the annotation step, taking about 95% of CPU time. In case you just want to re-run with different score cutoff (--min-score), `classify` argument can skip the annotation steps, and only re-run classify step.
-```
+```bash
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --min-score 0.8 classify
 ```
 
 ## speed up a run (`--provirus-off`) 
 
 In case you need to have some results quickly, there are two options: 1) turn off provirus step with `--provirus-off`; this reduces sensitivity on sequences that are only partially virus; 2) subsample ORFs from each sequence with `--max-orf-per-seq`; This option subsamples ORFs to a cutoff if a sequence has more ORFs than that. Note that this option is only availale when `--provirus-off` is used. 
-```
+```bash
 rm -rf test.out
 virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20
 ```
@@ -113,7 +113,7 @@ virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20
 ## Other options
 
 You can run `virsorter run -h` to see all options. VirSorter2 is a wrapper around [snakemake](https://snakemake.readthedocs.io/en/stable/), a great pipeline management tool designed for reproducibility, and running on computer clusters. All snakemake options still works here. You just need to append those snakemake option to virsorter options (after `all` or `classify`). For example, the `--forceall` snakemake option can be used to re-run the pipeline.
-```
+```bash
 virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20 --forceall
 ```
 
@@ -188,7 +188,7 @@ VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RN
 In this tutorial, I will show how to make `model` for *autolykiviridae*. 
 
 
-```
+```bash
 # download sequences
 wget https://github.com/jiarong/small-dataset/raw/master/vibrio_autolyki.fna.gz -O autolyki.fna.gz
 # train feature file
@@ -201,7 +201,7 @@ In the output directory (`autolyki-feature.out`), `all.pdg.ftr` is the feature f
 
 To make the classifier model, we also need a feature file from cellular organisms. This can be done by collecting genomes from cellular organisms and repeat the above step. Note number of cellular genomes are very large (>200K). Here I will re-use the feature file I have prepared before. 
 
-```
+```bash
 # fetch feature file for cellular organisms
 wget https://zenodo.org/record/3823805/files/nonviral-common-random-fragments.ftr.gz?download=1 -O nonviral.ftr
 # train the classifier model
@@ -210,7 +210,7 @@ virsorter train-model --viral-ftrfile autolyki-feature.out/all.pdg.ftr --nonvira
 
 In `autolyki-model.out`, `model` is the classifier model we need. Then put it in database directory
 
-```
+```bash
 mkdir db/group/autolykiviridae
 cp autolyki-model.out/model db/group/autolykiviridae
 # reuse hallmark gene list from dsDNAphage due to their similarity
@@ -219,7 +219,7 @@ cp db/group/dsDNAphage/hallmark-gene.list db/group/autolykiviridae/
 
 Now you can try this new classifier on the testing dataset:
 
-```
+```bash
 virsorter run -w test.out -i test.fa --include-groups "autolykiviridae" -j 4 --min-score 0.8 all
 ```
 
