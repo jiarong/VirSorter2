@@ -46,9 +46,15 @@ pip install -e .
 
 # Download database and dependencies
 
-Then download all databases and install dependencies (takes 10+ mins, but this only need to be done once). The following command line downloads databases and dependencies to `db` directory, and its location is recorded in the tool configuration as a default, so you do not need to type `--db-dir` of other `virsorter` subcommands.
+Then download all databases and install dependencies (takes 10+ mins, but this only need to be done once). The following command line downloads databases and dependencies to `db` directory, and its location is recorded in the tool configuration as a default, so you do not need to type `-d/--db-dir` of other `virsorter` subcommands. 
+
+Note that this step takes > 10 mins. If you feel impatient and cancel the process, make sure to **remove the diretory specified by `-d/--db-dir` (`db` in this case) before running again**.
 
 ```bash
+# just in case there is a failed attemp before; 
+#   remove the whole diretory specified by -d
+rm -rf db
+# run setup
 virsorter setup -d db -j 4
 ```
 
