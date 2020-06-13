@@ -26,7 +26,7 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 
 ## Option 1 (bioconda: version 2.0.alpha, build py38_1)
 
-Conda is the easiest way to install VirSorter2. Conda can install by following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
+Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
 ```bash
 conda intall -c bioconda virsorter
@@ -37,7 +37,7 @@ conda intall -c bioconda virsorter
 To install the development version (most updated but may not work all the time):
 
 ```bash
-conda create -n vs2 python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ncbi-genome-download ruamel.yaml snakemake=5.16.0 click
+conda create -n vs2 python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ruamel.yaml snakemake=5.16.0 click
 conda activate vs2
 git clone https://github.com/jiarong/VirSorter2.git
 cd VirSorter2
@@ -167,7 +167,7 @@ VirSorter2 tends overestimate the size of viral sequence during provirus extract
 
 # Training customized classifiers (still under construction)
 
-VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RNA, ssNA virus, and *lavidaviridae*). It's designed for easy addition of more classifiers. The information of classifiers are store in the database (`-d`) specified during [setup step](#download-database-and-dependencies). For each viral group, it needs four folowing files:
+VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RNA, ssNA virus, and *lavidaviridae*). It's designed for easy addition of more classifiers. The information of classifiers are store in the database (`-d`) specified during [setup step](#download-database-and-dependencies). For each viral group, it needs four files below:
 
 - model
 
