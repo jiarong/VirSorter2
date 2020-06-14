@@ -24,9 +24,9 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 
 # Installation (tested on CentOS linux; should work in all linux)
 
-## Option 1 (bioconda: version 2.0.alpha, build py38_1)
+## Option 1 (bioconda: virsorter version 2.0.alpha, build py38_2)
 
-Conda is the easiest way to install VirSorter2. Conda can install by following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
+Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
 ```bash
 conda install -c bioconda virsorter
@@ -37,7 +37,7 @@ conda install -c bioconda virsorter
 To install the development version (most updated but may not work all the time):
 
 ```bash
-conda create -n vs2 python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ncbi-genome-download ruamel.yaml snakemake=5.16.0 click
+conda create -n vs2 python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ruamel.yaml snakemake=5.16.0 click
 conda activate vs2
 git clone https://github.com/jiarong/VirSorter2.git
 cd VirSorter2
@@ -48,7 +48,13 @@ pip install -e .
 
 Before running VirSorter2, users must download all databases and install dependencies (takes 10+ mins, but this only need to be done once). The following command line downloads databases and dependencies to `db` directory, and its location is recorded in the tool configuration as a default, so you do not need to type `--db-dir` for other `virsorter` subcommands.
 
+Note that this step takes > 10 mins. If you feel impatient and cancel the process, make sure to **remove the diretory specified by `-d/--db-dir` (`db` in this case) before running again**.
+
 ```bash
+# just in case there is a failed attemp before; 
+#   remove the whole diretory specified by -d
+rm -rf db
+# run setup
 virsorter setup -d db -j 4
 ```
 
@@ -84,7 +90,8 @@ Note that suffix `||full` and `||{i}index_partial` (`{i}` can be numbers startin
 ## choosing viral groups (`--include-groups`)
 
 VirSorter2 finds all viral groups currently included (ssDNAphage, NCLDV , RNA, ssDNA virus, and *lavidaviridae*) by default. You can use `--include-groups` to select only specific groups:
-```
+
+```bash
 rm -rf test.out
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4
 ```
@@ -92,14 +99,17 @@ virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4
 ## re-run with different score cutoff (`--min-score`)
 
 VirSorter2 takes one positional argument, `all` or `classify`. The default is `all`, which means running the whole pipeline, including 1) preprocessing, 2) annotation (feature extraction), and 3) classification. The main computational bottleneck is the annotation step, taking about 95% of CPU time. In case you just want to re-run with different score cutoff (--min-score), `classify` argument can skip the annotation steps, and only re-run classify step.
-```
+
+```bash
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --min-score 0.8 classify
 ```
 
 ## speed up a run (`--provirus-off`) 
 
+
 In case you need to have some results quickly, there are two options: 1) turn off provirus step with `--provirus-off`; this reduces sensitivity on sequences that are only partially viral; 2) subsample ORFs from each sequence with `--max-orf-per-seq`; This option subsamples ORFs to a cutoff if a sequence has more ORFs than that. Note that this option is only availale when `--provirus-off` is used. 
-```
+
+```bash
 rm -rf test.out
 virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20
 ```
@@ -107,7 +117,8 @@ virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20
 ## Other options
 
 You can run `virsorter run -h` to see all options. VirSorter2 is a wrapper around [snakemake](https://snakemake.readthedocs.io/en/stable/), a great pipeline management tool designed for reproducibility, and running on computer clusters. All snakemake options still work with VirSorter2, and users can simply append those snakemake option to virsorter options (after `all` or `classify`). For example, the `--forceall` snakemake option can be used to re-run the pipeline.
-```
+
+```bash
 virsorter run -w test.out -i test.fa --provirus-off --max-orf-per-seq 20 --forceall
 ```
 
@@ -161,7 +172,7 @@ VirSorter2 tends to sometimes overestimate the size of viral sequence during pro
 
 # Training customized classifiers (still under construction)
 
-VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RNA, ssNA virus, and *lavidaviridae*). It's designed for easy addition of more classifiers. The information of classifiers are store in the database (`-d`) specified during [setup step](#download-database-and-dependencies). For each viral group, it needs four folowing files:
+VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RNA, ssNA virus, and *lavidaviridae*). It's designed for easy addition of more classifiers. The information of classifiers are store in the database (`-d`) specified during [setup step](#download-database-and-dependencies). For each viral group, it needs four files below:
 
 - model
 
@@ -182,7 +193,7 @@ VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RN
 In this tutorial, I will show how to make `model` for *autolykiviridae*. 
 
 
-```
+```bash
 # download sequences
 wget https://github.com/jiarong/small-dataset/raw/master/vibrio_autolyki.fna.gz -O autolyki.fna.gz
 # train feature file
@@ -195,7 +206,7 @@ In the output directory (`autolyki-feature.out`), `all.pdg.ftr` is the feature f
 
 To make the classifier model, we also need a feature file from cellular organisms. This can be done by collecting genomes from cellular organisms and repeat the above step. Note number of cellular genomes are very large (>200K). Here I will re-use the feature file I have prepared before. 
 
-```
+```bash
 # fetch feature file for cellular organisms
 wget https://zenodo.org/record/3823805/files/nonviral-common-random-fragments.ftr.gz?download=1 -O nonviral.ftr
 # train the classifier model
@@ -204,7 +215,7 @@ virsorter train-model --viral-ftrfile autolyki-feature.out/all.pdg.ftr --nonvira
 
 In `autolyki-model.out`, `model` is the classifier model we need. Then put it in database directory
 
-```
+```bash
 mkdir db/group/autolykiviridae
 cp autolyki-model.out/model db/group/autolykiviridae
 # reuse hallmark gene list from dsDNAphage due to their similarity
@@ -213,7 +224,7 @@ cp db/group/dsDNAphage/hallmark-gene.list db/group/autolykiviridae/
 
 Now you can try this new classifier on the testing dataset:
 
-```
+```bash
 virsorter run -w test.out -i test.fa --include-groups "autolykiviridae" -j 4 --min-score 0.8 all
 ```
 
