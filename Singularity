@@ -25,4 +25,4 @@ From: ubuntu:18.04
     pip install .
 
     # TACC's Stampede compliant, for iVirus/CyVerse
-    mkdir /home1 && mkdir /scratch && mkdir /work
+    mkdir /home1 && mkdir /scratch && mkdir /work && mkdir /trigger-rebuild
