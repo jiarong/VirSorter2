@@ -1,4 +1,4 @@
-Bootstrap: library
+Bootstrap: docker
 From: ubuntu:18.04
 
 %environment
