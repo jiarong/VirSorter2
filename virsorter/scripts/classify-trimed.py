@@ -358,6 +358,7 @@ class clf_trim:
                 name, desc = header.split(None ,1)
                 seqname_ori = name.rsplit('||', 1)[0]
                 _d = dict(i.split(':') for i in desc.split('||'))
+                seq_len = len(rec.sequence)
 
                 self.name2loc_d.setdefault(seqname_ori, {})
                 self.name2loc_d[seqname_ori].setdefault('seqname', [])
@@ -365,7 +366,8 @@ class clf_trim:
 
                 self.name2loc_d[seqname_ori]['seqname'].append(name)
                 self.name2loc_d[seqname_ori]['loc'].append(
-                        (int(_d.get('start')), int(_d.get('end')))
+                        (int(_d.get('start', 0)), 
+                            int(_d.get('end', seq_len)))
                 )
 
         with warnings.catch_warnings():
