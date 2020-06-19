@@ -24,9 +24,8 @@ Faa_bp_per_split = config['FAA_BP_PER_SPLIT']
 Gff_seqnum_per_split = config['GFF_SEQNUM_PER_SPLIT']
 Max_orf_per_seq = config['MAX_ORF_PER_SEQ']
 
-#Tmpdir=config['TMPDIR']
+Tmpdir=config['TMPDIR']
 #Local_scratch=config['LOCAL_SCRATCH']
-Tmpdir='iter-0'
 Local_scratch='/tmp'
 
 Srcdir = srcdir('.')

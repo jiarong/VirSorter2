@@ -4,6 +4,7 @@ import logging
 import multiprocessing
 import subprocess
 import glob
+import shutil
 import click
 
 from snakemake import load_configfile
@@ -148,12 +149,19 @@ def get_snakefile(f="Snakefile"):
     show_default=True,
     help='Stop using the conda envs (vs2.yaml) that come with this package and use what are installed in current system; Only useful when you want to install dependencies on your own with your own prefer versions',
 )
+@click.option(
+    '--rm-tmpdir',
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help='Remove intermediate file directory (--tmpdir)'
+)
 @click.argument(
     'snakemake_args', 
     nargs=-1, 
     type=click.UNPROCESSED, 
 )
-def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  min_score, provirus_off, hallmark_required_on_short, max_orf_per_seq, min_length, tmpdir, verbose, profile, dryrun, use_conda_off, snakemake_args):
+def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  min_score, provirus_off, hallmark_required_on_short, max_orf_per_seq, min_length, tmpdir, rm_tmpdir, verbose, profile, dryrun, use_conda_off, snakemake_args):
     ''' Runs the virsorter main function: to classify viral sequences
 
     By default all steps are executed. The "classify" rerun classify
@@ -161,6 +169,9 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
     snakemake arguments can be appended to the command for more info see
     'snakemake --help'. For more details, see: github
     '''
+    # hard coded, need to change all "iter-0" to Tmpdir in smk
+    tmpdir = 'iter-0'
+
     os.makedirs(working_dir, exist_ok=True)
     config_f = os.path.join(working_dir,'config.yaml')
 
@@ -228,6 +239,10 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
         # removes the traceback
         logging.critical(e)
         sys.exit(1)
+
+    if rm_tmpdir:
+        tmpdir_path = os.path.join(working_dir, tmpdir)
+        shutil.rmtree(tmpdir_path, ignore_errors=True)
 
 # initialize
 @cli.command(
