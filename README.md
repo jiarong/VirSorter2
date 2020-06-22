@@ -24,7 +24,7 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 
 # Installation (tested on CentOS linux; should work in all linux)
 
-## Option 1 (bioconda: virsorter version 2.0.alpha, build py38_2)
+## Option 1 (bioconda: virsorter version 2.0.beta, build py38_0)
 
 Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
