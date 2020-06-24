@@ -240,7 +240,7 @@ In `autolyki-model.out`, `model` is the classifier model we need. Then put it in
 mkdir db/group/autolykiviridae
 cp autolyki-model.out/model db/group/autolykiviridae
 # reuse hallmark gene list from dsDNAphage due to their similarity
-cp db/group/dsDNAphage/hallmark-gene.list db/group/autolykiviridae/
+cp hallmark-gene.list db/group/autolykiviridae/
 ```
 
 Now you can try this new classifier on the testing dataset, and compare with `dsDNAphage` classifier:
