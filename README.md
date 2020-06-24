@@ -170,7 +170,7 @@ VirSorter2 tends to sometimes overestimate the size of viral sequence during pro
 
 ---
 
-# Training customized classifiers (still under construction)
+# Training customized classifiers
 
 VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RNA, ssNA virus, and *lavidaviridae*). It's designed for easy addition of more classifiers. The information of classifiers are store in the database (`-d`) specified during [setup step](#download-database-and-dependencies). For each viral group, it needs four files below:
 
@@ -190,14 +190,35 @@ VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RN
 
   > prodigal RBS (ribosomal binding site) motif training model; this can be produced with `-t` option in prodigal; This is useful feature for NCLDV due to large genome size for training; For other viral groups, it's OK to skip this file.
 
-In this tutorial, I will show how to make `model` for *autolykiviridae*. 
+In this tutorial, I will show how to make `model` for *autolykiviridae*.
 
+First, prepare the dataset needed: 1) high quality viral genomes 2) protein sequence of hallmark gene; and install two more dependecies.
 
 ```bash
-# download sequences
-wget https://github.com/jiarong/small-dataset/raw/master/vibrio_autolyki.fna.gz -O autolyki.fna.gz
+# download genome sequences
+wget https://github.com/jiarong/small-dataset/raw/master/autolyki/vibrio_autolyki.fna.gz -O autolyki.fna.gz
+# download hallmark gene seqs
+wget https://raw.githubusercontent.com/jiarong/small-dataset/master/autolyki/DJR.fa -O DJR.fa
+# download source code
+git clone https://github.com/jiarong/VirSorter2.git
+# install two more dependencies
+conda install -c bioconda -y screed cd-hit
+```
+
+Then identify hallmark gene HMMs by protein sequences of hallmark genes 
+
+```bash
+# compare all HMMs and protein sequences of hallmark gene
+hmmsearch -T 50 --tblout DJR.hmmtbl --cpu 1 -o /dev/null db/hmm/viral/combined.hmm DJR.fa
+# get HMMs names that are signicant hits with protein sequences of hallmark gene
+python VirSorter2/virsorter/scripts/prepdb-train-get-seq-from-hmm-domtbl.py 50 DJR.fa >> hallmark-gene.list
+```
+
+With `hallmark-gene.list` and the high quality genomes `autolyki.fna.gz`, you can train the features that are used for the classifier model.
+
+```bash
 # train feature file
-virsorter train-feature --seqfile autolyki.fna.gz --hmm db/hmm/viral/combined.hmm --frags-per-genome 5 --jobs 4 -w autolyki-feature.out 
+virsorter train-feature --seqfile autolyki.fna.gz --hallmark hallmark-gene.list --hmm db/hmm/viral/combined.hmm --frags-per-genome 5 --jobs 4 -w autolyki-feature.out 
 # check output
 ls autolyki-feature.out
 ```
@@ -222,10 +243,12 @@ cp autolyki-model.out/model db/group/autolykiviridae
 cp db/group/dsDNAphage/hallmark-gene.list db/group/autolykiviridae/
 ```
 
-Now you can try this new classifier on the testing dataset:
+Now you can try this new classifier on the testing dataset, and compare with `dsDNAphage` classifier:
 
 ```bash
-virsorter run -w test.out -i test.fa --include-groups "autolykiviridae" -j 4 --min-score 0.8 all
+virsorter run -w autolyki-model-test.out -i test.fa --include-groups "dsDNAphage,autolykiviridae" -j 4 --min-score 0.8 all
+# check the scores in two classifiers
+cat autolyki-model-test.out/final-viral-score.tsv
 ```
 
 
