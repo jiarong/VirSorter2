@@ -8,3 +8,4 @@ install-deps
 test/*
 !test/test.sh
 !test/8seq.fa
+*template-config.yaml
