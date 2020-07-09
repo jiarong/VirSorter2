@@ -53,12 +53,12 @@ wildcard_constraints:
 rule all:
     input: 'model'
 
-rule prep_fragments_from_genome:
+rule make_classifer_model:
     input: 
         viral={Viral_ftrfile},
         nonviral={Nonviral_ftrfile},
     output: 'model'
-    conda: f'{Conda_yaml_dir}/vs2.yaml
+    conda: f'{Conda_yaml_dir}/vs2.yaml'
     threads: Jobs
     shell:
         """
@@ -69,7 +69,6 @@ rule prep_fragments_from_genome:
         fi
         """
 
-#container: "docker://continuumio/miniconda3:4.4.10"    
 container: "docker://continuumio/miniconda3"    
 
 #onsuccess:
