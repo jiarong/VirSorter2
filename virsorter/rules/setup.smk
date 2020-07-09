@@ -19,19 +19,18 @@ user_template = os.path.join(user_config_dir, 'template-config.yaml')
 
 # not in the same dir as setup.smk, need to go up 2 levels
 src_config_dir = os.path.dirname(os.path.dirname(workflow.snakefile))
+src_template_ori = os.path.join(src_config_dir, 'template-config-original.yaml')
 src_template = os.path.join(src_config_dir, 'template-config.yaml')
 Scriptdir=os.path.join(src_config_dir, 'scripts')
 
-if os.access(src_template, os.W_OK):
+if os.access(src_template_ori, os.W_OK):
     # check .virsorter in user home direcory first
     template = src_template
     #os.makedirs(user_config_dir, exist_ok=True)
 else:
     os.makedirs(user_config_dir, exist_ok=True)
-    shutil.copyfile(src_template, user_template)
-    mes = ('Attention: template-config.yaml in source directory '
-            'is not writable:\n'
-            f'{src_template}\n'
+    mes = ('Attention: can not write template-config.yaml in source directory:\n'
+            f'{src_config_dir}\n'
             'makeing a copy to user home direcotry:\n'
             f'{user_template}\n')
 
@@ -44,7 +43,7 @@ else:
 
 dbdir = os.path.abspath(os.getcwd())
 yaml = YAML()
-with open(template) as fp:
+with open(src_template_ori) as fp:
     config = yaml.load(fp)
     config['DBDIR'] = dbdir
     logging.info(f'saving to {dbdir} as DBDIR to config file {template}')
