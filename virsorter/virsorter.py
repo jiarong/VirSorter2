@@ -9,7 +9,7 @@ import click
 
 from snakemake import load_configfile
 from virsorter import __version__
-from virsorter.config import (set_logger, make_config, DEFAULT_CONFIG)
+from virsorter.config import set_logger, make_config
 
 set_logger()
 
@@ -398,6 +398,8 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
     2) extract feature from random DNA fragments to make ftrfile
     '''
 
+    from virsorter.config import DEFAULT_CONFIG
+
     cwd = os.getcwd()
     lis = []
     pat_lis = []
@@ -517,6 +519,8 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
 def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, use_conda_off, snakemake_args):
     '''Training customized classifier model.
     '''
+
+    from virsorter.config import DEFAULT_CONFIG
 
     if balanced == None:
         balanced = False
