@@ -26,6 +26,7 @@ MIN_FRAC_OF_MAX_SCORE = DEFAULT_CONFIG['MIN_FRAC_OF_MAX_SCORE']
 MAX_RETRY_TIMES = DEFAULT_CONFIG['MAX_RETRY_TIMES']
 TOTAL_FEATURE_LIST = DEFAULT_CONFIG['TOTAL_FEATURE_LIST']
 SELECT_FEATURE_LIST = DEFAULT_CONFIG['SELECT_FEATURE_LIST']
+DEFAULT_MIN_GENOME_SIZE = DEFAULT_CONFIG['DEFAULT_MIN_GENOME_SIZE']
 
 set_logger()
 
@@ -388,8 +389,15 @@ class provirus(object):
             warnings.filterwarnings('ignore', category=DeprecationWarning)
             warnings.filterwarnings('ignore', category=FutureWarning)
             model = joblib.load(self.model_f)
-            model.named_steps.gs.best_estimator_.set_params(
-                    n_jobs=CLASSIFY_THREADS)
+            try:
+                # pipe on grid search; legacy
+                model.named_steps.gs.best_estimator_.set_params(
+                        n_jobs=CLASSIFY_THREADS)
+            except AttributeError as e:
+                # grid search on pipe; new
+                # steps = [('scaler', MinMaxScaler()), ('rf', clf_to_train)]
+                model.named_steps.rf.set_params(n_jobs=CLASSIFY_THREADS)
+
             self.model = model
 
         self.gff_mat_colnames = ('orf_index', 'start', 'end', 'strand', 
@@ -617,7 +625,11 @@ class provirus(object):
                     full_bp_start, full_bp_end, pr_full, hallmark_cnt)
         else:
             # sliding windows
-            MIN_GENOME_SIZE = GROUP_DICT[self.group]['MIN_GENOME_SIZE']
+            try:
+                MIN_GENOME_SIZE = GROUP_DICT[self.group]['MIN_GENOME_SIZE']
+            except KeyError:
+                MIN_GENOME_SIZE = DEFAULT_MIN_GENOME_SIZE
+
             ind_end = len(ends.loc[ends < MIN_GENOME_SIZE]) + 1
             if ind_end >= len(df_gff):
                 # too short to be provirus

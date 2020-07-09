@@ -374,8 +374,12 @@ class clf_trim:
             warnings.filterwarnings('ignore', category=DeprecationWarning)
             warnings.filterwarnings('ignore', category=FutureWarning)
             model = joblib.load(self.model_f)
-            model.named_steps.gs.best_estimator_.set_params(
-                    n_jobs=CLASSIFY_THREADS)
+            try:
+                model.named_steps.gs.best_estimator_.set_params(
+                        n_jobs=CLASSIFY_THREADS)
+            except AttributeError as e:
+                model.named_steps.rf.set_params(n_jobs=CLASSIFY_THREADS)
+
             self.model = model
 
         self.gff_mat_colnames = ('orf_index', 'start', 'end', 'strand', 
