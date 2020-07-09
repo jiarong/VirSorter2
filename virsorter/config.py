@@ -7,6 +7,7 @@ from ruamel.yaml import YAML
 
 #from snakemake.io import load_configfile
 
+
 user_config_dir = os.path.join(os.path.expanduser('~'), '.virsorter')
 user_template = os.path.join(user_config_dir, 'template-config.yaml')
 src_config_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,11 +18,13 @@ if os.path.isfile(user_template):
     template = user_template
     #os.makedirs(user_config_dir, exist_ok=True)
 else:
-    assert os.path.isfile(src_template)
     template = src_template
 
 TEMPLATE = template
-DEFAULT_CONFIG = YAML().load(open(TEMPLATE))
+
+def get_default_config():
+    assert os.path.isfile(TEMPLATE)
+    return YAML().load(open(TEMPLATE))
 
 def set_logger():
     logging.basicConfig(

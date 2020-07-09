@@ -9,7 +9,7 @@ import click
 
 from snakemake import load_configfile
 from virsorter import __version__
-from virsorter.config import set_logger, make_config
+from virsorter.config import get_default_config, set_logger, make_config
 
 set_logger()
 
@@ -169,6 +169,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
     snakemake arguments can be appended to the command for more info see
     'snakemake --help'. For more details, see: github
     '''
+
     # hard coded, need to change all "iter-0" to Tmpdir in smk
     tmpdir = 'iter-0'
 
@@ -398,7 +399,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
     2) extract feature from random DNA fragments to make ftrfile
     '''
 
-    from virsorter.config import DEFAULT_CONFIG
+    DEFAULT_CONFIG = get_default_config()
 
     cwd = os.getcwd()
     lis = []
@@ -520,7 +521,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
     '''Training customized classifier model.
     '''
 
-    from virsorter.config import DEFAULT_CONFIG
+    DEFAULT_CONFIG = get_default_config
 
     if balanced == None:
         balanced = False
