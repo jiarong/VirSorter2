@@ -50,7 +50,13 @@ def main():
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         warnings.filterwarnings('ignore', category=FutureWarning)
         model = joblib.load(model_f)
-        model.named_steps.gs.best_estimator_.set_params(n_jobs=cpu)
+        try:
+            # pipe on grid search
+            model.named_steps.gs.best_estimator_.set_params(n_jobs=cpu)
+        except AttributeError as e:
+            # grid search on pipe
+            # steps = [('scaler', MinMaxScaler()), ('rf', clf_to_train)]
+            model.named_steps.rf.set_params(n_jobs=cpu)
         pred_prob = model.predict_proba(X)
         labels = model.classes_
         df = pd.DataFrame(pred_prob, columns= labels, index=X.index)
