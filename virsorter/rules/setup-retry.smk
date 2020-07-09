@@ -68,7 +68,7 @@ rule setup:
 
 onstart:
     if not os.path.exists('Done-install-dependencies'):
-        shutil.rm('conda-envs')
+        shutil.rmtree('conda-envs')
         os.makedirs('conda-envs')
 
     fs = glob.glob('combined.hmm.gz.split*')
