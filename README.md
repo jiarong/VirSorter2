@@ -202,16 +202,19 @@ wget https://raw.githubusercontent.com/jiarong/small-dataset/master/autolyki/DJR
 # download source code
 git clone https://github.com/jiarong/VirSorter2.git
 # install two more dependencies
-conda install -c bioconda -y screed cd-hit
+conda install -c bioconda -y screed hmmer
 ```
 
 Then identify hallmark gene HMMs by protein sequences of hallmark genes 
 
+Note that we will need the VirSorter2 database here. If you skip the tutorial above, you can download the database by `virsorter setup -d db -j 4`. This will take 10+ mins.
+
 ```bash
 # compare all HMMs and protein sequences of hallmark gene
-hmmsearch -T 50 --tblout DJR.hmmtbl --cpu 1 -o /dev/null db/hmm/viral/combined.hmm DJR.fa
+# this will take 10+ mins due to large hmm database file
+hmmsearch -T 50 --tblout DJR.hmmtbl --cpu 4 -o /dev/null db/hmm/viral/combined.hmm DJR.fa
 # get HMMs names that are signicant hits with protein sequences of hallmark gene
-python VirSorter2/virsorter/scripts/prepdb-train-get-seq-from-hmm-domtbl.py 50 DJR.fa >> hallmark-gene.list
+python VirSorter2/virsorter/scripts/prepdb-train-get-seq-from-hmm-domtbl.py 50 DJR.hmmtbl > hallmark-gene.list
 ```
 
 With `hallmark-gene.list` and the high quality genomes `autolyki.fna.gz`, you can train the features that are used for the classifier model.
@@ -223,29 +226,32 @@ virsorter train-feature --seqfile autolyki.fna.gz --hallmark hallmark-gene.list 
 ls autolyki-feature.out
 ```
 
-In the output directory (`autolyki-feature.out`), `all.pdg.ftr` is the feature file needed for next step, and `feature-importances.tsv` shows the importance of each feature used.  
+In the output directory (`autolyki-feature.out`), `all.pdg.ftr` is the feature file needed for next step.  
 
 To make the classifier model, we also need a feature file from cellular organisms. This can be done by collecting genomes from cellular organisms and repeat the above step. Note number of cellular genomes are very large (>200K). Here I will re-use the feature file I have prepared before. 
 
 ```bash
 # fetch feature file for cellular organisms
-wget https://zenodo.org/record/3823805/files/nonviral-common-random-fragments.ftr.gz?download=1 -O nonviral.ftr
+wget https://zenodo.org/record/3823805/files/nonviral-common-random-fragments.ftr.gz?download=1 -O nonviral.ftr.gz
+gzip -d nonviral.ftr.gz
 # train the classifier model
 virsorter train-model --viral-ftrfile autolyki-feature.out/all.pdg.ftr --nonviral-ftrfile nonviral.ftr --balanced --jobs 4 -w autolyki-model.out
 ```
 
-In `autolyki-model.out`, `model` is the classifier model we need. Then put it in database directory
+In `autolyki-model.out`, `feature-importances.tsv` shows the importance of each feature used. `model` is the classifier model we need. Then put the `model` and `hallmark-gene.list` in database directory as the existing viral groups.
 
 ```bash
 mkdir db/group/autolykiviridae
 cp autolyki-model.out/model db/group/autolykiviridae
-# reuse hallmark gene list from dsDNAphage due to their similarity
 cp hallmark-gene.list db/group/autolykiviridae/
 ```
 
 Now you can try this new classifier on the testing dataset, and compare with `dsDNAphage` classifier:
 
 ```bash
+# download the testing dataset
+wget -O test.fa https://raw.githubusercontent.com/jiarong/VirSorter2/master/test/8seq.fa
+# identify viral sequences in testing dataset; it takes 10+ mins;
 virsorter run -w autolyki-model-test.out -i test.fa --include-groups "dsDNAphage,autolykiviridae" -j 4 --min-score 0.8 all
 # check the scores in two classifiers
 cat autolyki-model-test.out/final-viral-score.tsv
