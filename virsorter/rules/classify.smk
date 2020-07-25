@@ -246,6 +246,7 @@ else:
         output: 
             combined='final-viral-combined.fa',
             proba='final-viral-score.tsv',
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             python {Scriptdir}/add-suffix-seqname-keep-desc.py iter-0/viral-fullseq.fa ||full > {output.combined}
