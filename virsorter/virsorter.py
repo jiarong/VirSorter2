@@ -58,7 +58,7 @@ def get_snakefile(f="Snakefile"):
 @click.option('-d',
     '--db-dir',
     required=False,
-    type=click.Path(dir_okay=True,resolve_path=True),
+    type=click.Path(dir_okay=True,writable=False,resolve_path=True),
     help='database directory, default to the --db-dir set during installation',
 )
 @click.option('-i',
