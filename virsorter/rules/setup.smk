@@ -4,7 +4,7 @@ import shutil
 import hashlib
 import logging
 from ruamel.yaml import YAML
-from virsorter.config import set_logger
+from virsorter.config import set_logger, init_config_template
 
 set_logger()
 
@@ -12,44 +12,21 @@ ENV_YAML_DIR = '../envs'
 
 # update DBDIR in template-config.yaml
 user_config_dir = os.path.join(os.path.expanduser('~'), '.virsorter')
-user_template = os.path.join(user_config_dir, 'template-config.yaml')
 
 # following DONOT work in Snakefile!!
 #src_config_dir = os.path.dirname(os.path.abspath(__file__)) 
 
 # not in the same dir as setup.smk, need to go up 2 levels
 src_config_dir = os.path.dirname(os.path.dirname(workflow.snakefile))
-src_template_ori = os.path.join(src_config_dir, 'template-config-original.yaml')
-src_template = os.path.join(src_config_dir, 'template-config.yaml')
 Scriptdir=os.path.join(src_config_dir, 'scripts')
 
-if os.access(src_template_ori, os.W_OK):
-    # check .virsorter in user home direcory first
-    template = src_template
-    #os.makedirs(user_config_dir, exist_ok=True)
-else:
-    os.makedirs(user_config_dir, exist_ok=True)
-    mes = ('Attention: can not write template-config.yaml in source directory:\n'
-            f'{src_config_dir}\n'
-            'makeing a copy to user home direcotry:\n'
-            f'{user_template}\n')
+db_dir = os.path.abspath(os.getcwd())
 
-    logging.info(mes)
-    template = user_template
+init_config_template(src_config_dir, user_config_dir, db_dir)
 
 #print(srcdir('.'))
 #print(workflow.basedir)
 #print(workflow.snakefile)
-
-dbdir = os.path.abspath(os.getcwd())
-yaml = YAML()
-with open(src_template_ori) as fp:
-    config = yaml.load(fp)
-    config['DBDIR'] = dbdir
-    logging.info(f'saving to {dbdir} as DBDIR to config file {template}')
-
-with open(template, 'w') as fw:
-    yaml.dump(config, fw)
 
 def md5(fname):
     # https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file

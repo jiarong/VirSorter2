@@ -7,11 +7,11 @@ from ruamel.yaml import YAML
 
 #from snakemake.io import load_configfile
 
+USER_CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.virsorter')
+SRC_CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 
-user_config_dir = os.path.join(os.path.expanduser('~'), '.virsorter')
-user_template = os.path.join(user_config_dir, 'template-config.yaml')
-src_config_dir = os.path.dirname(os.path.abspath(__file__))
-src_template = os.path.join(src_config_dir, 'template-config.yaml')
+user_template = os.path.join(USER_CONFIG_DIR, 'template-config.yaml')
+src_template = os.path.join(SRC_CONFIG_DIR, 'template-config.yaml')
 
 if os.path.isfile(user_template):
     # check .virsorter in user home direcory first
@@ -33,6 +33,35 @@ def set_logger():
         format="[%(asctime)s %(levelname)s] %(message)s",
     )
 
+def init_config_template(src_config_dir, user_config_dir, db_dir):
+    src_template_ori = os.path.join(src_config_dir, 
+            'template-config-original.yaml')
+    src_template = os.path.join(src_config_dir, 'template-config.yaml')
+    user_template = os.path.join(user_config_dir, 'template-config.yaml')
+    if os.access(src_template_ori, os.W_OK):
+        # check .virsorter in user home direcory first
+        template = src_template
+        #os.makedirs(user_config_dir, exist_ok=True)
+    else:
+        os.makedirs(user_config_dir, exist_ok=True)
+        mes = ('Attention: can not write template-config.yaml '
+                'in source directory:\n'
+                f'{src_config_dir}\n'
+                'makeing a copy to user home direcotry:\n'
+                f'{user_template}\n')
+
+        logging.info(mes)
+        template = user_template
+
+    yaml = YAML()
+    with open(src_template_ori) as fp:
+        config = yaml.load(fp)
+        config['DBDIR'] = db_dir
+        logging.info(f'saving to {dbdir} as DBDIR to config file {template}')
+
+    with open(template, 'w') as fw:
+        yaml.dump(config, fw)
+
 ### functions needes:
 # make_config
 # load_config
@@ -53,8 +82,19 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
     yaml = YAML()
     #yaml.version = (1, 1) # default is (1, 2)
     #yaml.default_flow_style = False # only needed for pre 1.2 version
-    with open(TEMPLATE) as fp:
-        config = yaml.load(fp)
+    try:
+        with open(TEMPLATE) as fp:
+            config = yaml.load(fp)
+    except FileNotFoundError as e:
+        if db_dir != None:
+            mes = ('"template-config.yaml" has not been initialized; '
+                    'initialing..')
+            logging.critical(mes)
+            init_config_template(SRC_CONFIG_DIR, USER_CONFIG_DIR, db_dir)
+        else:
+            mes = ('--db-dir must be provided since "template-config.yaml" '
+                    'has not been initialized')
+            logging.critical(mes)
 
     if db_dir != None:
         config['DBDIR'] = db_dir
@@ -74,7 +114,7 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
     groups_unavail = set(groups).difference(set(groups_avail))
     if len(groups_unavail) != 0:
         mes = (
-                'Following two viral groups are not available: {}\n'
+                'Following viral groups are not available: {}\n'
                 'Make sure viral group names match with direcotry '
                 'under {}/group\n'
         )

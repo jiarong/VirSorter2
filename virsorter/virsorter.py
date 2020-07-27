@@ -271,7 +271,6 @@ def run_setup(db_dir,jobs, snakemake_args):
     
     Executes a snakemake workflow to download reference database files
     and validate based on their MD5 checksum, and install dependencies
-    to {conda_prefix} path.
     '''
     cmd = (
         'snakemake --snakefile {snakefile} '
