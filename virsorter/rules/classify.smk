@@ -196,7 +196,7 @@ if Provirus:
             """
             Log={Wkdir}/log/iter-0/step3-classify/classify-trimmed-merge.log
             ### merge clf from all groups
-            python {Scriptdir}/merge-clf-from-groups.py {output.clf} {params.clf_fs_str} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            python {Scriptdir}/merge-clf-trim-from-groups.py {output.clf} {params.clf_fs_str} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             """
 
     localrules: finalize
@@ -209,16 +209,17 @@ if Provirus:
             'final-viral-score.tsv',
             'final-viral-combined.fa',
             'final-viral-boundary.tsv',
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            cp iter-0/viral-combined-proba.tsv final-viral-score.tsv
             cp iter-0/viral-combined.fa final-viral-combined.fa
             cp iter-0/viral-fullseq.tsv final-viral-boundary.tsv
+            python {Scriptdir}/add-length-to-table.py iter-0/viral-combined-proba.tsv iter-0/viral-combined.fa final-viral-score.tsv
             grep -v '^seqname' iter-0/viral-partseq.tsv >> final-viral-boundary.tsv || : 
             N_lt2gene=$(grep -c '^>' iter-0/viral-lt2gene-w-hallmark.fa || :)
             N_lytic=$(grep -c '^>' iter-0/viral-fullseq-trim.fa || :)
             N_lysogenic=$(grep -c '^>' iter-0/viral-partseq.fa || :)
-            echo -e "
+            printf "
             ====> VirSorter run (provirus mode) finished.
             # of full     seqs as viral:\t$N_lytic
             # of partial  seqs as viral:\t$N_lysogenic
@@ -249,12 +250,12 @@ else:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            python {Scriptdir}/add-suffix-seqname-keep-desc.py iter-0/viral-fullseq.fa ||full > {output.combined}
-            python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} ||lt2gene >> {output.combined}
-            cp iter-0/all-fullseq-proba.tsv {output.proba}
+            python {Scriptdir}/add-suffix-seqname-keep-desc.py iter-0/viral-fullseq.fa "||full" > {output.combined}
+            python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {output.combined}
+            python {Scriptdir}/add-length-to-table.py iter-0/all-fullseq-proba.tsv iter-0/viral-fullseq.fa final-viral-score.tsv
             N_viral_fullseq=$(grep -c '^>' iter-0/viral-fullseq.fa || :)
             N_viral_lt2gene=$(grep -c '^>' iter-0/viral-lt2gene-w-hallmark.fa || :)
-            echo -e "
+            printf "
             ====> VirSorter run (non-provirus mode) finished.
             # of viral contigs:\t$N_viral_fullseq
             # of short viral contigs (<2 genes):\t$N_viral_lt2gene
