@@ -54,18 +54,22 @@ rule download_hmm_viral:
     output: temp('combined.hmm.gz.split_{index}')
     shell:
         """
+        success=0
         for i in {{1..5}}; do
             Ret=$(wget --tries 2 --retry-connrefused --waitretry=60 --timeout=60 -q -O {output} https://zenodo.org/record/3823805/files/{output}?download=1 || echo "404 Not Found")
             if echo $Ret | grep -i -q "404 Not Found"; then
-                if [ $i = 5 ]; then
-                    exit 1
-                fi
                 echo "Server not responding for {output}; try $i/5.." | python {Scriptdir}/echo.py
                 continue
             else
+                success=1
                 break
             fi
         done
+        if [ $success -ne 1 ]; then
+            echo "zenodo server not reponsive"
+            echo "zenodo server not reponsive" | python {Scriptdir}/echo.py
+            exit 1
+        fi
         """
 
 
@@ -73,18 +77,22 @@ rule download_hmm_pfam:
     output: temp('Pfam-A-{domain}.hmm')
     shell:
         """
+        success=0
         for i in {{1..5}}; do
             Ret=$(wget --tries 2 --retry-connrefused --waitretry=60 --timeout=60 -q -O {output}.gz https://zenodo.org/record/3823805/files/{output}.gz?download=1 || echo "404 Not Found")
             if echo $Ret | grep -i -q "404 Not Found"; then
-                if [ $i = 5 ]; then
-                    exit 1
-                fi
                 echo "Server not responding for {output}; try $i/5.." | python {Scriptdir}/echo.py
                 continue
             else
+                success=1
                 break
             fi
         done
+        if [ $success -ne 1 ]; then
+            echo "zenodo server not reponsive"
+            echo "zenodo server not reponsive" | python {Scriptdir}/echo.py
+            exit 1
+        fi
         gunzip Pfam-A-{wildcards.domain}.hmm.gz
         """
 
@@ -92,46 +100,56 @@ rule download_other_db:
     output: temp('db.tgz')
     shell:
         """
+        success=0
         for i in {{1..5}}; do
             Ret=$(wget --tries 2 --retry-connrefused --waitretry=60 --timeout=60 -q -O db.tgz https://zenodo.org/record/3823805/files/db.tgz?download=1 || echo "404 Not Found")
             if echo $Ret | grep -i -q "404 Not Found"; then
-                if [ $i = 5 ]; then
-                    exit 1
-                fi
-                echo "*** Server not responding for {output}; try $i/5.." | python {Scriptdir}/echo.py
+                echo "Server not responding for {output}; try $i/5.." | python {Scriptdir}/echo.py
                 continue
             else
+                success=1
                 break
             fi
         done
+        if [ $success -ne 1 ]; then
+            echo "zenodo server not reponsive"
+            echo "zenodo server not reponsive" | python {Scriptdir}/echo.py
+            exit 1
+        fi
         """
 
 rule download_plamid_genomes:
     output: 'genomes-plasmid.fna.gz'
     shell:
         """
+        success=0
         for i in {{1..5}}; do
             Ret=$(wget --tries 2 --retry-connrefused --waitretry=60 --timeout=60 -q -O {output} https://zenodo.org/record/3823805/files/{output}?download=1 || echo "404 Not Found")
             if echo $Ret | grep -i -q "404 Not Found"; then
-                if [ $i = 5 ]; then
-                    exit 1
-                fi
                 echo "Server not responding for {output}; try $i/5.." | python {Scriptdir/echo.py
                 continue
             else
+                success=1
                 break
             fi
         done
+        if [ $success -ne 1 ]; then
+            echo "zenodo server not reponsive"
+            echo "zenodo server not reponsive" | python {Scriptdir}/echo.py
+            exit 1
+        fi
         """
 
 rule install_dependencies:
     output:
-        temp(touch('Done-install-dependencies'))
+        #temp(touch('Done-install-dependencies'))
+        temp('Done-install-dependencies')
     conda:
         '{}/vs2.yaml'.format(ENV_YAML_DIR)
     shell:
         """
         echo "Dependencies installed" | python {Scriptdir}/echo.py
+        touch Done-install-dependencies
         """
 
 rule setup:
@@ -142,7 +160,8 @@ rule setup:
         expand('Pfam-A-{domain}.hmm', 
                 domain=['Archaea', 'Bacteria', 'Eukaryota', 'Mixed'])
     output:
-        touch('Done_all_setup')
+        #touch('Done_all_setup')
+        'Done_all_setup'
     run:
         shell(
         """
@@ -166,6 +185,12 @@ rule setup:
             if md5(f) != D_FILE2MD5[bname]:
                 logging.error('Invalid checksum in for {}'.format(bname))
                 sys.exit(1)
+
+        shell(
+        """
+        touch Done_all_setup
+        """
+        )
 
 onerror:
     # clean up 

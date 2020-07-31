@@ -16,7 +16,7 @@ def get_version(relpath):
             v = v.strip().strip('"\' ')
             return v
         else:
-            sys.write('*** No version info found..\n')
+            sys.stderr.write('*** No version info found..\n')
             return ''
 
 setup(
