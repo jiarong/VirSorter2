@@ -277,39 +277,46 @@ def run_setup(db_dir,jobs, snakemake_args):
         '--directory {db_dir} --quiet '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
         '--nolock  --use-conda --conda-prefix {conda_prefix} '
-        '{add_args} {args}'
+        '{args}'
     )
     cmd_str = cmd.format(
         snakefile=get_snakefile('rules/setup.smk'),
         db_dir=db_dir,
         jobs=jobs,
         conda_prefix=os.path.join(db_dir,'conda_envs'),
-        add_args='' if snakemake_args and snakemake_args[0].startswith('-') else '--',
         args=' '.join(snakemake_args),
     )
 
-    logging.info('Setting up VirSorter2 database; this might takes ~10 mins and only needs to be done once.')
+    logging.info('Setting up VirSorter2 database; this might take ~10 mins and only needs to be done once.')
     #logging.info('Executing: %s' % cmd_str)
     try:
-        subprocess.run(cmd_str, check=True, shell=True)
+        subprocess.run(cmd_str, check=True, shell=True,
+                stdout=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
-        # removes the traceback
-        #logging.critical(e)
-        #retry
-        try: 
-            logging.info('Setting up VirSorter2 database failed due to server not responding or bad internet connection; retrying..; please be patient.')
-            cmd_str = cmd.format(
-                snakefile=get_snakefile('rules/setup-retry.smk'),
-                db_dir=db_dir,
-                jobs=jobs,
-                conda_prefix=os.path.join(db_dir,'conda_envs'),
-                add_args='' if snakemake_args and snakemake_args[0].startswith('-') else '--',
-                args=' '.join(snakemake_args),
-            )
-            subprocess.run(cmd_str, check=True, shell=True)
-        except subprocess.CalledProcessError as e:
-            # remove the traceback
-            #logging.critical(e)
+        out_str = e.stdout
+        if isinstance(out_str, bytes):
+            out_str = out_str.decode('utf-8')
+        if 'server not responsive' in out_str:
+            mes = ('Setting up VirSorter2 database failed due to server '
+                    'not responding or bad internet connection; '
+                    'retrying..; please be patient.')
+            logging.info(mes)
+            try: 
+                cmd_str = cmd.format(
+                    snakefile=get_snakefile('rules/setup-retry.smk'),
+                    db_dir=db_dir,
+                    jobs=jobs,
+                    conda_prefix=os.path.join(db_dir,'conda_envs'),
+                    args=' '.join(snakemake_args),
+                )
+                subprocess.run(cmd_str, check=True, shell=True)
+            except subprocess.CalledProcessError as e:
+                # remove the traceback
+                #logging.critical(e)
+                sys.exit(1)
+
+        else:
+            # errors other than server not responsive
             sys.exit(1)
 
 # train feature

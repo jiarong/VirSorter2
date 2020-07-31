@@ -57,7 +57,7 @@ def init_config_template(src_config_dir, user_config_dir, db_dir):
     with open(src_template_ori) as fp:
         config = yaml.load(fp)
         config['DBDIR'] = db_dir
-        logging.info(f'saving to {dbdir} as DBDIR to config file {template}')
+        logging.info(f'saving to {db_dir} as DBDIR to config file {template}')
 
     with open(template, 'w') as fw:
         yaml.dump(config, fw)
@@ -74,7 +74,7 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
     then update the some params provided by command line
 
     Args:
-        dbdir (str): location of database
+        db_dir (str): location of database
         threads (int): number of threads per node to utilize
         config (str): path of output yaml file
     '''
