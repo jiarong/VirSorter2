@@ -24,5 +24,5 @@ From: ubuntu:18.04
     cd VirSorter2
     pip install .
 
-    # TACC's Stampede compliant,  for iVirus/CyVerse
+    # TACC's Stampede compliant, for iVirus/CyVerse
     mkdir /home1 && mkdir /scratch && mkdir /work && mkdir /trigger-rebuild
