@@ -62,6 +62,8 @@ def init_config_template(src_config_dir, user_config_dir, db_dir):
     with open(template, 'w') as fw:
         yaml.dump(config, fw)
 
+    return config
+
 ### functions needes:
 # make_config
 # load_config
@@ -89,8 +91,9 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
         if db_dir != None:
             mes = ('"template-config.yaml" has not been initialized; '
                     'initialing..')
-            logging.critical(mes)
-            init_config_template(SRC_CONFIG_DIR, USER_CONFIG_DIR, db_dir)
+            logging.info(mes)
+            config = init_config_template(SRC_CONFIG_DIR, 
+                                             USER_CONFIG_DIR, db_dir)
         else:
             mes = ('--db-dir must be provided since "template-config.yaml" '
                     'has not been initialized')
