@@ -8,6 +8,7 @@ import shutil
 import click
 
 from snakemake import load_configfile
+from ruamel.yaml import YAML
 from virsorter import __version__
 from virsorter.config import get_default_config, set_logger, make_config
 
@@ -178,10 +179,13 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
 
     if min_score > 1 or min_score < 0:
         logging.critical('--min-score needs to be between 0 and 1')
+        sys.exit(1)
     if min_length < 0:
         logging.critical('--min-length needs to be >= 0')
+        sys.exit(1)
     if jobs < 0:
         logging.critical('--jobs needs to be >= 0')
+        sys.exit(1)
 
     if provirus_off:
         provirus = False
@@ -199,6 +203,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
         except subprocess.CalledProcessError as e:
             # removes the traceback
             logging.critical(e)
+            sys.exit(1)
 
     make_config(
             db_dir=db_dir, seqfile=seqfile, include_groups=include_groups,
@@ -423,6 +428,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
     if len(lis) == 0:
         mes = 'No files match {}'.format(viral_seqfile)
         logging.critical(mes)
+        sys.exit(1)
     else:
         mes = '{} seqfiles are used for training features'.format(len(lis))
         logging.info(mes)
@@ -527,7 +533,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
     '''Training customized classifier model.
     '''
 
-    DEFAULT_CONFIG = get_default_config
+    DEFAULT_CONFIG = get_default_config()
 
     if balanced == None:
         balanced = False
@@ -561,3 +567,145 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
         # removes the traceback
         logging.critical(e)
         exit(1)
+
+
+# config management
+@cli.command(
+    'config',
+    context_settings=dict(ignore_unknown_options=True),
+    short_help='subcommand for configuration management',
+)
+@click.option(
+    '--show',
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help='show all configuration values',
+)
+@click.option(
+    '--show-source',
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help='show path of the configuration file',
+)
+@click.option(
+    '--init-source',
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help='initialize configuration file',
+)
+@click.option(
+    '--db-dir',
+    type=click.Path(resolve_path=True),
+    help='directory for databases; required for --init-source',
+)
+@click.option(
+    '--set',
+    help='set KEY to VAL with the format: KEY=VAL; for nested dict in YAML use KEY1.KEY2=VAL (e.g. virsorter config --set GROUP_INFO.RNA.MIN_GENOME_SIZE=2000)',
+)
+@click.option(
+    '--get',
+    help='the value of a KEY (e.g. virsorter config --get GROUP_INFO.RNA.MIN_GENOME_SIZE',
+)
+def config(show, show_source, init_source, db_dir, set, get):
+    '''CLI for managing configurations.
+
+    There are many configurations kept in "template-config.yaml" in source 
+    code directory or "~/.virsorter" (when source code directory is not 
+    writable for user). This file can located with 
+    `virsorter config --show-source`. You can set the configurations with 
+    `virsorter config --set KEY=VAL`. Alternative, you can edit in the 
+    configuration file ("template-config.yaml") directly.
+    '''
+
+    from virsorter.config import (
+            TEMPLATE, SRC_CONFIG_DIR, 
+            USER_CONFIG_DIR, init_config_template
+    )
+
+    if init_source:
+        if db_dir == None:
+            mes = '--db-dir is required for --init-source'
+            logging.critical(mes)
+            sys.exit(1)
+        else:
+            init_config_template(SRC_CONFIG_DIR, USER_CONFIG_DIR, db_dir)
+            sys.exit(0)
+
+    if not os.path.isfile(TEMPLATE):
+        mes = ('config file "template-config.yaml" has not been '
+                'initialized yet; Please use '
+                '`virsorter config --set-source --db-dir PATH` to initialize')
+        logging.critical(mes)
+        sys.exit(1)
+
+    config = get_default_config()
+
+    if show:
+        YAML().dump(config, sys.stdout)
+        sys.exit(0)
+
+    if show_source:
+        mes = f'config file path: {TEMPLATE}\n'
+        sys.stdout.write(mes)
+        sys.exit(0)
+
+    if get != None:
+        s = get
+        lis = [var.strip() for var in s.split(',')]
+        for var in lis:
+            temp = config
+            for i in var.split('.'):
+                i = i.strip()
+                try:
+                    temp = temp[i]
+                except KeyError as e:
+                    mes = f'{i} is not a key in config file ({TEMPLATE})'
+                    logging.critical(mes)
+                    sys.exit(1)
+
+            mes = f'{var}: {temp}\n'
+            sys.stdout.write(mes)
+
+        sys.exit(0)
+
+    if set != None:
+        s = set
+        lis = [item.strip() for item in s.split(',')]
+        for item in lis:
+            temp = config
+            var, val = item.split('=')
+            var = var.strip()
+            val = val.strip()
+            keys = [key.strip() for key in var.split('.')]
+            for i in range(len(keys)):
+                if i == (len(keys) - 1):
+                    # stop at 2nd last key
+                    break
+                key = keys[i]
+                try:
+                    temp = temp[key]
+                except KeyError as e:
+                    mes = f'{key} is not a key in config file ({TEMPLATE})'
+                    logging.critical(mes)
+                    sys.exit(1)
+
+            last_key = keys[-1]
+            try:
+                print(temp)
+                old_val = temp[last_key]
+                temp[last_key] = val
+            except KeyError as e:
+                mes = f'{last_key} is not a key in config file ({TEMPLATE})'
+                logging.critical(mes)
+                sys.exit(1)
+
+            mes = f'{var}: {old_val} ==> {val}\n'
+            sys.stdout.write(mes)
+            with open(TEMPLATE, 'w') as fw:
+                YAML().dump(config, fw)
+
+        sys.exit(0)
+            
