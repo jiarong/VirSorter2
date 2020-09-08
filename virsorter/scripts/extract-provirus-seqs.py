@@ -90,7 +90,7 @@ def main():
                     fw_lytic.write(
                             mes.format(seqname, shape, trim_start_bp, 
                                 trim_end_bp, group, score, hallmark, 
-                                rec.sequence[trim_start_bp:trim_end_bp+1])
+                                rec.sequence[(trim_start_bp-1):trim_end_bp])
                     )
 
             elif seqname in st_part:
@@ -113,7 +113,7 @@ def main():
                     fw_lyso.write(
                             mes.format(seqname, i, shape, trim_start_bp, 
                                 trim_end_bp, group, score, hallmark,
-                                rec.sequence[trim_start_bp:trim_end_bp+1])
+                                rec.sequence[(trim_start_bp-1):trim_end_bp])
                     )
 
 if __name__ == '__main__':
