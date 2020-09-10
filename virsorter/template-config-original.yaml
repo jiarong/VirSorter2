@@ -66,6 +66,7 @@ HALLMARK_REQUIRED_ON_SHORT: false
 MIN_FRAC_OF_MAX_SCORE: 0.95  # pick longest within 95% of max score for trim
 MAX_RETRY_TIMES: 5  # extend more if pr fall below 0.5
 PROVIRUS_PEAK_PROBA_CUTOFF: 0.7  # peak proba during extension
+END_TRIM_OFF: false
 
 RANDOM_STATE: 99
 

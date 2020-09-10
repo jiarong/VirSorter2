@@ -34,6 +34,7 @@ MAX_RETRY_TIMES = DEFAULT_CONFIG['MAX_RETRY_TIMES']
 TOTAL_FEATURE_LIST = DEFAULT_CONFIG['TOTAL_FEATURE_LIST']
 SELECT_FEATURE_LIST = DEFAULT_CONFIG['SELECT_FEATURE_LIST']
 DEFAULT_MIN_GENOME_SIZE = DEFAULT_CONFIG['DEFAULT_MIN_GENOME_SIZE']
+END_TRIM_OFF = DEFAULT_CONFIG['END_TRIM_OFF']
 
 set_logger()
 
@@ -201,14 +202,16 @@ class provirus(object):
         prox_bp_end = df_gff['end'].iloc[-1]
 
         size = int(0.1* len(df_gff))
-        if size < 5:
-            size = 5
-        #if size == 0:
-        #    combs = [(0, 0),]
-        #else:
-        starts = np.array(range(size))
-        ends = -1*np.array(range(size))
-        combs = [ (x, y) for x in starts for y in ends ]
+        #if size < 5:
+        #    size = 5
+        if END_TRIM_OFF == 'true':
+            size = 0
+        if size == 0:
+            combs = [(0, 0),]
+        else:
+            starts = np.array(range(size))
+            ends = -1*np.array(range(size))
+            combs = [ (x, y) for x in starts for y in ends ]
         if size <= 10:
             # combinations
             lis = self.locate_ends(df_gff, df_tax, 
