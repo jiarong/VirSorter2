@@ -33,12 +33,13 @@ def main():
         if cnt == 0:
             merged = df
         else:
-            merged = pd.merge(prev, df, on='seqname', how='inner')
+            merged = pd.merge(prev, df, on='seqname', how='outer')
 
         prev = merged
         cnt += 1
 
-    merged.to_csv(outfile, sep='\t', index=False, float_format='%.3f')
+    merged.to_csv(outfile, sep='\t', na_rep='NaN',
+            index=False, float_format='%.3f')
 
 if __name__ == '__main__':
     main()

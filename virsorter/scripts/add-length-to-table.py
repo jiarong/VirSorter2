@@ -41,7 +41,8 @@ def main():
     df['length'] = _l
     cur_cols = ['seqname', 'length'] + old_cols[1:]
     df = df[cur_cols]
-    df.to_csv(outfile, sep='\t', index=False, float_format='%.3f')
+    df.to_csv(outfile, sep='\t', na_rep='NaN', 
+            index=False, float_format='%.3f')
 
 if __name__ == '__main__':
     main()
