@@ -9,3 +9,5 @@ test/*
 !test/test.sh
 !test/8seq.fa
 *template-config.yaml
+todo
+notes
