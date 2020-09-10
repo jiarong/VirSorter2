@@ -182,7 +182,7 @@ if Provirus:
 
             """
 
-    localrules: merge_classification
+    localrules: merge_full_and_part_classification
     rule merge_full_and_part_classification:
         input: expand('iter-0/{group}/viral.trim.clf', group=Groups)
         output: 
@@ -228,9 +228,9 @@ if Provirus:
             Useful output files:
             final-viral-score.tsv       ==> score table
             final-viral-combined.fa     ==> all viral seqs
-            final-viral-boundary.tsv    ==> table with boudary info
+            final-viral-boundary.tsv    ==> table with boundary info
             
-            Suffix are added to seqname in final-viral-combined.fa:
+            Suffix is added to seq names in final-viral-combined.fa:
             full seqs as viral:               ||full 
             partial seqs as viral:            ||partial
             short (<2 genes) seqs as viral:   ||lt2gene
