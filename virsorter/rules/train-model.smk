@@ -62,7 +62,7 @@ rule make_classifer_model:
     threads: Jobs
     shell:
         """
-        if [ {Balanced} = true ]; then
+        if [ {Balanced} = "True" ]; then
             python {Scriptdir}/train-model.py {input.viral} {input.nonviral} --jobs {threads} --balanced
         else
             python {Scriptdir}/train-model.py {input.viral} {input.nonviral} --jobs {threads}

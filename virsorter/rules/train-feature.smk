@@ -85,7 +85,7 @@ rule prep_fragments_from_genome:
     shell:
         """
         mkdir -p log
-        if [ ! {Viral_genome_as_bin} = true ]; then
+        if [ ! {Viral_genome_as_bin} = "True" ]; then
             ### each contig is a genome
             python {Scriptdir}/get-list-from-seqfile.py {Viral_seqfiles} | awk 'BEGIN{{OFS="\t"}} {{print $1,1}}' > {Tmpdir}/accession-with-cnt.list
             python {Scriptdir}/prepdb-train-sample-random-fragments-per-contig-for-env.py {Fragments_per_genome} {Tmpdir}/accession-with-cnt.list {Viral_seqfiles} > {Tmpdir}/fragments.fasta 2> {Tmpdir}/fragments.stats || {{ cat {Tmpdir}/fragments.stats; exit 1; }}

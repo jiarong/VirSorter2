@@ -14,7 +14,8 @@ from virsorter.config import get_default_config
 DEFAULT_CONFIG = get_default_config()
 
 D = DEFAULT_CONFIG['GROUP_INFO']
-DEFAULT_LEN_CUTOFF = 3000
+DEFAULT_MIN_SIZE_ALLOWED_WO_HALLMARK_GENE = \
+        DEFAULT_CONFIG['DEFAULT_MIN_SIZE_ALLOWED_WO_HALLMARK_GENE']
 
 def main():
     '''Remove seqs are shorter than a cutoff and without hallmark genes 
@@ -57,7 +58,7 @@ def main():
                         group = _s.strip()
                     cutoff = D[group]['MIN_SIZE_ALLOWED_WO_HALLMARK_GENE']
                 except IndexError as e:
-                    cutoff = DEFAULT_LEN_CUTOFF
+                    cutoff = DEFAULT_MIN_SIZE_ALLOWED_WO_HALLMARK_GENE
                 if len(seq) < cutoff:
                     continue
             elif df_max.at[name, 'max_cnt'] == 0:

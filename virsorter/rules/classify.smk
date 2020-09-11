@@ -5,7 +5,7 @@ rule classify_by_group:
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log={Wkdir}/log/iter-0/step3-classify/classify-{wildcards.group}.log
+        Log={Wkdir}/log/iter-0/step3-classify/all-score-{wildcards.group}.log
         python {Scriptdir}/classify.py {input} {Dbdir}/group/{wildcards.group}/model {wildcards.group} {output} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
         """
 
@@ -21,7 +21,7 @@ rule merge_classification:
         ),
     shell:
         """
-        Log={Wkdir}/log/iter-0/step3-classify/classify-merged.log
+        Log={Wkdir}/log/iter-0/step3-classify/all-score-merge.log
         ### merge clf from all groups
         python {Scriptdir}/merge-clf-from-groups.py {output.clf} {params.clf_fs_str} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
         """
@@ -47,13 +47,13 @@ rule pick_viral_fullseq:
         ),
     shell:
         """
-        Log={Wkdir}/log/iter-0/step3-classify/classify-merged.log
+        Log={Wkdir}/log/iter-0/step3-classify/all-score-merge.log
         python {Scriptdir}/pick-viral-contig-from-clf.py {Proba_cutoff} {input.clf} iter-0/all.fna > iter-0/viral-fullseq-contig.fa.tmp 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
 
         python {Scriptdir}/get-hallmark-cnt-for-each-seq.py {output.hmk_cnt} "{params.group_str}" "{params.hmk_fs_str}" "{params.tax_fs_str}" 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
 
         python {Scriptdir}/get-seq-w-lt2gene-w-hallmark.py {output.hmk_cnt} {input.clf} iter-0/all.fna > {output.lt2gene} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
-        if [ {Hallmark_required_on_short} = "true" ]; then
+        if [ {Hallmark_required_on_short} = "True" ]; then
             python {Scriptdir}/remove-short-seq-wo-hallmark.py {output.hmk_cnt} iter-0/viral-fullseq-contig.fa.tmp > {output.contig} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             rm iter-0/viral-fullseq-contig.fa.tmp
         else
@@ -128,8 +128,8 @@ if Provirus:
             groups_str = ','.join(Groups),
         shell:
             """
-            Log={Wkdir}/log/iter-0/step3-classify/classify-merged.log
-            python {Scriptdir}/merge-provirus-from-groups.py {params.prv_fs_str} {params.groups_str} {output.partial} {output.full} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            Log={Wkdir}/log/iter-0/step3-classify/provirus-score-merge.log
+            python {Scriptdir}/merge-provirus-from-groups.py {params.prv_fs_str} {params.groups_str} {output.partial} {output.full} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             """
 
     localrules: extract_provirus_seqs
@@ -148,17 +148,18 @@ if Provirus:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            Log={Wkdir}/log/iter-0/step3-classify/classify-merge.log
-            python {Scriptdir}/extract-provirus-seqs.py {input.contig} {input.full} {input.partial} iter-0/viral-fullseq-trim.fa.tmp {output.partial} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            Log={Wkdir}/log/iter-0/step3-classify/provirus-seq-extract.log
+            python {Scriptdir}/extract-provirus-seqs.py {input.contig} {input.full} {input.partial} iter-0/viral-fullseq-trim.fa.tmp {output.partial} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
 
-            if [ {Hallmark_required_on_short} = "true" ]; then
+            if [ {Hallmark_required_on_short} = "True" ]; then
                 python {Scriptdir}/remove-short-seq-wo-hallmark.py {input.hmk_cnt} iter-0/viral-fullseq-trim.fa.tmp > {output.fullseq} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
                 rm iter-0/viral-fullseq-trim.fa.tmp
             else
                 mv iter-0/viral-fullseq-trim.fa.tmp {output.fullseq}
             fi
             cat {output.fullseq} {output.partial} > {output.combined}
-            python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {output.combined}
+            python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {output.combined} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+
 
             """
 
@@ -172,7 +173,7 @@ if Provirus:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            Log={Wkdir}/log/iter-0/step3-classify/classify-trimmed-{wildcards.group}.log
+            Log={Wkdir}/log/iter-0/step3-classify/provirus-score-{wildcards.group}.log
             Hallmark_list_f={Dbdir}/group/{wildcards.group}/hallmark-gene.list
             if [ -s $Hallmark_list_f ]; then
                 python {Scriptdir}/classify-trimed.py {input.gff} {input.tax} {Dbdir}/rbs/rbs-catetory.tsv {Dbdir}/group/{wildcards.group}/model {input.seqfile} {output} --group {wildcards.group} --hallmark {Dbdir}/group/{wildcards.group}/hallmark-gene.list 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -194,7 +195,7 @@ if Provirus:
             ),
         shell:
             """
-            Log={Wkdir}/log/iter-0/step3-classify/classify-trimmed-merge.log
+            Log={Wkdir}/log/iter-0/step3-classify/provirus-score-merge.log
             ### merge clf from all groups
             python {Scriptdir}/merge-clf-trim-from-groups.py {output.clf} {params.clf_fs_str} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             """
