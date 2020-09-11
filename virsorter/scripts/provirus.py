@@ -207,7 +207,7 @@ class provirus(object):
         size = int(0.1* len(df_gff))
         #if size < 5:
         #    size = 5
-        if END_TRIM_OFF == 'true':
+        if END_TRIM_OFF:  #"true" in yaml ==> True (boolean) in python
             size = 0
         if size == 0:
             combs = [(0, 0),]
