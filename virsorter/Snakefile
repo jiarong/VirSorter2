@@ -79,7 +79,7 @@ rule extract_feature:
         temp(touch('Done-extract-feature'))
     shell:
         """
-        echo "Step 2 - exract-feature finished." | python {Scriptdir}/echo.py
+        echo "Step 2 - extract-feature finished." | python {Scriptdir}/echo.py
         """
 
 rule classify:
