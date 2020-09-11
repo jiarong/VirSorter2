@@ -13,7 +13,7 @@ from virsorter.config import get_default_config
 
 DEFAULT_CONFIG = get_default_config()
 
-PEAK_PROBA_CUTOFF = DEFAULT_CONFIG['PROVIRUS_PEAK_PROBA_CUTOFF']
+PROVIRUS_MIN_PEAK_PROBA = DEFAULT_CONFIG['PROVIRUS_MIN_PEAK_PROBA']
 
 def main():
     if len(sys.argv) != 5:
@@ -64,7 +64,8 @@ def main():
         # ignore those already processed in full (whole seq as viral)
         sel_seqname = df_merged_partial['seqname'].isin(seqnames_full)
         df_merged_partial = df_merged_partial.loc[~sel_seqname,:]
-        sel_peak_proba = df_merged_partial['prox_pr_max'] >= PEAK_PROBA_CUTOFF
+        sel_peak_proba = \
+                df_merged_partial['prox_pr_max'] >= PROVIRUS_MIN_PEAK_PROBA
         df_merged_partial = df_merged_partial.loc[sel_peak_proba,:]
 
         # a copy is made in background with sorting

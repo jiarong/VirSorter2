@@ -35,6 +35,8 @@ TOTAL_FEATURE_LIST = DEFAULT_CONFIG['TOTAL_FEATURE_LIST']
 SELECT_FEATURE_LIST = DEFAULT_CONFIG['SELECT_FEATURE_LIST']
 DEFAULT_MIN_GENOME_SIZE = DEFAULT_CONFIG['DEFAULT_MIN_GENOME_SIZE']
 END_TRIM_OFF = DEFAULT_CONFIG['END_TRIM_OFF']
+PROVIRUS_CHECK_MAX_FULLSEQ_PROBA = \
+        DEFAULT_CONFIG['PROVIRUS_CHECK_MAX_FULLSEQ_PROBA']
 
 set_logger()
 
@@ -163,6 +165,7 @@ class provirus(object):
         prs = list(zip(*res_lis))[1]
         _df = pd.DataFrame({'size':sizes, 'pr':prs})
         pr_max = max(prs)
+        #cutoff = max(pr_max * MIN_FRAC_OF_MAX_SCORE, self.proba)
         cutoff = pr_max * MIN_FRAC_OF_MAX_SCORE
         _df = _df.loc[_df['pr'] >= cutoff,:]
 
@@ -305,7 +308,10 @@ class provirus(object):
             _df = _df.drop(['seqname'], axis=1)
             pr_full = _df.at[seqname_ori, self.group]
             pr_full_max_groups = max(_df.loc[seqname_ori,:])
-            if pr_full < self.proba and pr_full_max_groups >= self.proba:
+            #if pr_full < self.proba and pr_full_max_groups >= self.proba:
+            if pr_full < PROVIRUS_CHECK_MAX_FULLSEQ_PROBA and \
+                    pr_full_max_groups >= max(self.proba,
+                            PROVIRUS_CHECK_MAX_FULLSEQ_PROBA):
                 # skip when another group is significant with full seq,
                 #  so do not need go through sliding window, save computation
                 #  in merge-provirus-from-groups.py step, provirus is selected
@@ -328,7 +334,10 @@ class provirus(object):
         full_bp_start = df_gff['start'].iloc[0]
         full_bp_end = df_gff['end'].iloc[-1]
 
-        if pr_full >= self.proba:
+        #if pr_full >= self.proba:
+        if pr_full >= PROVIRUS_CHECK_MAX_FULLSEQ_PROBA:
+            # those with pr_full < self.proba will be filtered 
+            #  through trim_ends()
             partial = 0
             self.trim_ends(df_gff, df_tax, 
                     sel_index_w_hallmark, seqname, 
