@@ -165,8 +165,8 @@ class provirus(object):
         prs = list(zip(*res_lis))[1]
         _df = pd.DataFrame({'size':sizes, 'pr':prs})
         pr_max = max(prs)
-        #cutoff = max(pr_max * MIN_FRAC_OF_MAX_SCORE, self.proba)
-        cutoff = pr_max * MIN_FRAC_OF_MAX_SCORE
+        cutoff = max(pr_max * MIN_FRAC_OF_MAX_SCORE, self.proba)
+        #cutoff = pr_max * MIN_FRAC_OF_MAX_SCORE
         _df = _df.loc[_df['pr'] >= cutoff,:]
 
         # original index is still kept after selection
