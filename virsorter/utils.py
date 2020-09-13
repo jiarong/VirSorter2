@@ -81,6 +81,32 @@ def parse_hallmark_hmm(hallmark_f):
 
     return d_hallmark_hmm
 
+
+def extract_feature_tax(df_tax_sel, sel_index_w_hallmark):
+    if len(df_tax_sel) == 0:
+        # all unaligned
+        l_tax = (0, 0, 0, 0, 0, 100, 0)
+    else:
+        if len(sel_index_w_hallmark) != 0:
+            indice = df_tax_sel['orf_index']
+            hallmark_st = set(indice).intersection(
+                    set(sel_index_w_hallmark))
+            hallmark_cnt = len(hallmark_st)
+        else:
+            hallmark_cnt = 0
+
+        tax_lis = df_tax_sel['tax']
+        aligned = len(tax_lis)
+        _d = Counter(tax_lis)
+        total = len(df_gff_sel)
+        l_tax = [ 100.0*_d.get(key, 0)/total for key in TAXON_LIST ]
+        unaligned = total - aligned
+        unaligned_perc = 100.0*unaligned/total
+        l_tax.append(unaligned_perc)
+        l_tax.append(hallmark_cnt)
+
+    return l_tax
+
 def parse_gff(gff):
     ''' parsing gff file from prodigal to info related genomic features.
     Args:
@@ -300,27 +326,7 @@ def get_feature(df_gff, df_tax, rbs_cat_d, sel_index_w_hallmark):
         # does not meet 1) >= 1 full gene 2) >= 2 total genes
         return l
 
-    if len(df_tax_sel) == 0:
-        # all unaligned
-        l_tax = (0, 0, 0, 0, 0, 100, 0)
-    else:
-        if len(sel_index_w_hallmark) != 0:
-            indice = df_tax_sel['orf_index']
-            hallmark_st = set(indice).intersection(
-                    set(sel_index_w_hallmark))
-            hallmark_cnt = len(hallmark_st)
-        else:
-            hallmark_cnt = 0
-
-        tax_lis = df_tax_sel['tax']
-        aligned = len(tax_lis)
-        _d = Counter(tax_lis)
-        total = len(df_gff_sel)
-        l_tax = [ 100.0*_d.get(key, 0)/total for key in TAXON_LIST ]
-        unaligned = total - aligned
-        unaligned_perc = 100.0*unaligned/total
-        l_tax.append(unaligned_perc)
-        l_tax.append(hallmark_cnt)
+    l_tax = extract_feature_tax(df_tax, sel_index_w_hallmark)
 
     l.extend(l_tax)
     ser = pd.Series(l, index=TOTAL_FEATURE_LIST)
