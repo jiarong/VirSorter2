@@ -109,6 +109,13 @@ class provirus(object):
 
         self.gff_mat_colnames = ('orf_index', 'start', 'end', 'strand', 
                 'partial', 'start_type', 'gc_cont', 'rbs_motif')
+        self.hallmark_ftr_ind = SELECT_FEATURE_LIST.index('hallmark')
+        self.arc_ind = SELECT_FEATURE_LIST.index('arc')
+        self.bac_ind = SELECT_FEATURE_LIST.index('bac')
+        self.euk_ind = SELECT_FEATURE_LIST.index('euk')
+        self.vir_ind = SELECT_FEATURE_LIST.index('vir')
+        self.mix_ind = SELECT_FEATURE_LIST.index('mix')
+        self.unaligned_ind = SELECT_FEATURE_LIST.index('unaligned')
 
 
     def locate_ends(self, df_gff, df_tax, sel_index_w_hallmark, combs):
@@ -184,7 +191,8 @@ class provirus(object):
     def trim_ends(self, df_gff, df_tax, sel_index_w_hallmark, seqname, 
             prox_pr, prox_pr_max, partial, 
             full_orf_index_start, full_orf_index_end,
-            full_bp_start, full_bp_end, pr_full, hallmark_cnt):
+            full_bp_start, full_bp_end, pr_full, 
+            arc, bac, euk, vir, mix, unaligned, hallmark_cnt):
         '''Trim the ends of viral candidate regions
 
         The function writes the boudary info to output file, including 
@@ -194,7 +202,8 @@ class provirus(object):
             prox_bp_start, prox_bp_end,
             prox_pr, prox_pr_max,
             partial, full_orf_index_start, full_orf_index_end,
-            full_bp_start, full_bp_end, pr_full, hallmark_cnt,
+            full_bp_start, full_bp_end, pr_full, 
+            arc, bac, euk, vir, mix, unaligned, hallmark_cnt
 
         '''
         # trim ends 5 or 10% of total genes
@@ -241,7 +250,8 @@ class provirus(object):
 
         mes = ('{}\t{}\t{}\t{}\t{}\t{:.3f}\t{:.3f}'
                 '\t{}\t{}\t{}\t{}\t{:.3f}\t{:.3f}'
-                '\t{}\t{}\t{}\t{}\t{}\t{:.3f}\t{}\n')
+                '\t{}\t{}\t{}\t{}\t{}\t{:.3f}'
+                '\t{:.1f}\t{:.1f}\t{:.1f}\t{:.1f}\t{:.1f}\t{:.1f}\t{}\n')
         self.fw.write(
                 mes.format(
                     seqname, final_ind_start, final_ind_end,
@@ -250,7 +260,8 @@ class provirus(object):
                     prox_bp_start, prox_bp_end,
                     prox_pr, prox_pr_max,
                     partial, full_orf_index_start, full_orf_index_end,
-                    full_bp_start, full_bp_end, pr_full, int(hallmark_cnt)
+                    full_bp_start, full_bp_end, pr_full, 
+                    arc, bac, euk, vir, mix, unaligned, int(hallmark_cnt)
                 )
         )
 
@@ -295,7 +306,13 @@ class provirus(object):
             # does not meet 1) >= 2 genes; 2) at least 1 full gene
             return
 
-        hallmark_cnt = l[-1]
+        hallmark_cnt = l[self.hallmark_ftr_ind]
+        arc = l[self.arc_ind]
+        bac = l[self.bac_ind]
+        euk = l[self.euk_ind]
+        vir = l[self.vir_ind]
+        mix = l[self.mix_ind]
+        unaligned = l[self.unaligned_ind]
 
         # if proba table to get proba of whole seq is provided
         if self.fullseq_clf_f != None:
@@ -343,7 +360,8 @@ class provirus(object):
                     sel_index_w_hallmark, seqname, 
                     np.nan, np.nan,
                     partial, full_orf_index_start, full_orf_index_end, 
-                    full_bp_start, full_bp_end, pr_full, hallmark_cnt)
+                    full_bp_start, full_bp_end, pr_full, 
+                    arc, bac, euk, vir, mix, unaligned, hallmark_cnt)
         else:
             # sliding windows
             try:
@@ -380,7 +398,13 @@ class provirus(object):
                     res_lis = self.model.predict_proba([l,])
                     res = res_lis[0]
                     pr = res[1]
-                    hallmark_cnt = l[-1]
+                    hallmark_cnt = l[self.hallmark_ftr_ind]
+                    arc = l[self.arc_ind]
+                    bac = l[self.bac_ind]
+                    euk = l[self.euk_ind]
+                    vir = l[self.vir_ind]
+                    mix = l[self.mix_ind]
+                    unaligned = l[self.unaligned_ind]
 
                 if trigger == False and pr < self.proba:
                     ind_start += 1
@@ -418,7 +442,9 @@ class provirus(object):
                                     partial, 
                                     full_orf_index_start, full_orf_index_end, 
                                     full_bp_start, full_bp_end, 
-                                    pr_full, hallmark_cnt)
+                                    pr_full, 
+                                    arc, bac, euk, vir, mix, unaligned,
+                                    hallmark_cnt)
 
                         # set up for next provirus in the same contig
                         ind_start = ind_end + 1
@@ -448,7 +474,9 @@ class provirus(object):
                         pr_last_valid, pr_max,
                         partial,
                         full_orf_index_start, full_orf_index_end, 
-                        full_bp_start, full_bp_end, pr_full, hallmark_cnt)
+                        full_bp_start, full_bp_end, pr_full, 
+                        arc, bac, euk, vir, mix, unaligned,
+                        hallmark_cnt)
 
 
     def find_boundary(self):
@@ -465,7 +493,9 @@ class provirus(object):
                     'prox_bp_start', 'prox_bp_end',
                     'prox_pr', 'prox_pr_max',
                     'partial', 'full_orf_index_start', 'full_orf_index_end',
-                    'full_bp_start', 'full_bp_end', 'pr_full', 'hallmark_cnt'
+                    'full_bp_start', 'full_bp_end', 'pr_full', 
+                    'arc', 'bac', 'euk', 'vir', 'mix', 'unaligned', 
+                    'hallmark_cnt'
             ]
             self.fw.write('{}\n'.format('\t'.join(header_lis)))
 

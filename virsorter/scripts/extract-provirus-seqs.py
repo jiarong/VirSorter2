@@ -60,25 +60,41 @@ def main():
             seqname = seqname.rsplit('||', 1)[0] # remove ||rbs:common
             if seqname in st_full:
                 ser = df_full.loc[seqname, :]
-                trim_start_ind = ser.iloc[0]
-                trim_end_ind = ser.iloc[1]
-                trim_start_bp = ser.iloc[2]
-                trim_end_bp = ser.iloc[3]
-                full_start_ind = ser.iloc[-6]
-                full_end_ind = ser.iloc[-5]
-                group = ser.iloc[-1]
-                hallmark = ser.iloc[-2]
-                score = ser.iloc[4]
+                #trim_start_ind = ser.iloc[0]
+                #trim_end_ind = ser.iloc[1]
+                #trim_start_bp = ser.iloc[2]
+                #trim_end_bp = ser.iloc[3]
+                #full_start_ind = ser.iloc[-6]
+                #full_end_ind = ser.iloc[-5]
+                #group = ser.iloc[-1]
+                #hallmark = ser.iloc[-2]
+                #score = ser.iloc[4]
+                trim_start_ind = ser.loc['trim_orf_index_start']
+                trim_end_ind = ser.loc['trim_orf_index_end']
+                trim_start_bp = ser.loc['trim_bp_start']
+                trim_end_bp = ser.loc['trim_bp_end']
+                full_start_ind = ser.loc['full_orf_index_start']
+                full_end_ind = ser.loc['full_orf_index_end']
+                group = ser.loc['group']
+                viral = ser.loc['vir']
+                cellular = sum(ser.loc[['arc', 'bac', 'euk']])
+                hallmark = ser.loc['hallmark_cnt']
+                score = ser.loc['trim_pr']
                 
                 if (trim_start_ind == full_start_ind and 
                         trim_end_ind == full_end_ind):
                     # not trimmed; save to lytic
                     mes = ('>{}||full  '
                         'shape:{}||start:{}||end:{}||'
-                        'group:{}||score:{}||hallmark:{}\n{}\n')
+                        'start_ind:{}||end_ind:{}||'
+                        'viral:{:.1f}||cellular:{:.1f}||'
+                        'group:{}||score:{:.3f}||hallmark:{}\n{}\n')
                     fw_lytic.write(
-                            mes.format(seqname, shape, trim_start_bp, 
-                                trim_end_bp, group, score, hallmark, 
+                            mes.format(seqname, shape, 
+                                trim_start_bp, trim_end_bp, 
+                                trim_start_ind, trim_end_ind, 
+                                viral, cellular,
+                                group, score, hallmark, 
                                 rec.sequence)
                     )
                 else:
@@ -86,10 +102,13 @@ def main():
                     #   interpret lytic or lyso here
                     mes = ('>{}||full  '
                         'shape:{}||start:{}||end:{}||'
+                        'start_ind:{}||end_ind:{}||'
                         'group:{}||score:{}||hallmark:{}\n{}\n')
                     fw_lytic.write(
-                            mes.format(seqname, shape, trim_start_bp, 
-                                trim_end_bp, group, score, hallmark, 
+                            mes.format(seqname, shape, 
+                                trim_start_bp, trim_end_bp, 
+                                trim_start_ind, trim_end_ind, 
+                                group, score, hallmark, 
                                 rec.sequence[(trim_start_bp-1):trim_end_bp])
                     )
 
@@ -97,22 +116,38 @@ def main():
                 _df = df_part.loc[df_part.index == seqname, :]
                 for i in range(len(_df)):
                     ser = _df.iloc[i, :]
-                    trim_start_ind = ser.iloc[0]
-                    trim_end_ind = ser.iloc[1]
-                    trim_start_bp = ser.iloc[2]
-                    trim_end_bp = ser.iloc[3]
-                    full_start_ind = ser.iloc[-6]
-                    full_end_ind = ser.iloc[-5]
-                    group = ser.iloc[-1]
-                    hallmark = ser.iloc[-2]
-                    score = ser.iloc[4]
+                    #trim_start_ind = ser.iloc[0]
+                    #trim_end_ind = ser.iloc[1]
+                    #trim_start_bp = ser.iloc[2]
+                    #trim_end_bp = ser.iloc[3]
+                    #full_start_ind = ser.iloc[-6]
+                    #full_end_ind = ser.iloc[-5]
+                    #group = ser.iloc[-1]
+                    #hallmark = ser.iloc[-2]
+                    #score = ser.iloc[4]
+                    trim_start_ind = ser.loc['trim_orf_index_start']
+                    trim_end_ind = ser.loc['trim_orf_index_end']
+                    trim_start_bp = ser.loc['trim_bp_start']
+                    trim_end_bp = ser.loc['trim_bp_end']
+                    full_start_ind = ser.loc['full_orf_index_start']
+                    full_end_ind = ser.loc['full_orf_index_end']
+                    group = ser.loc['group']
+                    viral = ser.loc['vir']
+                    cellular = sum(ser.loc[['arc', 'bac', 'euk']])
+                    hallmark = ser.loc['hallmark_cnt']
+                    score = ser.loc['trim_pr']
                     #save to lyso
                     mes = ('>{}||{}index_partial  '
                             'shape:{}||start:{}||end:{}||'
-                            'group:{}||score:{}||hallmark:{}\n{}\n')
+                            'start_ind:{}||end_ind:{}||'
+                            'viral:{:.1f}||cellular:{:.1f}||'
+                            'group:{}||score:{:.3f}||hallmark:{}\n{}\n')
                     fw_lyso.write(
-                            mes.format(seqname, i, shape, trim_start_bp, 
-                                trim_end_bp, group, score, hallmark,
+                            mes.format(seqname, i, shape, 
+                                trim_start_bp, trim_end_bp, 
+                                trim_start_ind, trim_end_ind, 
+                                viral, cellular,
+                                group, score, hallmark,
                                 rec.sequence[(trim_start_bp-1):trim_end_bp])
                     )
 

@@ -56,7 +56,7 @@ def main():
     _df = _df.drop_duplicates(['seqname'])
     _df = _df.drop(['size'], axis=1)
     _df.to_csv(f_full, sep='\t', index=False, 
-            na_rep='NA', float_format='%.3f')
+            na_rep='nan', float_format='%.3f')
 
 
     # partial
