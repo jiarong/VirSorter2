@@ -82,7 +82,7 @@ def parse_hallmark_hmm(hallmark_f):
     return d_hallmark_hmm
 
 
-def extract_feature_tax(df_tax_sel, sel_index_w_hallmark):
+def extract_feature_tax(df_tax_sel, sel_index_w_hallmark, total_gene_cnt):
     if len(df_tax_sel) == 0:
         # all unaligned
         l_tax = (0, 0, 0, 0, 0, 100, 0)
@@ -98,7 +98,7 @@ def extract_feature_tax(df_tax_sel, sel_index_w_hallmark):
         tax_lis = df_tax_sel['tax']
         aligned = len(tax_lis)
         _d = Counter(tax_lis)
-        total = len(df_gff_sel)
+        total = total_gene_cnt
         l_tax = [ 100.0*_d.get(key, 0)/total for key in TAXON_LIST ]
         unaligned = total - aligned
         unaligned_perc = 100.0*unaligned/total
@@ -326,7 +326,8 @@ def get_feature(df_gff, df_tax, rbs_cat_d, sel_index_w_hallmark):
         # does not meet 1) >= 1 full gene 2) >= 2 total genes
         return l
 
-    l_tax = extract_feature_tax(df_tax, sel_index_w_hallmark)
+    l_tax = extract_feature_tax(df_tax, sel_index_w_hallmark, 
+                                len(df_gff_sel))
 
     l.extend(l_tax)
     ser = pd.Series(l, index=TOTAL_FEATURE_LIST)
