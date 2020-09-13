@@ -65,7 +65,7 @@ HALLMARK_REQUIRED_ON_SHORT: false
 # provirus
 MIN_FRAC_OF_MAX_SCORE: 0.95  # pick longest within 95% of max score for trim
 MAX_RETRY_TIMES: 5  # extend more if pr fall below PROBA_CUTOFF
-PROVIRUS_CHECK_MAX_FULLSEQ_PROBA: 0.5  # max fullseq proba for provirus check
+PROVIRUS_CHECK_MAX_FULLSEQ_PROBA: 0.7  # max fullseq proba for provirus check
 PROVIRUS_MIN_PEAK_PROBA: 0.7  # minimal peak proba required 
 END_TRIM_OFF: false
 
