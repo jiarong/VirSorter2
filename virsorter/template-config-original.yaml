@@ -72,8 +72,6 @@ END_TRIM_OFF: false
 RANDOM_STATE: 99
 
 # feature list
-GFF_PARSER_COLS: [orf_index, start, end, strand, partial, start_type, gc_cont, rbs_motif]
-TAX_FEATURE_LIST: [arc, bac, euk, vir, mix, unaligned, hallmark]
 TOTAL_FEATURE_LIST: [contig_size, gene_size, gene_overlap_perc, density, strand_switch_perc,
   atg_perc, gtg_perc, ttg_perc, gc_mean, gc_sd, rbs_DoubleA, rbs_DoubleT, rbs_NoA,
   rbs_None, rbs_OnlyA, rbs_OnlyT, rbs_Other, rbs_Other_GA, rbs_SD_Bacteroidetes, rbs_SD_Canonical,
@@ -83,3 +81,8 @@ SELECT_FEATURE_LIST: [gene_size, gene_overlap_perc, density, strand_switch_perc,
   gtg_perc, ttg_perc, gc_mean, gc_sd, rbs_DoubleA, rbs_DoubleT, rbs_NoA, rbs_None,
   rbs_OnlyA, rbs_OnlyT, rbs_Other, rbs_Other_GA, rbs_SD_Bacteroidetes, rbs_SD_Canonical,
   rbs_TATATA_3-6, arc, bac, euk, vir, mix, unaligned, hallmark]
+
+# trivial stuff
+GFF_PARSER_COLS: [orf_index, start, end, strand, partial, start_type, gc_cont, rbs_motif]
+TAX_FEATURE_LIST: [arc, bac, euk, vir, mix, unaligned, hallmark]
+FASTA_DESC_FORMAT_TEMPLATE: shape:{shape}||start:{start}||end:{end}||start_ind:{start_ind}||end_ind:{end_ind}||viral:{viral:.1f}||cellular:{cellular:.1f}||score:{score:.3f}||group:{group}||hallmark:{hallmark:.0f}
