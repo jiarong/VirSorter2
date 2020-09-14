@@ -254,7 +254,7 @@ rule remove_partial_gene_by_group:
         fi
         """
 
-def combine_linear_circular_input_agg_gff(wildcards):
+def combine_linear_circular_input_agg(wildcards):
     # iter-0/seqname-length.tsv
     out = checkpoints.circular_linear_split.get(**wildcards).output[0]
     outdir = os.path.dirname(out)
@@ -264,48 +264,17 @@ def combine_linear_circular_input_agg_gff(wildcards):
                         outdir=outdir, shape=shapes)
     gff_fs = expand('{outdir}/pp-{shape}-flt.gff', 
                         outdir=outdir, shape=shapes)
-
-    return gff_fs
-
-def combine_linear_circular_input_agg_faa(wildcards):
-    # iter-0/seqname-length.tsv
-    out = checkpoints.circular_linear_split.get(**wildcards).output[0]
-    outdir = os.path.dirname(out)
-    pat = os.path.join(outdir, 'pp-{shape}.fna')
-    shapes = glob_wildcards(pat).shape
-    faa_fs = expand('{outdir}/pp-{shape}-flt.faa', 
-                        outdir=outdir, shape=shapes)
-    gff_fs = expand('{outdir}/pp-{shape}-flt.gff', 
-                        outdir=outdir, shape=shapes)
-
-    #return {'faa': faa_fs, 'gff': gff_fs}
-    # seems unpack dict does not work in the rule input
-    # have to use separate functions for gff_fs and faa_fs
-    return faa_fs
-
-def combine_linear_circular_input_agg_contig(wildcards):
-    # iter-0/seqname-length.tsv
-    out = checkpoints.circular_linear_split.get(**wildcards).output[0]
-    outdir = os.path.dirname(out)
-    pat = os.path.join(outdir, 'pp-{shape}.fna')
-    shapes = glob_wildcards(pat).shape
-    faa_fs = expand('{outdir}/pp-{shape}-flt.faa', 
-                        outdir=outdir, shape=shapes)
-    gff_fs = expand('{outdir}/pp-{shape}-flt.gff', 
-                        outdir=outdir, shape=shapes)
-    contig_fs = expand('{outdir}/pp-{shape}.fna', 
-                        outdir=outdir, shape=shapes)
-    #return {'faa': faa_fs, 'gff': gff_fs}
-    # seems unpack dict does not work in the rule input
-    # have to use separate functions for gff_fs and faa_fs
-    return contig_fs
+    # pp-circular.fna is extended by its seq (duplicate and concatenate)
+    # so not the original sequence; use pp-circular.fna.preext
+    contig_fs = [f'{outdir}/pp-{shape}.fna.preext' if shape == 'circular' 
+                    else f'{outdir}/pp-{shape}.fna'
+                    for shape in shapes]
+    return {'faa': faa_fs, 'gff': gff_fs, 'contig': contig_fs}
 
 localrules: combine_linear_circular
 rule combine_linear_circular:
     input:
-        gff=combine_linear_circular_input_agg_gff,
-        faa=combine_linear_circular_input_agg_faa,
-        contig=combine_linear_circular_input_agg_contig,
+        unpack(combine_linear_circular_input_agg)
     output:
         faa='iter-0/all.pdg.faa',
         gff='iter-0/all.pdg.gff',
@@ -322,7 +291,7 @@ rule combine_linear_circular:
         fi
         """
 
-def combine_linear_circular_by_group_input_agg_gff(wildcards):
+def combine_linear_circular_by_group_input_agg(wildcards):
     # iter-0/seqname-length.tsv
     out = checkpoints.circular_linear_split.get(**wildcards).output[0]
     outdir = os.path.dirname(out)
@@ -333,30 +302,17 @@ def combine_linear_circular_by_group_input_agg_gff(wildcards):
     gff_fs = expand('{outdir}/{group}/pp-{shape}-flt.gff', 
                         outdir=outdir, group=wildcards.group, shape=shapes)
 
-    #return {'group_gff': gff_fs, 'group_faa': faa_fs}
-    return gff_fs
-
-def combine_linear_circular_by_group_input_agg_faa(wildcards):
-    # iter-0/seqname-length.tsv
-    out = checkpoints.circular_linear_split.get(**wildcards).output[0]
-    outdir = os.path.dirname(out)
-    pat = os.path.join(outdir, 'pp-{shape}.fna')
-    shapes = glob_wildcards(pat).shape
-    faa_fs = expand('{outdir}/{group}/pp-{shape}-flt.faa', 
-                        outdir=outdir, group=wildcards.group, shape=shapes)
-    gff_fs = expand('{outdir}/{group}/pp-{shape}-flt.gff', 
-                        outdir=outdir, group=wildcards.group, shape=shapes)
-
-    #return {'group_gff': gff_fs, 'group_faa': faa_fs}
-    return faa_fs
+    return {'group_gff': gff_fs, 'group_faa': faa_fs}
 
 localrules: combine_linear_circular_by_group
 rule combine_linear_circular_by_group:
     input:
+        unpack(combine_linear_circular_by_group_input_agg),
         faa='iter-0/all.pdg.faa',
         gff='iter-0/all.pdg.gff',
-        group_faa=combine_linear_circular_by_group_input_agg_faa,
-        group_gff=combine_linear_circular_by_group_input_agg_gff,
+        #group_faa=combine_linear_circular_by_group_input_agg_faa,
+        #group_faa=combine_linear_circular_by_group_input_agg_faa,
+        #group_gff=combine_linear_circular_by_group_input_agg_gff,
     output: 
         faa='iter-0/{group}/all.pdg.faa',
         gff='iter-0/{group}/all.pdg.gff',
