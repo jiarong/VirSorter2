@@ -3,7 +3,16 @@
 import sys
 import os
 import screed
+import logging
 
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+snakefile_dir = os.path.dirname(script_dir)
+pkg_dir = os.path.dirname(snakefile_dir)
+sys.path.append(pkg_dir)
+from virsorter.config import set_logger
+
+set_logger()
 
 def main():
     if len(sys.argv) != 4:
@@ -31,15 +40,25 @@ def main():
                 ind = proba_lis.index(maxi)
                 # ind is for lis[1:]
                 group = headers[ind+1]
-                d[seqname] = group
+                d[seqname] = group, maxi
 
         for rec in sp:
             header = rec.name
-            name = header.split(None, 1)[0]
+            lis = header.split(None, 1)
+            name = lis[0]
+            try:
+                desc = lis[1]
+            except IndexError as e:
+                mes = '{} in {} does not have shape (linear or circular) info'
+                logging.error(mes.format(seqname, seqfile))
+                sys.exit(1)
             name = name.rsplit('||', 1)[0]
             if not name in d:
                 continue
-            sys.stdout.write('>{}  group:{}\n{}\n'.format(name, d[name], rec.sequence))
+            group, score = d[name]
+            mes = (f'>{name}  shape:{desc}||group:{group}||score:{score}\n'
+                    f'{rec.sequence}\n')
+            sys.stdout.write(mes)
 
 if __name__ == '__main__':
     main()

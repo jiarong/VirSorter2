@@ -10,9 +10,49 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 snakefile_dir = os.path.dirname(script_dir)
 pkg_dir = os.path.dirname(snakefile_dir)
 sys.path.append(pkg_dir)
-from virsorter.config import set_logger
+from virsorter.config import get_default_config, set_logger
+
+DEFAULT_CONFIG = get_default_config()
+FASTA_DESC_FORMAT_TEMPLATE = DEFAULT_CONFIG['FASTA_DESC_FORMAT_TEMPLATE']
 
 set_logger()
+
+def get_fasta_desc_d(ser, shape):
+    d_desc = {}
+    #trim_start_ind = ser.iloc[0]
+    #trim_end_ind = ser.iloc[1]
+    #trim_start_bp = ser.iloc[2]
+    #trim_end_bp = ser.iloc[3]
+    #full_start_ind = ser.iloc[-6]
+    #full_end_ind = ser.iloc[-5]
+    #group = ser.iloc[-1]
+    #hallmark = ser.iloc[-2]
+    #score = ser.iloc[4]
+    trim_start_ind = ser.loc['trim_orf_index_start']
+    trim_end_ind = ser.loc['trim_orf_index_end']
+    trim_start_bp = ser.loc['trim_bp_start']
+    trim_end_bp = ser.loc['trim_bp_end']
+    full_start_ind = ser.loc['full_orf_index_start']
+    full_end_ind = ser.loc['full_orf_index_end']
+    group = ser.loc['group']
+    viral = ser.loc['vir']
+    cellular = sum(ser.loc[['arc', 'bac', 'euk']])
+    hallmark = ser.loc['hallmark_cnt']
+    score = ser.loc['trim_pr']
+
+    d_desc['shape'] = shape
+    d_desc['start'] = trim_start_bp
+    d_desc['end'] = trim_end_bp
+    d_desc['start_ind'] = trim_start_ind
+    d_desc['end_ind'] = trim_end_ind
+    d_desc['viral'] = viral
+    d_desc['cellular'] = cellular
+    d_desc['group'] = group
+    d_desc['score'] = score
+    d_desc['hallmark'] = hallmark
+
+    return d_desc
+
 
 def main():
     '''Extract substring sequences based in boundries
@@ -60,96 +100,39 @@ def main():
             seqname = seqname.rsplit('||', 1)[0] # remove ||rbs:common
             if seqname in st_full:
                 ser = df_full.loc[seqname, :]
-                #trim_start_ind = ser.iloc[0]
-                #trim_end_ind = ser.iloc[1]
-                #trim_start_bp = ser.iloc[2]
-                #trim_end_bp = ser.iloc[3]
-                #full_start_ind = ser.iloc[-6]
-                #full_end_ind = ser.iloc[-5]
-                #group = ser.iloc[-1]
-                #hallmark = ser.iloc[-2]
-                #score = ser.iloc[4]
                 trim_start_ind = ser.loc['trim_orf_index_start']
                 trim_end_ind = ser.loc['trim_orf_index_end']
                 trim_start_bp = ser.loc['trim_bp_start']
                 trim_end_bp = ser.loc['trim_bp_end']
                 full_start_ind = ser.loc['full_orf_index_start']
                 full_end_ind = ser.loc['full_orf_index_end']
-                group = ser.loc['group']
-                viral = ser.loc['vir']
-                cellular = sum(ser.loc[['arc', 'bac', 'euk']])
-                hallmark = ser.loc['hallmark_cnt']
-                score = ser.loc['trim_pr']
+
+                d_desc = get_fasta_desc_d(ser, shape)
+                desc = FASTA_DESC_FORMAT_TEMPLATE.format(**d_desc)
+                seq = rec.sequence
                 
                 if (trim_start_ind == full_start_ind and 
                         trim_end_ind == full_end_ind):
                     # not trimmed; save to lytic
-                    mes = ('>{}||full  '
-                        'shape:{}||start:{}||end:{}||'
-                        'start_ind:{}||end_ind:{}||'
-                        'viral:{:.1f}||cellular:{:.1f}||'
-                        'group:{}||score:{:.3f}||hallmark:{}\n{}\n')
-                    fw_lytic.write(
-                            mes.format(seqname, shape, 
-                                trim_start_bp, trim_end_bp, 
-                                trim_start_ind, trim_end_ind, 
-                                viral, cellular,
-                                group, score, hallmark, 
-                                rec.sequence)
-                    )
+                    mes = f'>{seqname}||full  {desc}\n{seq}\n'
+                    fw_lytic.write(mes)
                 else:
-                    # trimmed; save to lytic; decided not to 
+                    # trimmed; save to lytic (fullseq); decided not to 
                     #   interpret lytic or lyso here
-                    mes = ('>{}||full  '
-                        'shape:{}||start:{}||end:{}||'
-                        'start_ind:{}||end_ind:{}||'
-                        'group:{}||score:{}||hallmark:{}\n{}\n')
-                    fw_lytic.write(
-                            mes.format(seqname, shape, 
-                                trim_start_bp, trim_end_bp, 
-                                trim_start_ind, trim_end_ind, 
-                                group, score, hallmark, 
-                                rec.sequence[(trim_start_bp-1):trim_end_bp])
-                    )
+                    mes = f'>{seqname}||full  {desc}\n{seq}\n'
+                    fw_lytic.write(mes)
 
             elif seqname in st_part:
                 _df = df_part.loc[df_part.index == seqname, :]
                 for i in range(len(_df)):
                     ser = _df.iloc[i, :]
-                    #trim_start_ind = ser.iloc[0]
-                    #trim_end_ind = ser.iloc[1]
-                    #trim_start_bp = ser.iloc[2]
-                    #trim_end_bp = ser.iloc[3]
-                    #full_start_ind = ser.iloc[-6]
-                    #full_end_ind = ser.iloc[-5]
-                    #group = ser.iloc[-1]
-                    #hallmark = ser.iloc[-2]
-                    #score = ser.iloc[4]
-                    trim_start_ind = ser.loc['trim_orf_index_start']
-                    trim_end_ind = ser.loc['trim_orf_index_end']
-                    trim_start_bp = ser.loc['trim_bp_start']
-                    trim_end_bp = ser.loc['trim_bp_end']
-                    full_start_ind = ser.loc['full_orf_index_start']
-                    full_end_ind = ser.loc['full_orf_index_end']
-                    group = ser.loc['group']
-                    viral = ser.loc['vir']
-                    cellular = sum(ser.loc[['arc', 'bac', 'euk']])
-                    hallmark = ser.loc['hallmark_cnt']
-                    score = ser.loc['trim_pr']
+                    d_desc = get_fasta_desc_d(ser, shape)
+                    desc = FASTA_DESC_FORMAT_TEMPLATE.format(**d_desc)
+                    seq = rec.sequence[(trim_start_bp-1):trim_end_bp]
+
                     #save to lyso
-                    mes = ('>{}||{}index_partial  '
-                            'shape:{}||start:{}||end:{}||'
-                            'start_ind:{}||end_ind:{}||'
-                            'viral:{:.1f}||cellular:{:.1f}||'
-                            'group:{}||score:{:.3f}||hallmark:{}\n{}\n')
-                    fw_lyso.write(
-                            mes.format(seqname, i, shape, 
-                                trim_start_bp, trim_end_bp, 
-                                trim_start_ind, trim_end_ind, 
-                                viral, cellular,
-                                group, score, hallmark,
-                                rec.sequence[(trim_start_bp-1):trim_end_bp])
-                    )
+                    mes = f'>{seqname}||{i}_partial  {desc}\n{seq}\n'
+                    fw_lyso.write(mes)
 
 if __name__ == '__main__':
     main()
