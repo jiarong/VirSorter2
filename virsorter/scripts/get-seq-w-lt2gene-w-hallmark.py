@@ -5,17 +5,6 @@ import os
 import screed
 import pandas as pd
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-snakefile_dir = os.path.dirname(script_dir)
-pkg_dir = os.path.dirname(snakefile_dir)
-sys.path.append(pkg_dir)
-from virsorter.config import get_default_config
-
-DEFAULT_CONFIG = get_default_config()
-
-D = DEFAULT_CONFIG['GROUP_INFO']
-DEFAULT_LEN_CUTOFF = 3000
-
 def main():
     '''Get short contigs (with less than 2 genes) but has hallmark genes
 
@@ -68,8 +57,8 @@ def main():
                 shape = 'NA'
             cnt = df_max.at[name, 'max_cnt']
             group = df_max.at[name, 'group']
-            mes = '>{}  shape:{}||hm_cnt:{}||hm_group:{}\n{}\n'
-            sys.stdout.write(mes.format(name, shape, cnt, group, seq))
+            mes = '>{}  shape:{}||hallmark:{}||group:{}\n{}\n'
+            sys.stdout.write(mes.format(name, shape, int(cnt), group, seq))
 
 if __name__ == '__main__':
     main()
