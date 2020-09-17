@@ -37,6 +37,7 @@ DEFAULT_MIN_GENOME_SIZE = DEFAULT_CONFIG['DEFAULT_MIN_GENOME_SIZE']
 END_TRIM_OFF = DEFAULT_CONFIG['END_TRIM_OFF']
 PROVIRUS_CHECK_MAX_FULLSEQ_PROBA = \
         DEFAULT_CONFIG['PROVIRUS_CHECK_MAX_FULLSEQ_PROBA']
+GFF_PARSER_COLS = DEFAULT_CONFIG['GFF_PARSER_COLS']
 
 set_logger()
 
@@ -107,8 +108,7 @@ class provirus(object):
 
             self.model = model
 
-        self.gff_mat_colnames = ('orf_index', 'start', 'end', 'strand', 
-                'partial', 'start_type', 'gc_cont', 'rbs_motif')
+        self.gff_mat_colnames = GFF_PARSER_COLS
         self.hallmark_ftr_ind = SELECT_FEATURE_LIST.index('hallmark')
         self.arc_ind = SELECT_FEATURE_LIST.index('arc')
         self.bac_ind = SELECT_FEATURE_LIST.index('bac')
@@ -171,11 +171,14 @@ class provirus(object):
         res_lis = self.model.predict_proba(X)
         prs = list(zip(*res_lis))[1]
         _df = pd.DataFrame({'size':sizes, 'pr':prs})
+        df_ori = _df
         pr_max = max(prs)
         cutoff = max(pr_max * MIN_FRAC_OF_MAX_SCORE, self.proba)
         #cutoff = pr_max * MIN_FRAC_OF_MAX_SCORE
         _df = _df.loc[_df['pr'] >= cutoff,:]
-
+        if len(_df) == 0:
+            return []
+            
         # original index is still kept after selection
         ind = _df['size'].idxmax() 
         final_ind_start = ind_starts[ind]
@@ -351,17 +354,25 @@ class provirus(object):
         full_bp_start = df_gff['start'].iloc[0]
         full_bp_end = df_gff['end'].iloc[-1]
 
+        # fullseq
         #if pr_full >= self.proba:
         if pr_full >= PROVIRUS_CHECK_MAX_FULLSEQ_PROBA:
             # those with pr_full < self.proba will be filtered 
             #  through trim_ends()
             partial = 0
+            if pr_full < self.proba:
+                # those with pr_full < self.proba could be filtered 
+                #  through trim_ends(), but filter here to save time 
+                #  also keep consistent with provirus that only segments
+                #  with > self.proba gets passed to trim_ends()
+                return
             self.trim_ends(df_gff, df_tax, 
                     sel_index_w_hallmark, seqname, 
                     np.nan, np.nan,
                     partial, full_orf_index_start, full_orf_index_end, 
                     full_bp_start, full_bp_end, pr_full, 
                     arc, bac, euk, vir, mix, unaligned, hallmark_cnt)
+        # partial
         else:
             # sliding windows
             try:
@@ -371,8 +382,16 @@ class provirus(object):
 
             ind_end = len(ends.loc[ends < MIN_GENOME_SIZE]) + 1
             if ind_end >= len(df_gff):
-                # too short to be provirus
+                # too short to be provirus; just trim_ends() as fullseq
+                partial = 0
+                self.trim_ends(df_gff, df_tax, 
+                        sel_index_w_hallmark, seqname, 
+                        np.nan, np.nan,
+                        partial, full_orf_index_start, full_orf_index_end, 
+                        full_bp_start, full_bp_end, pr_full, 
+                        arc, bac, euk, vir, mix, unaligned, hallmark_cnt)
                 return
+
             # first window index 0 -> ind
             ind_start = 0
             trigger = False
