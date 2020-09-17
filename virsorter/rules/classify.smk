@@ -45,20 +45,31 @@ rule pick_viral_fullseq:
         tax_fs_str = ','.join(
             ['iter-0/{}/all.pdg.hmm.tax'.format(group) for group in Groups if os.path.exists('{}/group/{}/hallmark-gene.list'.format(Dbdir, group))]
         ),
+        all_group_str = ','.join(Groups),
+        all_tax_fs_str = ','.join(
+            ['iter-0/{}/all.pdg.hmm.tax'.format(group) for group in Groups]
+        ),
+        all_gff_fs_str = ','.join(
+            ['iter-0/{}/all.pdg.gff'.format(group) for group in Groups]
+        ),
+        all_ftr_fs_str = ','.join(
+            ['iter-0/{}/all.pdg.ftr'.format(group) for group in Groups]
+        ),
     shell:
         """
-        Log={Wkdir}/log/iter-0/step3-classify/all-score-merge.log
-        python {Scriptdir}/pick-viral-contig-from-clf.py {Proba_cutoff} {input.clf} iter-0/all.fna > iter-0/viral-fullseq-contig.fa.tmp 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        Log={Wkdir}/log/iter-0/step3-classify/pick-viral-fullseq.log
+        python {Scriptdir}/pick-viral-contig-from-clf.py {Proba_cutoff} {input.clf} iter-0/all.fna > {output.contig}.tmp 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+
+        python {Scriptdir}/add-extra-to-fullseq-fasta-header.py {output.contig}.tmp {params.all_ftr_fs_str} {params.all_group_str} > {output.contig} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        rm {output.contig}.tmp
 
         python {Scriptdir}/get-hallmark-cnt-for-each-seq.py {output.hmk_cnt} "{params.group_str}" "{params.hmk_fs_str}" "{params.tax_fs_str}" 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
 
-        python {Scriptdir}/get-seq-w-lt2gene-w-hallmark.py {output.hmk_cnt} {input.clf} iter-0/all.fna > {output.lt2gene} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
-        if [ {Hallmark_required_on_short} = "True" ]; then
-            python {Scriptdir}/remove-short-seq-wo-hallmark.py {output.hmk_cnt} iter-0/viral-fullseq-contig.fa.tmp > {output.contig} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
-            rm iter-0/viral-fullseq-contig.fa.tmp
-        else
-            mv iter-0/viral-fullseq-contig.fa.tmp {output.contig}
-        fi
+        python {Scriptdir}/get-seq-w-lt2gene-w-hallmark.py {output.hmk_cnt} {input.clf} iter-0/all.fna > {output.lt2gene}.tmp 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+
+        python {Scriptdir}/add-extra-to-lt2gene-fasta-header.py {output.lt2gene}.tmp {params.all_gff_fs_str} {params.all_tax_fs_str} {params.all_group_str} > {output.lt2gene} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        rm {output.lt2gene}.tmp
+
         """
 
 if Provirus:
@@ -81,7 +92,7 @@ if Provirus:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            Log={input.gff}.prv.log
+            Log={Wkdir}/{input.gff}.prv.log
             Hallmark_list_f={Dbdir}/group/{wildcards.group}/hallmark-gene.list
             if [ -s $Hallmark_list_f ]; then
                 python {Scriptdir}/provirus.py {input.gff} {input.tax} {Dbdir}/rbs/rbs-catetory.tsv {Dbdir}/group/{wildcards.group}/model {output.boundry} {output.ftr} --fullseq-clf {input.clf} --group {wildcards.group} --proba {Proba_cutoff} --hallmark {Dbdir}/group/{wildcards.group}/hallmark-gene.list 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -149,17 +160,10 @@ if Provirus:
         shell:
             """
             Log={Wkdir}/log/iter-0/step3-classify/provirus-seq-extract.log
-            python {Scriptdir}/extract-provirus-seqs.py {input.contig} {input.full} {input.partial} iter-0/viral-fullseq-trim.fa.tmp {output.partial} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            python {Scriptdir}/extract-provirus-seqs.py {input.contig} {input.full} {input.partial} {output.fullseq} {output.partial} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
 
-            if [ {Hallmark_required_on_short} = "True" ]; then
-                python {Scriptdir}/remove-short-seq-wo-hallmark.py {input.hmk_cnt} iter-0/viral-fullseq-trim.fa.tmp > {output.fullseq} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
-                rm iter-0/viral-fullseq-trim.fa.tmp
-            else
-                mv iter-0/viral-fullseq-trim.fa.tmp {output.fullseq}
-            fi
             cat {output.fullseq} {output.partial} > {output.combined}
             python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {output.combined} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
-
 
             """
 
@@ -213,18 +217,18 @@ if Provirus:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            cp iter-0/viral-combined.fa final-viral-combined.fa
+            python {Scriptdir}/add-extra-to-table.py iter-0/viral-combined-proba.tsv iter-0/viral-combined.fa iter-0/viral-combined-proba-more-cols.tsv
+            python {Scriptdir}/filter-score-table.py config.yaml iter-0/viral-combined-proba-more-cols.tsv iter-0/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
             cp iter-0/viral-fullseq.tsv final-viral-boundary.tsv
-            python {Scriptdir}/add-length-to-table.py iter-0/viral-combined-proba.tsv iter-0/viral-combined.fa final-viral-score.tsv
             grep -v '^seqname' iter-0/viral-partseq.tsv >> final-viral-boundary.tsv || : 
-            N_lt2gene=$(grep -c '^>' iter-0/viral-lt2gene-w-hallmark.fa || :)
-            N_lytic=$(grep -c '^>' iter-0/viral-fullseq-trim.fa || :)
-            N_lysogenic=$(grep -c '^>' iter-0/viral-partseq.fa || :)
+            N_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
+            N_lytic=$(grep -c '^>.*||full' final-viral-combined.fa || :)
+            N_lysogenic=$(grep -c '^>.+||.*_partial' final-viral-combined.fa || :)
             printf "
             ====> VirSorter run (provirus mode) finished.
-            # of full     seqs as viral:\t$N_lytic
-            # of partial  seqs as viral:\t$N_lysogenic
-            # of short (<2 genes) seqs as viral:\t$N_lt2gene
+            # of full    seqs (>=2 genes) as viral:\t$N_lytic
+            # of partial seqs (>=2 genes) as viral:\t$N_lysogenic
+            # of short   seqs (< 2 genes) as viral:\t$N_lt2gene
 
             Useful output files:
             final-viral-score.tsv       ==> score table
@@ -232,12 +236,24 @@ if Provirus:
             final-viral-boundary.tsv    ==> table with boundary info
             
             Suffix is added to seq names in final-viral-combined.fa:
-            full seqs as viral:               ||full 
-            partial seqs as viral:            ||partial
-            short (<2 genes) seqs as viral:   ||lt2gene
+            full    seqs (>=2 genes) as viral:\t||full
+            partial seqs (>=2 genes) as viral:\t||partial
+            short   seqs (< 2 genes) as viral:\t||lt2gene
+
+            NOTES:
+            Users can further screen the results based on the following 
+                columns in final-viral-score.tsv:
+                - contig length (length) 
+                - hallmark gene count (hallmark)
+                - viral gene %% (viral) 
+                - cellular gene %% (cellular)
+            The "group" field in final-viral-score.tsv should NOT be used
+                as reliale taxonomy info
+
             <====
             " | python {Scriptdir}/echo.py
             """
+# provirus off
 else:
     localrules: finalize
     rule finalize:
@@ -251,19 +267,37 @@ else:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            python {Scriptdir}/add-suffix-seqname-keep-desc.py iter-0/viral-fullseq.fa "||full" > {output.combined}
-            python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {output.combined}
-            python {Scriptdir}/add-length-to-table.py iter-0/all-fullseq-proba.tsv iter-0/viral-fullseq.fa final-viral-score.tsv
-            N_viral_fullseq=$(grep -c '^>' iter-0/viral-fullseq.fa || :)
-            N_viral_lt2gene=$(grep -c '^>' iter-0/viral-lt2gene-w-hallmark.fa || :)
+            python {Scriptdir}/filter-table-and-add-suffix-to-seqname.py "||full" iter-0/all-fullseq-proba.tsv iter-0/viral-fullseq.fa iter-0/viral-combined-proba.tsv
+            python {Scriptdir}/add-suffix-seqname-keep-desc.py iter-0/viral-fullseq.fa "||full" > iter-0/viral-combined.fa
+            python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> iter-0/viral-combined.fa
+
+            python {Scriptdir}/add-extra-to-table.py iter-0/viral-combined-proba.tsv iter-0/viral-combined.fa iter-0/viral-combined-proba-more-cols.tsv
+            python {Scriptdir}/filter-score-table.py config.yaml iter-0/viral-combined-proba-more-cols.tsv iter-0/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
+            N_viral_fullseq=$(grep -c '^>.*||full' final-viral-combined.fa || :)
+            N_viral_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
             printf "
             ====> VirSorter run (non-provirus mode) finished.
-            # of viral contigs:\t$N_viral_fullseq
-            # of short viral contigs (<2 genes):\t$N_viral_lt2gene
+            # of contigs w/ >=2 genes as viral:\t$N_viral_fullseq
+            # of contigs w/ < 2 genes as viral:\t$N_viral_lt2gene
 
             Useful output files:
-            final-viral-score.tsv
-            final-viral-combined.fa
+            final-viral-score.tsv      ==> score table
+            final-viral-combined.fa    ==> all viral seqs
+
+            Suffix is added to seq names in final-viral-combined.fa:
+            contigs (>=2 genes) as viral:\t||full
+            contigs (< 2 genes) as viral:\t||lt2gene
+
+            NOTES: 
+            Users can further screen the results based on the 
+                following columns in final-viral-score.tsv
+                - contig length (length) 
+                - hallmark gene count (hallmark)
+                - viral gene %% (viral) 
+                - cellular gene %% (cellular)
+            The "group" field in final-viral-score.tsv should NOT be used
+                as reliale taxonomy info
+
             <====
             " | python {Scriptdir}/echo.py
             """
