@@ -77,7 +77,7 @@ def main():
 
     df = pd.DataFrame.from_dict(d_hallmark_cnt)
     df.to_csv(outfile, sep='\t', index=True, header=True, 
-            index_label='seqname') 
+            index_label='seqname', float_format='%.0f') 
 
     #group_ser = df.idxmax(axis=1)
     #max_cnt_ser = df.max(axis=1)
