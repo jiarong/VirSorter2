@@ -17,7 +17,9 @@ Hmmsearch_score_min = config['HMMSEARCH_SCORE_MIN']
 Proba_cutoff = config['PROBA_CUTOFF']
 Min_length = config['MIN_LENGTH']
 
+Hallmark_required = config['HALLMARK_REQUIRED']
 Hallmark_required_on_short = config['HALLMARK_REQUIRED_ON_SHORT']
+Viral_gene_required = config['VIRAL_GENE_REQUIRED']
 
 Contig_bp_per_split = config['CONTIG_BP_PER_SPLIT']
 Faa_bp_per_split = config['FAA_BP_PER_SPLIT']

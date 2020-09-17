@@ -91,11 +91,25 @@ def get_snakefile(f="Snakefile"):
     help='minimal score to be identified as viral',
 )
 @click.option(
+    '--hallmark-required',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help='require hallmark gene on all seqs',
+)
+@click.option(
     '--hallmark-required-on-short',
     default=False,
     is_flag=True,
     show_default=True,
-    help='require hallmark gene short seqs (length cutoff as "short" were set in template-config.yaml file); this can reduce false positives at reasonable cost of sensitivity',
+    help='require hallmark gene on short seqs (length cutoff as "short" were set by "MIN_SIZE_ALLOWED_WO_HALLMARK_GENE" in template-config.yaml file, default 3kbp); this can reduce false positives at reasonable cost of sensitivity',
+)
+@click.option(
+    '--viral-gene-required',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help='requires viral genes annotated, removing putative viral seqs with no genes annotated; this can reduce false positives at reasonable cost of sensitivity',
 )
 @click.option(
     '--provirus-off',
@@ -162,13 +176,21 @@ def get_snakefile(f="Snakefile"):
     nargs=-1, 
     type=click.UNPROCESSED, 
 )
-def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  min_score, provirus_off, hallmark_required_on_short, max_orf_per_seq, min_length, tmpdir, rm_tmpdir, verbose, profile, dryrun, use_conda_off, snakemake_args):
-    ''' Runs the virsorter main function: to classify viral sequences
+def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
+        jobs,  min_score, hallmark_required, hallmark_required_on_short,
+        viral_gene_required, provirus_off, max_orf_per_seq, min_length,
+        tmpdir, rm_tmpdir, verbose, profile, dryrun, use_conda_off,
+        snakemake_args):
+    ''' Runs the virsorter main function to classify viral sequences
 
-    By default all steps are executed. The "classify" rerun classify
-    step without previous steps that are computationally heavy. Most
-    snakemake arguments can be appended to the command for more info see
-    'snakemake --help'. For more details, see: github
+    This includes 3 steps: 1) preprocess, 2) feature extraction, and 3)
+    classify. By default ("all") all steps are executed. The "classify"
+    only run the 3) classify step without previous steps that are
+    computationally heavy, good for rerunning with different filtering
+    options (--min-score, --hallmark-required,
+    --hallmark-required-on-short, --viral-gene-required). Most snakemake
+    arguments can be appended to the command for more info see
+    'snakemake --help'.
     '''
 
     # hard coded, need to change all "iter-0" to Tmpdir in smk
@@ -208,7 +230,9 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups, jobs,  
     make_config(
             db_dir=db_dir, seqfile=seqfile, include_groups=include_groups,
             threads=jobs, config_f=config_f, provirus=provirus,
+            hallmark_required=hallmark_required,
             hallmark_required_on_short=hallmark_required_on_short,
+            viral_gene_required=viral_gene_required,
             max_orf_per_seq=max_orf_per_seq, 
             tmpdir=tmpdir, min_length=min_length, min_score=min_score,
     )

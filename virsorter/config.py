@@ -70,7 +70,10 @@ def init_config_template(src_config_dir, user_config_dir, db_dir):
 # validate_config
 # No make_sample_table function is needed for virsorter
 
-def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5, min_length=0, provirus=True, hallmark_required_on_short=False, threads=None, max_orf_per_seq=20):
+def make_config(db_dir, seqfile, config_f, include_groups, tmpdir,
+        min_score=0.5, min_length=0, provirus=True,
+        hallmark_required=False, hallmark_required_on_short=False,
+        viral_gene_required=False, threads=None, max_orf_per_seq=20):
     '''
     read config params from template-config.yaml
     then update the some params provided by command line
@@ -104,7 +107,9 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir, min_score=0.5
     db_dir = config['DBDIR']
     config['SEQFILE'] = seqfile
     config['PROVIRUS'] = provirus
+    config['HALLMARK_REQUIRED'] = hallmark_required
     config['HALLMARK_REQUIRED_ON_SHORT'] = hallmark_required_on_short
+    config['VIRAL_GENE_REQUIRED'] = viral_gene_required
     config['MAX_ORF_PER_SEQ'] = max_orf_per_seq
     config['TMPDIR'] = tmpdir
     config['PROBA_CUTOFF'] = min_score

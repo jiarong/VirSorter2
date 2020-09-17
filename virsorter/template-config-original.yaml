@@ -61,6 +61,8 @@ TAXON_LIST:
 CLASSIFY_THREADS: 1
 PROBA_CUTOFF: 0.5
 HALLMARK_REQUIRED_ON_SHORT: false
+HALLMARK_REQUIRED: false
+VIRAL_GENE_REQUIRED: false  # viral gene % > cellular gene %
 
 # provirus
 MIN_FRAC_OF_MAX_SCORE: 0.95  # pick longest within 95% of max score for trim
