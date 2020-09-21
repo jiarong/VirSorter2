@@ -108,7 +108,7 @@ class provirus(object):
 
             self.model = model
 
-        self.gff_mat_colnames = GFF_PARSER_COLS
+        self.gff_mat_colnames = GFF_PARSER_COLS[2:]
         self.hallmark_ftr_ind = SELECT_FEATURE_LIST.index('hallmark')
         self.arc_ind = SELECT_FEATURE_LIST.index('arc')
         self.bac_ind = SELECT_FEATURE_LIST.index('bac')
@@ -533,6 +533,7 @@ class provirus(object):
                     mat = []
                     last_seqname = None
 
+                # do not need first two items: seqname, seqlen
                 mat.append(lis[2:])
                 last_seqname = seqname
 

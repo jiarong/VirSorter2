@@ -85,6 +85,6 @@ SELECT_FEATURE_LIST: [gene_size, gene_overlap_perc, density, strand_switch_perc,
   rbs_TATATA_3-6, arc, bac, euk, vir, mix, unaligned, hallmark]
 
 # trivial stuff
-GFF_PARSER_COLS: [orf_index, start, end, strand, partial, start_type, gc_cont, rbs_motif]
+GFF_PARSER_COLS: [seqname, seqlen, orf_index, start, end, strand, partial, start_type, gc_cont, rbs_motif]
 TAX_FEATURE_LIST: [arc, bac, euk, vir, mix, unaligned, hallmark]
 FASTA_DESC_FORMAT_TEMPLATE: shape:{shape}||start:{start}||end:{end}||start_ind:{start_ind}||end_ind:{end_ind}||viral:{viral:.1f}||cellular:{cellular:.1f}||score:{score:.3f}||group:{group}||hallmark:{hallmark:.0f}
