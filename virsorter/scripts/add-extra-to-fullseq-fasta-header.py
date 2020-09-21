@@ -58,18 +58,35 @@ def main():
 
     d_name2info = {}
     for ftr_f, group in zip(ftr_fs, groups):
-        df_ftr = pd.read_csv(ftr_f, sep='\t', header=0)
-        seqname_lis = df_ftr['seqname']
-        seqname_ori_lis = [i.rsplit('||')[0] for i in seqname_lis]
-        df_ftr.index = seqname_ori_lis
-
         name_st = d_group2name.get(group, set())
-        for seqname_ori in name_st:
-            hallmark = df_ftr.loc[seqname_ori, 'hallmark']
-            viral = df_ftr.loc[seqname_ori, 'vir']
-            cellular = sum(df_ftr.loc[seqname_ori, ['arc', 'bac', 'euk']])
-            d_name2info[seqname_ori] = 1, np.nan, viral, cellular, hallmark
+        with open(ftr_f) as fp:
+            # read first header line
+            header_line = fp.readline().rstrip()
+            assert header_line.startswith('seqname\t')
+            header_list = header_line.split('\t')
 
+            hallmark_ind = header_list.index('hallmark')
+            vir_ind = header_list.index('vir')
+            arc_ind = header_list.index('arc')
+            bac_ind = header_list.index('bac')
+            euk_ind = header_list.index('euk')
+
+            # first line (header) has been read
+            for line in fp:
+                lis = line.rstrip().split('\t')
+                seqname = lis[0]
+                seqname_ori = seqname.rsplit('||', 1)[0]
+                if not seqname_ori in name_st:
+                    continue
+                hallmark = int(lis[hallmark_ind])
+                viral = float(lis[vir_ind])
+
+                arc = float(lis[arc_ind])
+                bac = float(lis[bac_ind])
+                euk = float(lis[euk_ind])
+                cellular = sum([arc, bac, euk])
+
+                d_name2info[seqname_ori] = 1, np.nan, viral, cellular, hallmark
 
     with screed.open(seqfile) as sp:
         for rec in sp:
