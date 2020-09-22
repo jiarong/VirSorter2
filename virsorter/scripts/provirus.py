@@ -19,7 +19,7 @@ sys.path.append(pkg_dir)
 from virsorter.config import get_default_config, set_logger
 from virsorter.utils import (
         load_rbs_category, df_tax_per_config, parse_hallmark_hmm,
-        parse_gff, extract_feature_gff, get_feature
+        parse_gff, extract_feature_gff, get_feature, GFF_PARSER_COLS
 )
 
 
@@ -28,7 +28,6 @@ DEFAULT_CONFIG = get_default_config()
 GROUP_DICT = DEFAULT_CONFIG['GROUP_INFO']
 GENE_OVERLAP_MIN = DEFAULT_CONFIG['GENE_OVERLAP_MIN']
 CLASSIFY_THREADS = DEFAULT_CONFIG['CLASSIFY_THREADS']
-TAXON_LIST = DEFAULT_CONFIG['TAXON_LIST']
 MIN_FRAC_OF_MAX_SCORE = DEFAULT_CONFIG['MIN_FRAC_OF_MAX_SCORE']
 MAX_RETRY_TIMES = DEFAULT_CONFIG['MAX_RETRY_TIMES']
 TOTAL_FEATURE_LIST = DEFAULT_CONFIG['TOTAL_FEATURE_LIST']
@@ -37,7 +36,7 @@ DEFAULT_MIN_GENOME_SIZE = DEFAULT_CONFIG['DEFAULT_MIN_GENOME_SIZE']
 END_TRIM_OFF = DEFAULT_CONFIG['END_TRIM_OFF']
 PROVIRUS_CHECK_MAX_FULLSEQ_PROBA = \
         DEFAULT_CONFIG['PROVIRUS_CHECK_MAX_FULLSEQ_PROBA']
-GFF_PARSER_COLS = DEFAULT_CONFIG['GFF_PARSER_COLS']
+
 
 set_logger()
 

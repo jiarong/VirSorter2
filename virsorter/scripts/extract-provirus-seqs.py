@@ -11,9 +11,9 @@ snakefile_dir = os.path.dirname(script_dir)
 pkg_dir = os.path.dirname(snakefile_dir)
 sys.path.append(pkg_dir)
 from virsorter.config import get_default_config, set_logger
+from virsorter.utils import FASTA_DESC_FORMAT_TEMPLATE
 
 DEFAULT_CONFIG = get_default_config()
-FASTA_DESC_FORMAT_TEMPLATE = DEFAULT_CONFIG['FASTA_DESC_FORMAT_TEMPLATE']
 
 set_logger()
 

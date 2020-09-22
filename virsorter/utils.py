@@ -18,6 +18,28 @@ TAXON_LIST = DEFAULT_CONFIG['TAXON_LIST']
 TOTAL_FEATURE_LIST = DEFAULT_CONFIG['TOTAL_FEATURE_LIST']
 SELECT_FEATURE_LIST = DEFAULT_CONFIG['SELECT_FEATURE_LIST']
 
+# gene row items for AFFI_CONTIGS.tab
+AFFI_CONTIG_COLS = [ 
+    'gene_name', 'start', 'end', 'seqlen', 'strand', 'hmm', 
+    'bits', 'eval', 'cat', 'pfamhmm', 'pfambits', 'pfameval'
+]
+
+GFF_PARSER_COLS = ['seqname', 'seqlen', 'orf_index', 'start', 'end', 
+                    'strand', 'partial', 'start_type', 'gc_cont', 
+                    'rbs_motif']
+GENE_ANNO_COLS = ['hmm', 'pfamhmm', 'tax', 'bits', 'is_hallmark', 
+                    'cat', 'group']
+TAX_FEATURE_LIST = ['arc', 'bac', 'euk', 'vir', 'mix', 'unaligned', 
+                        'hallmark']
+FASTA_DESC_FORMAT_TEMPLATE = (
+    'shape:{shape}||start:{start}||end:{end}||start_ind:{start_ind}||'
+    'end_ind:{end_ind}||viral:{viral:.1f}||cellular:{cellular:.1f}||'
+    'score:{score:.3f}||group:{group}||hallmark:{hallmark:.0f}'
+)
+
+# tax feature extration
+TAXON_LIST = ['arc', 'bac', 'euk', 'vir', 'mixed']
+
 def load_rbs_category(f):
     '''load into rbs site and rbs catetory mapping into a dict
     '''

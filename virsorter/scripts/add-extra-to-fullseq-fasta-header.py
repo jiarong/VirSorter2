@@ -12,11 +12,7 @@ snakefile_dir = os.path.dirname(script_dir)
 pkg_dir = os.path.dirname(snakefile_dir)
 sys.path.append(pkg_dir)
 from virsorter.config import get_default_config, set_logger
-
-DEFAULT_CONFIG = get_default_config()
-TAX_FEATURE_LIST = DEFAULT_CONFIG['TAX_FEATURE_LIST']
-FASTA_DESC_FORMAT_TEMPLATE = DEFAULT_CONFIG['FASTA_DESC_FORMAT_TEMPLATE']
-
+from virsorter.utils import TAX_FEATURE_LIST, FASTA_DESC_FORMAT_TEMPLATE
 
 def main():
     '''Add sequence length to table

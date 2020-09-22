@@ -14,13 +14,8 @@ sys.path.append(pkg_dir)
 from virsorter.config import get_default_config, set_logger
 from virsorter.utils import (
         load_rbs_category, df_tax_per_config, parse_gff, 
-        extract_feature_tax
+        extract_feature_tax, TAX_FEATURE_LIST, FASTA_DESC_FORMAT_TEMPLATE
 )
-
-DEFAULT_CONFIG = get_default_config()
-TAX_FEATURE_LIST = DEFAULT_CONFIG['TAX_FEATURE_LIST']
-FASTA_DESC_FORMAT_TEMPLATE = DEFAULT_CONFIG['FASTA_DESC_FORMAT_TEMPLATE']
-
 
 def main():
     '''Add sequence length to table
