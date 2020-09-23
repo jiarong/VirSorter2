@@ -86,7 +86,7 @@ def main(config, intable, inseqfile, outtable, outseqfile, hallmark_required,
             mes = f'>{name}\n{rec.sequence}\n'
             fw.write(mes)
 
-    df.to_csv(score_out_f, sep='\t', na_rep='NaN', 
+    df.to_csv(score_out_f, sep='\t', na_rep='nan', 
             index=False, float_format='%.3f')
 
 if __name__ == '__main__':
