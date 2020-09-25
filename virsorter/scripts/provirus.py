@@ -394,6 +394,8 @@ class provirus(object):
             # first window index 0 -> ind
             ind_start = 0
             trigger = False
+            trigger_cnt = 0
+            provirus_cnt = 0
             retry_cnt = 0
             pr_max = -10000
             pr_last_valid = -10000
@@ -429,6 +431,7 @@ class provirus(object):
                     ind_end += 1
                 elif trigger == False and pr >= self.proba:
                     trigger = True
+                    trigger_cnt += 1
                     ind_end += 1
                     pr_last_valid = pr
                     if pr > pr_max:
@@ -454,6 +457,7 @@ class provirus(object):
                         partial = 1
                         # require hallmark gene for provirus
                         if hallmark_cnt > 0:
+                            provirus_cnt += 1
                             self.trim_ends(df_gff_sel, df_tax_sel, 
                                     sel_index_w_hallmark, seqname,
                                     pr_last_valid, pr_max,
@@ -463,6 +467,7 @@ class provirus(object):
                                     pr_full, 
                                     arc, bac, euk, vir, mix, unaligned,
                                     hallmark_cnt)
+
 
                         # set up for next provirus in the same contig
                         ind_start = ind_end + 1
@@ -474,28 +479,43 @@ class provirus(object):
                         pr_max = -10000
                         pr_last_valid = -10000
 
-            if trigger == False:
-                # not provirus
-                return
+            if trigger == True:
+                # last segment is still provirus
+                # walk back 1 and retry_cnt extension
+                ind_end = ind_end - 1 - retry_cnt
+                df_gff_sel = df_gff.iloc[ind_start:ind_end+1]
+                sel = df_tax['orf_index'].isin(
+                        set(df_gff_sel['orf_index']))
+                df_tax_sel = df_tax.loc[sel,:]
+                partial = 1
+                # require hallmark gene for provirus
+                if hallmark_cnt > 0:
+                    provirus_cnt += 1
+                    self.trim_ends(df_gff_sel, df_tax_sel,
+                            sel_index_w_hallmark, seqname,
+                            pr_last_valid, pr_max,
+                            partial,
+                            full_orf_index_start, full_orf_index_end, 
+                            full_bp_start, full_bp_end, pr_full, 
+                            arc, bac, euk, vir, mix, unaligned,
+                            hallmark_cnt)
 
-            # walk back 1 and retry_cnt extension
-            ind_end = ind_end - 1 - retry_cnt
-            df_gff_sel = df_gff.iloc[ind_start:ind_end+1]
-            sel = df_tax['orf_index'].isin(
-                    set(df_gff_sel['orf_index']))
-            df_tax_sel = df_tax.loc[sel,:]
-            partial = 1
-            # require hallmark gene for provirus
-            if hallmark_cnt > 0:
-                self.trim_ends(df_gff_sel, df_tax_sel,
-                        sel_index_w_hallmark, seqname,
-                        pr_last_valid, pr_max,
-                        partial,
-                        full_orf_index_start, full_orf_index_end, 
-                        full_bp_start, full_bp_end, pr_full, 
-                        arc, bac, euk, vir, mix, unaligned,
-                        hallmark_cnt)
-
+            if provirus_cnt == 0 and pr_full >= self.proba:
+                # trigger_cnt > 0 <==> pr_full >= self.proba
+                # add this condition to accommodate 
+                # 1) provirus proba cutoff high, 
+                #      triggering requiring hallmark
+                # 2) seq has no hallmark 
+                # 3) seq pr_full > proba cutoff;
+                # 
+                partial = 0
+                self.trim_ends(df_gff, df_tax, 
+                    sel_index_w_hallmark, seqname, 
+                    np.nan, np.nan,
+                    partial, full_orf_index_start, 
+                    full_orf_index_end, full_bp_start, 
+                    full_bp_end, pr_full, arc, bac, euk, 
+                    vir, mix, unaligned, hallmark_cnt)
 
     def find_boundary(self):
         '''Iterate through each contigs in gff and get provirus boundary info
