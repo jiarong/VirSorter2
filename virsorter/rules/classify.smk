@@ -204,12 +204,40 @@ if Provirus:
             python {Scriptdir}/merge-clf-trim-from-groups.py {output.clf} {params.clf_fs_str} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             """
 
+    localrules: make_annotation_table
+    rule make_annotation_table:
+        input: 
+            f'{Tmpdir}/viral-combined.fa',
+            expand('{Tmpdir}/{group}/all.pdg.gff', Tmpdir=Tmpdir, group=Groups),
+            expand('{Tmpdir}/{group}/all.pdg.hmm.taxwhm', Tmpdir=Tmpdir, group=Groups),
+            expand('{Tmpdir}/{group}/all.pdg.hmm.taxpfam', Tmpdir=Tmpdir, group=Groups),
+        output: 
+            anno=f'{Tmpdir}/viral.anno',
+            affi=f'{Tmpdir}/viral-affi-contigs.tab',
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+        params:
+            gff_fs_str = ','.join(
+                [f'{Tmpdir}/{group}/all.pdg.gff' for group in Groups]
+            ),
+            taxwhm_fs_str = ','.join(
+                [f'{Tmpdir}/{group}/all.pdg.hmm.taxwhm' for group in Groups]
+            ),
+            taxpfam_fs_str = ','.join(
+                [f'{Tmpdir}/{group}/all.pdg.hmm.taxpfam' for group in Groups]
+            ),
+            groups_str = ','.join(Groups),
+        shell:
+            """
+            python {Scriptdir}/make-affi-contigs-tabfile.py --pfamtax-list-str {params.taxpfam_fs_str} {Tmpdir}/viral-combined.fa {output.anno} {output.affi} {params.gff_fs_str} {params.taxwhm_fs_str} {params.groups_str}
+            """
+
     localrules: finalize
     rule finalize:
         input:
-            'iter-0/viral-fullseq-trim.fa',
-            'iter-0/viral-partseq.fa',
-            'iter-0/viral-combined-proba.tsv',
+            f'{Tmpdir}/viral-fullseq-trim.fa',
+            f'{Tmpdir}/viral-partseq.fa',
+            f'{Tmpdir}/viral-combined-proba.tsv',
+            f'{Tmpdir}/viral-affi-contigs.tab',
         output: 
             'final-viral-score.tsv',
             'final-viral-combined.fa',
@@ -255,23 +283,62 @@ if Provirus:
             """
 # provirus off
 else:
-    localrules: finalize
-    rule finalize:
+    localrules: get_viral_combined
+    rule get_viral_combined:
         input: 
-            fullseq='iter-0/viral-fullseq.fa',
-            proba='iter-0/all-fullseq-proba.tsv',
-            lt2gene='iter-0/viral-lt2gene-w-hallmark.fa',
+            fullseq=f'{Tmpdir}/viral-fullseq.fa',
+            proba=f'{Tmpdir}/all-fullseq-proba.tsv',
+            lt2gene=f'{Tmpdir}/viral-lt2gene-w-hallmark.fa',
         output: 
             combined='final-viral-combined.fa',
-            proba='final-viral-score.tsv',
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             python {Scriptdir}/filter-table-and-add-suffix-to-seqname.py "||full" iter-0/all-fullseq-proba.tsv iter-0/viral-fullseq.fa iter-0/viral-combined-proba.tsv
             python {Scriptdir}/add-suffix-seqname-keep-desc.py iter-0/viral-fullseq.fa "||full" > iter-0/viral-combined.fa
             python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> iter-0/viral-combined.fa
-
             python {Scriptdir}/add-extra-to-table.py iter-0/viral-combined-proba.tsv iter-0/viral-combined.fa iter-0/viral-combined-proba-more-cols.tsv
+            """
+
+    localrules: make_annotation_table
+    rule make_annotation_table:
+        input: 
+            f'{Tmpdir}/viral-combined.fa',
+            expand('{Tmpdir}/{group}/all.pdg.gff', Tmpdir=Tmpdir, group=Groups),
+            expand('{Tmpdir}/{group}/all.pdg.hmm.taxwhm', Tmpdir=Tmpdir, group=Groups),
+            expand('{Tmpdir}/{group}/all.pdg.hmm.taxpfam', Tmpdir=Tmpdir, group=Groups),
+        output: 
+            anno=f'{Tmpdir}/viral.anno',
+            affi=f'{Tmpdir}/viral-affi-contigs.tab',
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+        params:
+            gff_fs_str = ','.join(
+                [f'{Tmpdir}/{group}/all.pdg.gff' for group in Groups]
+            ),
+            taxwhm_fs_str = ','.join(
+                [f'{Tmpdir}/{group}/all.pdg.hmm.taxwhm' for group in Groups]
+            ),
+            taxpfam_fs_str = ','.join(
+                [f'{Tmpdir}/{group}/all.pdg.hmm.taxpfam' for group in Groups]
+            ),
+            groups_str = ','.join(Groups),
+        shell:
+            """
+            python {Scriptdir}/make-affi-contigs-tabfile.py --pfamtax-list-str {params.taxpfam_fs_str} {Tmpdir}/viral-combined.fa {output.anno} {output.affi} {params.gff_fs_str} {params.taxwhm_fs_str} {params.groups_str}
+            """
+
+    localrules: finalize
+    rule finalize:
+        input: 
+            seqfile=f'{Tmpdir}/viral-combined.fa',
+            proba=f'{Tmpdir}/viral-combined-proba-more-cols.tsv',
+            affi=f'{Tmpdir}/viral-affi-contigs.tab',
+        output: 
+            combined='final-viral-combined.fa',
+            proba='final-viral-score.tsv',
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
+        shell:
+            """
             python {Scriptdir}/filter-score-table.py config.yaml iter-0/viral-combined-proba-more-cols.tsv iter-0/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
             N_viral_fullseq=$(grep -c '^>.*||full' final-viral-combined.fa || :)
             N_viral_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
