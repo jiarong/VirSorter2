@@ -597,6 +597,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
 @cli.command(
     'config',
     context_settings=dict(ignore_unknown_options=True),
+    no_args_is_help=True,
     short_help='subcommand for configuration management',
 )
 @click.option(
@@ -661,7 +662,7 @@ def config(show, show_source, init_source, db_dir, set, get):
     if not os.path.isfile(TEMPLATE):
         mes = ('config file "template-config.yaml" has not been '
                 'initialized yet; Please use '
-                '`virsorter config --set-source --db-dir PATH` to initialize')
+                '`virsorter config --init-source --db-dir PATH` to initialize')
         logging.critical(mes)
         sys.exit(1)
 
@@ -718,7 +719,6 @@ def config(show, show_source, init_source, db_dir, set, get):
 
             last_key = keys[-1]
             try:
-                print(temp)
                 old_val = temp[last_key]
                 temp[last_key] = val
             except KeyError as e:
