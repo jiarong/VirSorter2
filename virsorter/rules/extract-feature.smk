@@ -64,21 +64,27 @@ rule hmmsearch:
         else
             Hmmdb={Dbdir}/hmm/pfam/Pfam-A-{wildcards.domain}.hmm
         fi
+
+        Bname=$(basename {input})
         To_scratch=false
-        # move the heavy IO of hmmsearch in local scratch
+        # move the heavy IO of hmmsearch in local scratch if possible
         if [ -d "{Local_scratch}" ]; then
-            Tmp=$(mktemp -d {Local_scratch}/vs2-XXXXXXXXXXXX) && To_scratch=true
-            Avail=$(df -P {Local_scratch} | awk 'END{{print $4}}')
-            Fsize=$(du -k {input} | awk '{{print $1*5}}')
+            # not sure df or du are compatible in all linux; use "||To_scratch=false" 
+            #   to prevent imcompatibility in some linux distro
+            Tmp=$(mktemp -d {Local_scratch}/vs2-XXXXXXXXXXXX) && To_scratch=true || To_scratch=false
+            Avail=$(df -P {Local_scratch} | awk 'END{{print $4}}') || To_scratch=false
+            Fsize=$(du -k {input} | awk '{{print $1*5}}') || To_scratch=false
             if [ "$Avail" -gt "$Fsize" ] && [ "$To_scratch" = "true" ]; then
-                Bname=$(basename {input})
                 cp {input} $Tmp/$Bname || To_scratch=false
+            else
+                To_scratch=false
             fi
         fi
         if [ "$To_scratch" = false ]; then
             # local scratch not set or not enough space in local scratch
             hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input} 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
         else
+            # when To_scratch is true, Tmp and Bname should have been defined successfully
             hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
             rm -f $Tmp/$Bname && rmdir $Tmp
         fi
@@ -168,20 +174,25 @@ rule hmmsearch_by_group:
 
         if [ -s $Rbs_pdg_db ] || [ -s $Group_specific_hmmdb ]; then
             To_scratch=false
+            Bname=$(basename {input})
             # move the heavy IO of hmmsearch in local scratch
             if [ -d "{Local_scratch}" ]; then
-                Tmp=$(mktemp -d {Local_scratch}/vs2-XXXXXXXXXXXX) && To_scratch=true
-                Avail=$(df -P {Local_scratch} | awk 'END{{print $4}}')
-                Fsize=$(du -k {input} | awk '{{print $1*5}}')
+                # not sure df or du are compatible in all linux; use "||To_scratch=false" 
+                #   to prevent imcompatibility in some linux distro
+                Tmp=$(mktemp -d {Local_scratch}/vs2-XXXXXXXXXXXX) && To_scratch=true || To_scratch=false
+                Avail=$(df -P {Local_scratch} | awk 'END{{print $4}}') || To_scratch=false
+                Fsize=$(du -k {input} | awk '{{print $1*5}}') || To_scratch=false
                 if [ "$Avail" -gt "$Fsize" ] && [ "$To_scratch" = "true" ]; then
-                    Bname=$(basename {input})
                     cp {input} $Tmp/$Bname || To_scratch=false
+                else
+                    To_scratch=false
                 fi
             fi
             if [ "$To_scratch" = false ]; then
                 # local scratch not set or not enough space in local scratch
                 hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input} 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
             else
+                # when To_scratch is true, Tmp and Bname should have been defined successfully
                 hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
                 rm -f $Tmp/$Bname && rmdir $Tmp
             fi
