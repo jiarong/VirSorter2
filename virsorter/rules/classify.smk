@@ -251,7 +251,7 @@ if Provirus:
             grep -v '^seqname' iter-0/viral-partseq.tsv >> final-viral-boundary.tsv || : 
             N_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
             N_lytic=$(grep -c '^>.*||full' final-viral-combined.fa || :)
-            N_lysogenic=$(grep -c '^>.+||.*_partial' final-viral-combined.fa || :)
+            N_lysogenic=$(grep -c '^>.*||.*_partial' final-viral-combined.fa || :)
             printf "
             ====> VirSorter run (provirus mode) finished.
             # of full    seqs (>=2 genes) as viral:\t$N_lytic
