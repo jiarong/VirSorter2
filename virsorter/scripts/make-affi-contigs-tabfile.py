@@ -75,12 +75,17 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
     affi_f = affi_contigs_file
 
     d_group2name = {}
+    d_name2provirus = {}
     with screed.open(seqfile) as sp:
         for rec in sp:
             header = rec.name
             name, desc = header.split(None ,1)
             # remove suffix, ty in ['full', '*_partial', 'lt2gene']
             name, ty = name.rsplit('||', 1)
+            provirus = False
+            if ty.endswith('partial'):
+                provirus = True
+            d_name2provirus[name] = provirus
             _d = dict(i.split(':') for i in desc.split('||'))
             group = _d['group']
             st = d_group2name.setdefault(group, set())
@@ -147,14 +152,25 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
                 pfamhmm = 'NA'
 
 
+            provirus = d_name2provirus[seqname_ori]
             is_hallmark = 0
-            if hallmark == 1:
-                cat = 0
-                is_hallmark = 1
-            elif tax == 'vir':
-                cat = 1
+            if not provirus:
+                if hallmark == 1:
+                    cat = 0
+                    is_hallmark = 1
+                elif tax == 'vir':
+                    cat = 1
+                else:
+                    cat = 2
+
             else:
-                cat = 2
+                if hallmark == 1:
+                    cat = 3
+                    is_hallmark = 1
+                elif tax == 'vir':
+                    cat = 4
+                else:
+                    cat = 5
 
             _l = list(l)
             _l[seqname_ind] = seqname_ori
@@ -173,9 +189,11 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
         for rec in sp:
             header = rec.name
             name, desc = header.split(None ,1)
-            seqname = name.rsplit('||', 1)[0] # remove full, _provirus suffix
+            # remove full, _provirus suffix
+            seqname, ty = name.rsplit('||', 1)
 
             d_desc = dict(i.split(':') for i in desc.split('||'))
+            shape = d_desc['shape']
             start_ind = d_desc['start_ind']
             end_ind = d_desc['end_ind']
             group = d_desc['group']
@@ -195,13 +213,20 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
             df_oneseq['seqname_final'] = name
             df_lis.append(df_oneseq)
 
-            fw.write(f'>{name}\n')
+            # within contigs-affi.tsv
+            # no | allowed in name (the string after >) for DRAM-v
+            # no | allowed in gene_name for DRAM-v
+            name = name.replace('|', '_')
+            gene_nb = len(df_oneseq)
+            shape_simple = 'c' if shape == 'circular' else 'l'
+
+
+
+            fw.write(f'>{name}|{gene_nb}|{shape_simple}\n')
             for i in range(len(df_oneseq)):
                 ser = df_oneseq.iloc[i]
                 orf_ind = ser.loc['orf_index']
                 gene_name = f'{name}__{orf_ind}'
-                # no | allowed in gene_name for DRAM-v
-                gene_name = gene_name.replace('|', '_')
                 l = [gene_name]
                 # skip gene_name
                 for i in AFFI_CONTIG_COLS[1:]:
