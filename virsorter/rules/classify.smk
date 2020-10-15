@@ -213,7 +213,7 @@ if Provirus:
             expand('{Tmpdir}/{group}/all.pdg.hmm.taxpfam', Tmpdir=Tmpdir, group=Groups),
         output: 
             anno=f'{Tmpdir}/viral.anno',
-            affi=f'{Tmpdir}/viral-affi-contigs.tab',
+            affi=f'{Tmpdir}/viral-affi-contigs-for-dramv.tab',
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         params:
             gff_fs_str = ','.join(
@@ -237,7 +237,7 @@ if Provirus:
             f'{Tmpdir}/viral-fullseq-trim.fa',
             f'{Tmpdir}/viral-partseq.fa',
             f'{Tmpdir}/viral-combined-proba.tsv',
-            f'{Tmpdir}/viral-affi-contigs.tab',
+            f'{Tmpdir}/viral-affi-contigs-for-dramv.tab',
         output: 
             'final-viral-score.tsv',
             'final-viral-combined.fa',
@@ -245,10 +245,17 @@ if Provirus:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            python {Scriptdir}/add-extra-to-table.py iter-0/viral-combined-proba.tsv iter-0/viral-combined.fa iter-0/viral-combined-proba-more-cols.tsv
-            python {Scriptdir}/filter-score-table.py config.yaml iter-0/viral-combined-proba-more-cols.tsv iter-0/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
-            cp iter-0/viral-fullseq.tsv final-viral-boundary.tsv
-            grep -v '^seqname' iter-0/viral-partseq.tsv >> final-viral-boundary.tsv || : 
+            python {Scriptdir}/add-extra-to-table.py {Tmpdir}/viral-combined-proba.tsv {Tmpdir}/viral-combined.fa {Tmpdir}/viral-combined-proba-more-cols.tsv
+            python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
+            cp {Tmpdir}/viral-fullseq.tsv final-viral-boundary.tsv
+            grep -v '^seqname' {Tmpdir}/viral-partseq.tsv >> final-viral-boundary.tsv || : 
+            if [ {Prep_for_dramv} = "True" ]; then
+                mkdir -p for-dramv
+                python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o for-dramv/final-viral-combined-for-dramv.fa
+                cp {Tmpdir}/viral-affi-contigs-for-dramv.tab for-dramv
+            else
+                python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o {Tmpdir}/for-dramv-final-viral-combined-for-dramv.fa
+            fi
             N_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
             N_lytic=$(grep -c '^>.*||full' final-viral-combined.fa || :)
             N_lysogenic=$(grep -c '^>.*||.*_partial' final-viral-combined.fa || :)
@@ -309,7 +316,7 @@ else:
             expand('{Tmpdir}/{group}/all.pdg.hmm.taxpfam', Tmpdir=Tmpdir, group=Groups),
         output: 
             anno=f'{Tmpdir}/viral.anno',
-            affi=f'{Tmpdir}/viral-affi-contigs.tab',
+            affi=f'{Tmpdir}/viral-affi-contigs-for-dramv.tab',
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         params:
             gff_fs_str = ','.join(
@@ -332,14 +339,21 @@ else:
         input: 
             seqfile=f'{Tmpdir}/viral-combined.fa',
             proba=f'{Tmpdir}/viral-combined-proba-more-cols.tsv',
-            affi=f'{Tmpdir}/viral-affi-contigs.tab',
+            affi=f'{Tmpdir}/viral-affi-contigs-for-dramv.tab',
         output: 
             combined='final-viral-combined.fa',
             proba='final-viral-score.tsv',
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            python {Scriptdir}/filter-score-table.py config.yaml iter-0/viral-combined-proba-more-cols.tsv iter-0/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
+            python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
+            if [ {Prep_for_dramv} = "True" ]; then
+                mkdir -p for-dramv
+                python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o for-dramv/final-viral-combined-for-dramv.fa
+                cp {Tmpdir}/viral-affi-contigs-for-dramv.tab for-dramv
+            else
+                python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o {Tmpdir}/final-viral-combined-for-dramv.fa
+            fi
             N_viral_fullseq=$(grep -c '^>.*||full' final-viral-combined.fa || :)
             N_viral_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
             printf "

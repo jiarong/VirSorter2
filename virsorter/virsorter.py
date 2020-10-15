@@ -133,6 +133,13 @@ def get_snakefile(f="Snakefile"):
     help='minimal seq length required; all seqs shorter than this will be removed',
 )
 @click.option(
+    '--prep-for-dramv-off',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help='To turn off generating viral seqfile and viral-affi-contigs.tab for DRAMv',
+)
+@click.option(
     '--tmpdir',
     default='iter-0',
     help='Directory name for intermediate files',
@@ -179,8 +186,8 @@ def get_snakefile(f="Snakefile"):
 def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         jobs,  min_score, hallmark_required, hallmark_required_on_short,
         viral_gene_required, provirus_off, max_orf_per_seq, min_length,
-        tmpdir, rm_tmpdir, verbose, profile, dryrun, use_conda_off,
-        snakemake_args):
+        prep_for_dramv_off, tmpdir, rm_tmpdir, verbose, profile, dryrun,
+        use_conda_off, snakemake_args):
     ''' Runs the virsorter main function to classify viral sequences
 
     This includes 3 steps: 1) preprocess, 2) feature extraction, and 3)
@@ -215,6 +222,11 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         provirus = True
         max_orf_per_seq = -1
 
+    if prep_for_dramv_off:
+        prep_for_dramv = False
+    else:
+        prep_for_dramv = True
+
     if workflow == 'classify':
         target_f = '{working_dir}/{tmpdir}/all-fullseq-proba.tsv'.format(
                 working_dir=working_dir,
@@ -233,6 +245,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
             hallmark_required=hallmark_required,
             hallmark_required_on_short=hallmark_required_on_short,
             viral_gene_required=viral_gene_required,
+            prep_for_dramv=prep_for_dramv,
             max_orf_per_seq=max_orf_per_seq, 
             tmpdir=tmpdir, min_length=min_length, min_score=min_score,
     )

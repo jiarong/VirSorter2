@@ -71,9 +71,9 @@ def init_config_template(src_config_dir, user_config_dir, db_dir):
 # No make_sample_table function is needed for virsorter
 
 def make_config(db_dir, seqfile, config_f, include_groups, tmpdir,
-        min_score=0.5, min_length=0, provirus=True,
-        hallmark_required=False, hallmark_required_on_short=False,
-        viral_gene_required=False, threads=None, max_orf_per_seq=20):
+        min_score=0.5, min_length=0, provirus=True, hallmark_required=False,
+        hallmark_required_on_short=False, viral_gene_required=False,
+        prep_for_dramv=True, threads=None, max_orf_per_seq=20):
     '''
     read config params from template-config.yaml
     then update the some params provided by command line
@@ -114,6 +114,7 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir,
     config['TMPDIR'] = tmpdir
     config['PROBA_CUTOFF'] = min_score
     config['MIN_LENGTH'] = min_length
+    config['PREP_FOR_DRAMV'] = prep_for_dramv
 
     config['THREADS'] = multiprocessing.cpu_count() if not threads else threads
 
