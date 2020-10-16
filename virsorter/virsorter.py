@@ -597,7 +597,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
 @cli.command(
     'config',
     context_settings=dict(ignore_unknown_options=True),
-    no_args_is_help=True,
+    #no_args_is_help=True,
     short_help='subcommand for configuration management',
 )
 @click.option(
