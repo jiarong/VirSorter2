@@ -244,7 +244,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
     cmd = (
         'snakemake --snakefile {snakefile} --directory {working_dir} '
         '--jobs {jobs} '
-        '--configfile {config_file} --conda-prefix {conda_prefix} '
+        '--configfile {config_file} {conda_prefix} '
         '--rerun-incomplete {use_conda_off} --nolock --latency-wait 600'
         ' {profile} {dryrun} {verbose} '
         ' {target_rule} '
@@ -260,7 +260,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         verbose='' if verbose else '--quiet',
         args=' '.join(snakemake_args),
         target_rule='-R {}'.format(workflow) if workflow!='all' else workflow,
-        conda_prefix=os.path.join(db_dir,'conda_envs')
+        conda_prefix='' if use_conda_off else '--conda-prefix {}'.format(os.path.join(db_dir,'conda_envs'))
     )
     logging.info('Executing: %s' % cmd)
     try:
@@ -477,7 +477,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
             'Viral_genome_as_bin={genome_as_bin} '
             'Fragments_per_genome={frags_per_genome} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
-        '--nolock  {use_conda_off} --quiet --conda-prefix {conda_prefix} '
+        '--nolock  {use_conda_off} --quiet {conda_prefix} '
         '{add_args} {args}'
     ).format(
         snakefile=get_snakefile('rules/train-feature.smk'),
@@ -492,7 +492,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
         frags_per_genome=frags_per_genome, 
         jobs=jobs,
         use_conda_off='' if use_conda_off else '--use-conda',
-        conda_prefix=os.path.join(DEFAULT_CONFIG['DBDIR'],'conda_envs'),
+        conda_prefix='' if use_conda_off else '--conda-prefix {}'.format(os.path.join(DEFAULT_CONFIG['DBDIR'],'conda_envs')),
         add_args='' if snakemake_args and snakemake_args[0].startswith('-') else '--',
         args=' '.join(snakemake_args),
     )
@@ -570,7 +570,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
             'Balanced={balanced} '
             'Jobs={jobs} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
-        '--nolock {use_conda_off} --quiet --conda-prefix {conda_prefix} '
+        '--nolock {use_conda_off} --quiet {conda_prefix} '
         '{add_args} {args}'
     ).format(
         snakefile=get_snakefile('rules/train-model.smk'),
@@ -580,7 +580,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
         balanced=balanced,
         jobs=jobs,
         use_conda_off='' if use_conda_off else '--use-conda',
-        conda_prefix=os.path.join(DEFAULT_CONFIG['DBDIR'],'conda_envs'),
+        conda_prefix='' if use_conda_off else '--conda-prefix {}'.format(os.path.join(DEFAULT_CONFIG['DBDIR'],'conda_envs')),
         add_args='' if snakemake_args and snakemake_args[0].startswith('-') else '--',
         args=' '.join(snakemake_args),
     )
@@ -597,6 +597,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
 @cli.command(
     'config',
     context_settings=dict(ignore_unknown_options=True),
+    no_args_is_help=True,
     short_help='subcommand for configuration management',
 )
 @click.option(
@@ -661,7 +662,7 @@ def config(show, show_source, init_source, db_dir, set, get):
     if not os.path.isfile(TEMPLATE):
         mes = ('config file "template-config.yaml" has not been '
                 'initialized yet; Please use '
-                '`virsorter config --set-source --db-dir PATH` to initialize')
+                '`virsorter config --init-source --db-dir PATH` to initialize')
         logging.critical(mes)
         sys.exit(1)
 
@@ -718,7 +719,6 @@ def config(show, show_source, init_source, db_dir, set, get):
 
             last_key = keys[-1]
             try:
-                print(temp)
                 old_val = temp[last_key]
                 temp[last_key] = val
             except KeyError as e:

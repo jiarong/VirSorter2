@@ -22,19 +22,19 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 - train with high quality virus genomes from metagenomes or other sources.
 
 
-# Installation (tested on CentOS linux; should work in all linux)
+# Installation (tested on CentOS linux; should work in all linux; MacOS is not supported at the moment)
 
-## Option 1 (bioconda: virsorter version 2.0.beta, build py38_0)
+## Option 1 (bioconda: virsorter version 2.0.beta)
 
 Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
 ```bash
-conda install -c bioconda virsorter
+conda install -c bioconda virsorter=2
 ```
 
 ## Option 2
 
-To install the development version (most updated but may not work all the time):
+The development version is most updated and recommended. To install the development version:
 
 ```bash
 conda create -n vs2 -c bioconda -c conda-forge python=3 scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ruamel.yaml snakemake=5.16.0 click
@@ -258,4 +258,5 @@ cat autolyki-model-test.out/final-viral-score.tsv
 ```
 
 
-
+# Acknowledgement
+VirSorter 2 is jointly developed by the Sullivan Lab at Ohio State University (https://u.osu.edu/viruslab/) and the Viral Genomics Group at the DOE Joint Genome Institute (https://jgi.doe.gov/our-science/scientists-jgi/viral-genomics/).  Funding was provided by NSF (#OCE1829831, #ABI1758974), the U.S. Department of Energy (#DE-SC0020173), and the Gordon and Betty Moore Foundation (#3790). The work conducted by the U.S. Department of Energy Joint Genome Institute is supported by the Office of Science of the U.S. Department of Energy under contract no. DE-AC02-05CH11231.

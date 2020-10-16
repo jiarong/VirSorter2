@@ -97,36 +97,51 @@ def main():
             except IndexError as e:
                 mes = '{} in {} does not have shape (linear or circular) info'
                 logging.error(mes.format(seqname, seqfile))
+                shape = 'NA'
             seqname = seqname.rsplit('||', 1)[0] # remove ||rbs:common
             if seqname in st_full:
                 ser = df_full.loc[seqname, :]
-                trim_start_ind = ser.loc['trim_orf_index_start']
-                trim_end_ind = ser.loc['trim_orf_index_end']
-                trim_start_bp = ser.loc['trim_bp_start']
-                trim_end_bp = ser.loc['trim_bp_end']
                 full_start_ind = ser.loc['full_orf_index_start']
                 full_end_ind = ser.loc['full_orf_index_end']
+                full_start_bp = ser.loc['full_bp_start']
+                full_end_bp = ser.loc['full_bp_end']
 
                 d_desc = get_fasta_desc_d(ser, shape)
+                trim_start_bp = d_desc['start']
+                trim_end_bp = d_desc['end'] 
+                trim_start_ind = d_desc['start_ind']
+                trim_end_ind = d_desc['end_ind']
+
                 desc = FASTA_DESC_FORMAT_TEMPLATE.format(**d_desc)
-                seq = rec.sequence
+
+                if shape == 'circular':
+                    trim_start_bp_adj = trim_start_bp - full_start_bp + 1
+                    trim_end_bp_adj = trim_end_bp - full_start_bp + 1
+                else:
+                    trim_start_bp_adj = trim_start_bp
+                    trim_end_bp_adj = trim_end_bp
                 
                 if (trim_start_ind == full_start_ind and 
                         trim_end_ind == full_end_ind):
                     # not trimmed; save to lytic
-                    mes = f'>{seqname}||full  {desc}\n{seq}\n'
-                    fw_lytic.write(mes)
+                    seq = rec.sequence[(trim_start_bp_adj-1):trim_end_bp]
                 else:
                     # trimmed; save to lytic (fullseq); decided not to 
                     #   interpret lytic or lyso here
-                    mes = f'>{seqname}||full  {desc}\n{seq}\n'
-                    fw_lytic.write(mes)
+                    seq = rec.sequence[(trim_start_bp_adj-1):trim_end_bp]
+
+                mes = f'>{seqname}||full  {desc}\n{seq}\n'
+                fw_lytic.write(mes)
 
             elif seqname in st_part:
                 _df = df_part.loc[df_part.index == seqname, :]
                 for i in range(len(_df)):
                     ser = _df.iloc[i, :]
                     d_desc = get_fasta_desc_d(ser, shape)
+                    trim_start_bp = d_desc['start']
+                    trim_end_bp = d_desc['end'] 
+                    trim_start_ind = d_desc['start_ind']
+                    trim_end_ind = d_desc['end_ind']
                     desc = FASTA_DESC_FORMAT_TEMPLATE.format(**d_desc)
                     seq = rec.sequence[(trim_start_bp-1):trim_end_bp]
 

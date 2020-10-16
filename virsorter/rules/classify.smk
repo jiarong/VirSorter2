@@ -221,9 +221,9 @@ if Provirus:
             python {Scriptdir}/filter-score-table.py config.yaml iter-0/viral-combined-proba-more-cols.tsv iter-0/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
             cp iter-0/viral-fullseq.tsv final-viral-boundary.tsv
             grep -v '^seqname' iter-0/viral-partseq.tsv >> final-viral-boundary.tsv || : 
-            N_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
-            N_lytic=$(grep -c '^>.*||full' final-viral-combined.fa || :)
-            N_lysogenic=$(grep -c '^>.+||.*_partial' final-viral-combined.fa || :)
+            N_lt2gene=$(grep -c -E '^>.+\|\|lt2gene' final-viral-combined.fa || :)
+            N_lytic=$(grep -c -E '^>.+\|\|full' final-viral-combined.fa || :)
+            N_lysogenic=$(grep -c -E '^>.+\|\|[0-9]+_partial' final-viral-combined.fa || :)
             printf "
             ====> VirSorter run (provirus mode) finished.
             # of full    seqs (>=2 genes) as viral:\t$N_lytic
@@ -248,7 +248,7 @@ if Provirus:
                 - viral gene %% (viral) 
                 - cellular gene %% (cellular)
             The "group" field in final-viral-score.tsv should NOT be used
-                as reliale taxonomy info
+                as reliable taxonomy info
 
             <====
             " | python {Scriptdir}/echo.py
@@ -273,8 +273,8 @@ else:
 
             python {Scriptdir}/add-extra-to-table.py iter-0/viral-combined-proba.tsv iter-0/viral-combined.fa iter-0/viral-combined-proba-more-cols.tsv
             python {Scriptdir}/filter-score-table.py config.yaml iter-0/viral-combined-proba-more-cols.tsv iter-0/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
-            N_viral_fullseq=$(grep -c '^>.*||full' final-viral-combined.fa || :)
-            N_viral_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
+            N_viral_fullseq=$(grep -c -E '^>.+\|\|full' final-viral-combined.fa || :)
+            N_viral_lt2gene=$(grep -c -E '^>.+\|\|lt2gene' final-viral-combined.fa || :)
             printf "
             ====> VirSorter run (non-provirus mode) finished.
             # of contigs w/ >=2 genes as viral:\t$N_viral_fullseq
@@ -296,7 +296,7 @@ else:
                 - viral gene %% (viral) 
                 - cellular gene %% (cellular)
             The "group" field in final-viral-score.tsv should NOT be used
-                as reliale taxonomy info
+                as reliable taxonomy info
 
             <====
             " | python {Scriptdir}/echo.py

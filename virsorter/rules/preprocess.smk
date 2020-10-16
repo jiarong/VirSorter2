@@ -266,6 +266,10 @@ def combine_linear_circular_input_agg(wildcards):
                         outdir=outdir, shape=shapes)
     # pp-circular.fna is extended by its seq (duplicate and concatenate)
     # so not the original sequence; use pp-circular.fna.preext
+    # Maybe CHANGE: pp-circular.fna (extended) is needed for extract 
+    # 	 viral segment adjusted for partial gene;
+    # 	 for now just keep the original sequence since adjust partial gene
+    # 	 on circular is not virsorter's job
     contig_fs = [f'{outdir}/pp-{shape}.fna.preext' if shape == 'circular' 
                     else f'{outdir}/pp-{shape}.fna'
                     for shape in shapes]
