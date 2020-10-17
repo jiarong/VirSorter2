@@ -112,7 +112,7 @@ rule merge_split_hmmtbl:
     output: 'iter-0/all.pdg.{domain}.hmmtbl',
     shell:
         """
-        printf "%s\0" {input} | xargs -0 cat > {output}
+        printf {input} | xargs cat > {output}
         """
 
 localrules: split_faa_by_group
@@ -231,7 +231,7 @@ rule merge_split_hmmtbl_by_group_tmp:
         Group_specific_hmmdb={Dbdir}/group/{wildcards.group}/customized.hmm
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
         if [ -s $Rbs_pdg_db ] || [ -s $Group_specific_hmmdb ]; then
-            printf "%s\0" {input} | xargs -0 cat > {output}
+            printf {input} | xargs cat > {output}
         else
             touch {output}
         fi
