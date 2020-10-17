@@ -121,8 +121,8 @@ if Provirus:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            cat {input.bdy} | awk '!/^seqname\t/ || !f++' > {output.bdy}
-            cat {input.ftr} | awk '!/^seqname\t/ || !f++' > {output.ftr}
+            printf "%s\0" {input.bdy} | xargs -0 cat | awk '!/^seqname\t/ || !f++' > {output.bdy}
+            printf "%s\0" {input.ftr} | xargs -0 cat | awk '!/^seqname\t/ || !f++' > {output.ftr}
             """
 
     localrules: merge_provirus_call_from_groups
