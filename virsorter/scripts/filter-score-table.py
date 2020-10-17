@@ -57,7 +57,9 @@ def main(config, intable, inseqfile, outtable, outseqfile, hallmark_required,
 
     config = YAML().load(open(config_f))
     df = pd.read_csv(score_f, sep='\t', header=0)
-    sel = [True,] * len(df)
+    sel = pd.Series([True,] * len(df))
+    # select viral enrichment; filter out viral% < cellular%
+    sel = sel & (df['viral'] > df['cellular'])
     if config['HALLMARK_REQUIRED']:
         sel = sel & (df['hallmark'] > 0)
     elif config['HALLMARK_REQUIRED_ON_SHORT']:
