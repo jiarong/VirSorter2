@@ -254,7 +254,7 @@ if Provirus:
                 python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o for-dramv/final-viral-combined-for-dramv.fa
                 cp {Tmpdir}/viral-affi-contigs-for-dramv.tab for-dramv
             else
-                python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o {Tmpdir}/for-dramv-final-viral-combined-for-dramv.fa
+                python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o {Tmpdir}/final-viral-combined-for-dramv.fa
             fi
             N_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
             N_lytic=$(grep -c '^>.*||full' final-viral-combined.fa || :)
