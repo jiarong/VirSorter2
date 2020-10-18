@@ -314,6 +314,7 @@ class provirus(object):
                 #  and full seq is always longer than partial, thus preferred
                 return
 
+
             # prefilter out short contigs with low proba
             #  - too short for provirus extraction
             #  - unlikely to have proba > cutoff after trimming ends
@@ -382,6 +383,7 @@ class provirus(object):
                 #  also keep consistent with provirus that only segments
                 #  with > self.proba gets passed to trim_ends()
                 return
+
             self.trim_ends(df_gff, df_tax, 
                     sel_index_w_hallmark, seqname, 
                     np.nan, np.nan,
