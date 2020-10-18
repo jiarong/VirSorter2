@@ -317,7 +317,7 @@ class provirus(object):
             # prefilter out short contigs with low proba
             #  - too short for provirus extraction
             #  - unlikely to have proba > cutoff after trimming ends
-            if seqlen < MIN_GENOME_SIZE and pr_full < self.proba:
+            if seqlen < min(3000, MIN_GENOME_SIZE) and pr_full < self.proba:
                 return
 
         df_gff = pd.DataFrame(mat, columns=self.gff_mat_colnames)
@@ -360,7 +360,7 @@ class provirus(object):
             # prefilter out short contigs with low proba
             #  - too short for provirus extraction
             #  - unlikely to have proba > cutoff after trimming ends
-            if seqlen < MIN_GENOME_SIZE and pr_full < self.proba:
+            if seqlen < min(3000, MIN_GENOME_SIZE) and pr_full < self.proba:
                 return
 
         starts = df_gff['start']
