@@ -59,9 +59,10 @@ def main(config, intable, inseqfile, outtable, outseqfile, hallmark_required,
     df = pd.read_csv(score_f, sep='\t', header=0)
     sel = pd.Series([True,] * len(df))
     # require viral enrichment except for provirus
-    sel_viral_enrich = df['viral'] >= df['cellular']
+    sel_viral_enrich = df['viral'] > df['cellular']
     sel_provirus = df['seqname'].map(lambda x: x.endswith('_partial'))
-    sel = sel & (sel_viral_enrich | sel_provirus)
+    sel_hallmark = df['hallmark'] > 1
+    sel = sel & (sel_viral_enrich | sel_provirus | sel_hallmark)
     if config['HALLMARK_REQUIRED']:
         sel = sel & (df['hallmark'] > 0)
     elif config['HALLMARK_REQUIRED_ON_SHORT']:
