@@ -116,8 +116,8 @@ rule merge_split_faa_gff:
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        printf {input.gff} | xargs cat > {output.gff}
-        printf {input.faa} | xargs cat > {output.faa}
+        printf "%s\n" {input.gff} | xargs cat > {output.gff}
+        printf "%s\n" {input.faa} | xargs cat > {output.faa}
         """
 
 localrules: split_contig_file_by_group
@@ -198,8 +198,8 @@ rule merge_split_faa_gff_by_group:
         """
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
         if [ -s $Rbs_pdg_db ]; then
-            printf {input.gff} | xargs cat > {output.gff}
-            printf {input.faa} | xargs cat > {output.faa}
+            printf "%s\n" {input.gff} | xargs cat > {output.gff}
+            printf "%s\n" {input.faa} | xargs cat > {output.faa}
         else
             (cd iter-0/{wildcards.group} && ln -s ../pp-{wildcards.shape}.gff && ln -s ../pp-{wildcards.shape}.faa)
         fi
