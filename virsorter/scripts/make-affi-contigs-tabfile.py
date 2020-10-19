@@ -87,8 +87,8 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
                 provirus = True
             d_name2provirus[name] = provirus
             _d = dict(i.split(':') for i in desc.split('||'))
-            group = _d['group']
-            st = d_group2name.setdefault(group, set())
+            best_group = _d['group']
+            st = d_group2name.setdefault(best_group, set())
             st.add(name)
 
     gff_fs = [f.strip() for f in gff_fs.split(',')]
@@ -101,6 +101,7 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
     orf_index_ind = GFF_PARSER_COLS.index('orf_index')
     seqname_ind = GFF_PARSER_COLS.index('seqname')
     for i, l in enumerate(zip(gff_fs, tax_fs, groups)):
+
         gff_f, tax_f, group = l
         gen_gff = parse_gff(gff_f) 
 
@@ -179,6 +180,7 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
                 [hmm, bits, pfamhmm, pfamscore, tax, is_hallmark, cat, group]
             )
             gene_anno_lis.append(_l)
+            prev_seqname = seqname
 
     # continue work from here
     df_anno = pd.DataFrame(gene_anno_lis, 
@@ -219,8 +221,6 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
             name = name.replace('|', '_')
             gene_nb = len(df_oneseq)
             shape_simple = 'c' if shape == 'circular' else 'l'
-
-
 
             fw.write(f'>{name}|{gene_nb}|{shape_simple}\n')
             for i in range(len(df_oneseq)):
