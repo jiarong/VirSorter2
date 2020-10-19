@@ -120,10 +120,10 @@ def get_snakefile(f="Snakefile"):
 )
 @click.option(
     '--max-orf-per-seq',
-    default=20,
+    default=-1,
     type=int,
     show_default=True,
-    help='Max # of orf used for computing taxonomic features; if # of orf in a seq exceeds the max limit, it is sub-sampled to this # to reduce computation; to turn off this, set it to -1; this option must be used together with --provirus-off option'
+    help='Max # of orf used for computing taxonomic feature; this option can only be used in --provirus-off mode; if # of orf in a seq exceeds the max limit, it is sub-sampled to this # to reduce computation'
 )
 @click.option(
     '--min-length',
@@ -218,6 +218,11 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
 
     if provirus_off:
         provirus = False
+        if max_orf_per_seq != -1 and not prep_for_dramv_off:
+            mes = ('--max-orf-per-seq CAN NOT be used with '
+                    '--prep-for-dramv-off; '
+                    'outputs with ORFs subsampled are NOT '
+                    'compatible with DRAMv')
     else:
         provirus = True
         max_orf_per_seq = -1
@@ -228,6 +233,31 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         prep_for_dramv = True
 
     if workflow == 'classify':
+        if not os.path.exists(config_f):
+            mes = 'No config.yaml dectected from previous run'
+            logging.critical(mes)
+            sys.exit(1)
+
+        config = load_configfile(config_f)
+        min_length_prev = config['MIN_LENGTH']
+        if min_length != min_length_prev:
+            mes = (
+                '--min-length has changed from '
+                f'{min_length_prev} to {min_length}; '
+                'but --min-length has not effect on classify step; '
+                'The whole pipeline has to be rerun if --min-length changes'
+            )
+            logging.critical(mes)
+            sys.exit(1)
+
+        if provirus != config['PROVIRUS']:
+            mes = (
+                '--provirus-off setting change found; '
+                'The whole pipeline has to be rerun if --provirus-off changes'
+            )
+            logging.critical(mes)
+            sys.exit(1)
+
         target_f = '{working_dir}/{tmpdir}/all-fullseq-proba.tsv'.format(
                 working_dir=working_dir,
                 tmpdir=tmpdir,
@@ -236,8 +266,10 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
             subprocess.run(['touch', target_f], check=True)
         except subprocess.CalledProcessError as e:
             # removes the traceback
-            logging.critical(e)
+            #logging.critical(e)
             sys.exit(1)
+
+        os.rename(config_f, os.path.join(working_dir,'config.yaml.bak'))
 
     make_config(
             db_dir=db_dir, seqfile=seqfile, include_groups=include_groups,
@@ -280,7 +312,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         subprocess.run(cmd, check=True, shell=True)
     except subprocess.CalledProcessError as e:
         # removes the traceback
-        logging.critical(e)
+        #logging.critical(e)
         sys.exit(1)
 
     if rm_tmpdir:
@@ -514,7 +546,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train, frags_per
         subprocess.run(cmd, check=True, shell=True)
     except subprocess.CalledProcessError as e:
         # removes the traceback
-        logging.critical(e)
+        #logging.critical(e)
         exit(1)
 
 
@@ -602,7 +634,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced, jobs, us
         subprocess.run(cmd, check=True, shell=True)
     except subprocess.CalledProcessError as e:
         # removes the traceback
-        logging.critical(e)
+        #logging.critical(e)
         exit(1)
 
 
