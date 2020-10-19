@@ -278,7 +278,7 @@ class provirus(object):
                     final_ind_end, '\t'.join(ftr_lis))
         )
 
-    def process_one_contig(self, seqname, mat):
+    def process_one_contig(self, seqname, seqlen, mat):
         '''Process a contig
 
         Args:
@@ -287,6 +287,40 @@ class provirus(object):
                 features
 
         '''
+        try:
+            MIN_GENOME_SIZE = GROUP_DICT[self.group]['MIN_GENOME_SIZE']
+        except KeyError:
+            MIN_GENOME_SIZE = DEFAULT_MIN_GENOME_SIZE
+
+        # if proba table to get proba of whole seq is provided
+        if self.fullseq_clf_f != None:
+            seqname_ori = seqname.rsplit('||',1)[0]
+            seqname_st = set(self.df_fullseq_clf['seqname'].unique())
+            if not seqname_ori in seqname_st:
+                return
+            _df = self.df_fullseq_clf
+            _df.index = _df['seqname']
+            _df = _df.drop(['seqname'], axis=1)
+            pr_full = _df.at[seqname_ori, self.group]
+            pr_full_max_groups = max(_df.loc[seqname_ori,:])
+            #if pr_full < self.proba and pr_full_max_groups >= self.proba:
+            if pr_full < PROVIRUS_CHECK_MAX_FULLSEQ_PROBA and \
+                    pr_full_max_groups >= max(self.proba,
+                            PROVIRUS_CHECK_MAX_FULLSEQ_PROBA):
+                # skip when another group is significant with full seq,
+                #  so do not need go through sliding window, save computation
+                #  in merge-provirus-from-groups.py step, provirus is selected
+                #  based on longer length, 
+                #  and full seq is always longer than partial, thus preferred
+                return
+
+
+            # prefilter out short contigs with low proba
+            #  - too short for provirus extraction
+            #  - unlikely to have proba > cutoff after trimming ends
+            if seqlen < min(3000, MIN_GENOME_SIZE) and pr_full < self.proba:
+                return
+
         df_gff = pd.DataFrame(mat, columns=self.gff_mat_colnames)
         df_tax = df_tax_per_config(self.tax_f, seqname)
         if self.d_hallmark_hmm != None:
@@ -316,35 +350,19 @@ class provirus(object):
         mix = l[self.mix_ind]
         unaligned = l[self.unaligned_ind]
 
-        # if proba table to get proba of whole seq is provided
-        if self.fullseq_clf_f != None:
-            seqname_ori = seqname.rsplit('||',1)[0]
-            seqname_st = set(self.df_fullseq_clf['seqname'].unique())
-            if not seqname_ori in seqname_st:
-                return
-            _df = self.df_fullseq_clf
-            _df.index = _df['seqname']
-            _df = _df.drop(['seqname'], axis=1)
-            pr_full = _df.at[seqname_ori, self.group]
-            pr_full_max_groups = max(_df.loc[seqname_ori,:])
-            #if pr_full < self.proba and pr_full_max_groups >= self.proba:
-            if pr_full < PROVIRUS_CHECK_MAX_FULLSEQ_PROBA and \
-                    pr_full_max_groups >= max(self.proba,
-                            PROVIRUS_CHECK_MAX_FULLSEQ_PROBA):
-                # skip when another group is significant with full seq,
-                #  so do not need go through sliding window, save computation
-                #  in merge-provirus-from-groups.py step, provirus is selected
-                #  based on longer length, 
-                #  and full seq is always longer than partial, thus preferred
-                return
-
-        else:
+        if self.fullseq_clf_f == None:
             # redo prediction here
             # classify
             res_lis = self.model.predict_proba([l,]) # [[0.84 0.16]]
             res = res_lis[0]  #[0.84 0.16]
             pr_full = res[1]       # 0.16
             # print(self.model.classes_)  # [0, 1] 1 is viral
+
+            # prefilter out short contigs with low proba
+            #  - too short for provirus extraction
+            #  - unlikely to have proba > cutoff after trimming ends
+            if seqlen < min(3000, MIN_GENOME_SIZE) and pr_full < self.proba:
+                return
 
         starts = df_gff['start']
         ends = df_gff['end']
@@ -365,6 +383,7 @@ class provirus(object):
                 #  also keep consistent with provirus that only segments
                 #  with > self.proba gets passed to trim_ends()
                 return
+
             self.trim_ends(df_gff, df_tax, 
                     sel_index_w_hallmark, seqname, 
                     np.nan, np.nan,
@@ -374,11 +393,6 @@ class provirus(object):
         # partial
         else:
             # sliding windows
-            try:
-                MIN_GENOME_SIZE = GROUP_DICT[self.group]['MIN_GENOME_SIZE']
-            except KeyError:
-                MIN_GENOME_SIZE = DEFAULT_MIN_GENOME_SIZE
-
             ind_end = len(ends.loc[ends < MIN_GENOME_SIZE]) + 1
             if ind_end >= len(df_gff):
                 # too short to be provirus; just trim_ends() as fullseq
@@ -394,6 +408,8 @@ class provirus(object):
             # first window index 0 -> ind
             ind_start = 0
             trigger = False
+            trigger_cnt = 0
+            provirus_cnt = 0
             retry_cnt = 0
             pr_max = -10000
             pr_last_valid = -10000
@@ -429,6 +445,7 @@ class provirus(object):
                     ind_end += 1
                 elif trigger == False and pr >= self.proba:
                     trigger = True
+                    trigger_cnt += 1
                     ind_end += 1
                     pr_last_valid = pr
                     if pr > pr_max:
@@ -454,6 +471,7 @@ class provirus(object):
                         partial = 1
                         # require hallmark gene for provirus
                         if hallmark_cnt > 0:
+                            provirus_cnt += 1
                             self.trim_ends(df_gff_sel, df_tax_sel, 
                                     sel_index_w_hallmark, seqname,
                                     pr_last_valid, pr_max,
@@ -463,6 +481,7 @@ class provirus(object):
                                     pr_full, 
                                     arc, bac, euk, vir, mix, unaligned,
                                     hallmark_cnt)
+
 
                         # set up for next provirus in the same contig
                         ind_start = ind_end + 1
@@ -474,28 +493,43 @@ class provirus(object):
                         pr_max = -10000
                         pr_last_valid = -10000
 
-            if trigger == False:
-                # not provirus
-                return
+            if trigger == True:
+                # last segment is still provirus
+                # walk back 1 and retry_cnt extension
+                ind_end = ind_end - 1 - retry_cnt
+                df_gff_sel = df_gff.iloc[ind_start:ind_end+1]
+                sel = df_tax['orf_index'].isin(
+                        set(df_gff_sel['orf_index']))
+                df_tax_sel = df_tax.loc[sel,:]
+                partial = 1
+                # require hallmark gene for provirus
+                if hallmark_cnt > 0:
+                    provirus_cnt += 1
+                    self.trim_ends(df_gff_sel, df_tax_sel,
+                            sel_index_w_hallmark, seqname,
+                            pr_last_valid, pr_max,
+                            partial,
+                            full_orf_index_start, full_orf_index_end, 
+                            full_bp_start, full_bp_end, pr_full, 
+                            arc, bac, euk, vir, mix, unaligned,
+                            hallmark_cnt)
 
-            # walk back 1 and retry_cnt extension
-            ind_end = ind_end - 1 - retry_cnt
-            df_gff_sel = df_gff.iloc[ind_start:ind_end+1]
-            sel = df_tax['orf_index'].isin(
-                    set(df_gff_sel['orf_index']))
-            df_tax_sel = df_tax.loc[sel,:]
-            partial = 1
-            # require hallmark gene for provirus
-            if hallmark_cnt > 0:
-                self.trim_ends(df_gff_sel, df_tax_sel,
-                        sel_index_w_hallmark, seqname,
-                        pr_last_valid, pr_max,
-                        partial,
-                        full_orf_index_start, full_orf_index_end, 
-                        full_bp_start, full_bp_end, pr_full, 
-                        arc, bac, euk, vir, mix, unaligned,
-                        hallmark_cnt)
-
+            if provirus_cnt == 0 and pr_full >= self.proba:
+                # trigger_cnt > 0 <==> pr_full >= self.proba
+                # add this condition to accommodate 
+                # 1) provirus proba cutoff high, 
+                #      triggering requiring hallmark
+                # 2) seq has no hallmark 
+                # 3) seq pr_full > proba cutoff;
+                # 
+                partial = 0
+                self.trim_ends(df_gff, df_tax, 
+                    sel_index_w_hallmark, seqname, 
+                    np.nan, np.nan,
+                    partial, full_orf_index_start, 
+                    full_orf_index_end, full_bp_start, 
+                    full_bp_end, pr_full, arc, bac, euk, 
+                    vir, mix, unaligned, hallmark_cnt)
 
     def find_boundary(self):
         '''Iterate through each contigs in gff and get provirus boundary info
@@ -524,21 +558,24 @@ class provirus(object):
 
             for lis in self.gff_gen:
                 seqname = lis[0]
+                seqlen = lis[1]
                 # process a contig
                 if last_seqname != None and last_seqname != seqname:
                     #logging.info('Processing {}'.format(last_seqname))
-                    self.process_one_contig(last_seqname, mat)
+                    self.process_one_contig(last_seqname, last_seqlen, mat)
                     # reset mat and last_seqname for next iter
                     mat = []
                     last_seqname = None
+                    last_seqlen = None
 
                 # do not need first two items: seqname, seqlen
                 mat.append(lis[2:])
                 last_seqname = seqname
+                last_seqlen = seqlen
 
             if len(mat) != 0:
                 #logging.info('Processing {}'.format(last_seqname))
-                self.process_one_contig(last_seqname, mat)
+                self.process_one_contig(last_seqname, last_seqlen, mat)
 
 
 CONTEXT_SETTINGS = {'help_option_names': ['-h', '--help']}

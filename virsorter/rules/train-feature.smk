@@ -160,8 +160,8 @@ rule merge_split_faa_gff:
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        cat {input.gff} > {output.gff}
-        cat {input.faa} > {output.faa}
+        printf "%s\n" {input.gff} | xargs cat > {output.gff}
+        printf "%s\n" {input.faa} | xargs cat > {output.faa}
         """
 
 rule gff_feature:
@@ -250,7 +250,7 @@ rule merge_split_hmmtbl:
     output: f'{Tmpdir}/all.pdg.{{domain}}.hmmtbl',
     shell:
         """
-        cat {input} > {output}
+        printf "%s\n" {input} | xargs cat > {output}
         """
 
 rule hmm_sort_to_best_hit_taxon:

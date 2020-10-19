@@ -29,6 +29,8 @@ Max_orf_per_seq = config['MAX_ORF_PER_SEQ']
 Tmpdir=config['TMPDIR']
 #Local_scratch=config['LOCAL_SCRATCH']
 Local_scratch='/tmp'
+Prep_for_dramv = config['PREP_FOR_DRAMV']
+
 
 Srcdir = srcdir('.')
 Scriptdir='{}/scripts'.format(Srcdir)
