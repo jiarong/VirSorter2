@@ -218,7 +218,7 @@ if Provirus:
             python {Scriptdir}/make-affi-contigs-tabfile-on-split-gff.py --pfamtax {input.taxpfam} {input.seqfile} {output.anno} {output.affi} {input.gff} {input.taxwhm} {wildcards.group}
             """
 
-    def merge_annotation_table_by_group_by_split_input_agg(wildcards):
+    def merge_annotation_table_by_group_from_split_input_agg(wildcards):
         split_dir = checkpoints.split_gff_by_group.get(
                         **wildcards).output[0]
         idx_lis = glob_wildcards(
@@ -229,9 +229,9 @@ if Provirus:
         affi_lis = expand(affi_str, idx=idx_lis)
         return {'anno': anno_lis, 'affi': affi_lis}
 
-    localrules: merge_annotation_table_by_group_by_split
-    rule merge_annotation_table_by_group_by_split:
-        input: unpack(merge_annotation_table_by_group_by_split_input_agg)
+    localrules: merge_annotation_table_by_group_from_split
+    rule merge_annotation_table_by_group_from_split:
+        input: unpack(merge_annotation_table_by_group_from_split_input_agg)
         output: 
             anno=f'{Tmpdir}/{{group}}/all.pdg.anno',
             affi=f'{Tmpdir}/{{group}}/all.pdg.affi',
@@ -379,7 +379,7 @@ else:
             python {Scriptdir}/make-affi-contigs-tabfile-on-split-gff.py --pfamtax {input.taxpfam} {input.seqfile} {output.anno} {output.affi} {input.gff} {input.taxwhm} {wildcards.group}
             """
 
-    def merge_annotation_table_by_group_by_split_input_agg(wildcards):
+    def merge_annotation_table_by_group_from_split_input_agg(wildcards):
         split_dir = checkpoints.split_gff_by_group.get(
                         **wildcards).output[0]
         idx_lis = glob_wildcards(
@@ -390,9 +390,9 @@ else:
         affi_lis = expand(affi_str, idx=idx_lis)
         return {'anno': anno_lis, 'affi': affi_lis}
 
-    localrules: merge_annotation_table_by_group_by_split
-    rule merge_annotation_table_by_group_by_split:
-        input: unpack(merge_annotation_table_by_group_by_split_input_agg)
+    localrules: merge_annotation_table_by_group_from_split
+    rule merge_annotation_table_by_group_from_split:
+        input: unpack(merge_annotation_table_by_group_from_split_input_agg)
         output: 
             anno=f'{Tmpdir}/{{group}}/all.pdg.anno',
             affi=f'{Tmpdir}/{{group}}/all.pdg.affi',
