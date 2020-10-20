@@ -450,13 +450,15 @@ class provirus(object):
                     pr_last_valid = pr
                     if pr > pr_max:
                         pr_max = pr
-                elif trigger == True and pr >= self.proba:
+                #elif trigger == True and pr >= self.proba:
+                elif trigger == True and pr >= pr_max * 0.95:
                     ind_end += 1
                     retry_cnt = 0
                     pr_last_valid = pr
                     if pr > pr_max:
                         pr_max = pr
-                elif trigger == True and pr < self.proba:
+                #elif trigger == True and pr < self.proba:
+                elif trigger == True and pr < pr_max * 0.95:
                     if retry_cnt <= MAX_RETRY_TIMES:
                         retry_cnt += 1
                         ind_end += 1
