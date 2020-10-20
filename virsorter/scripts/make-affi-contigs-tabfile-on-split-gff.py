@@ -87,6 +87,7 @@ def main(seqfile, outfile, gff, tax, group,
             st.add(name)
 
     name_st = d_group2name.get(group, set())
+    # no seq has best score in this group; just exit
     if len(name_st) == 0:
         with open(affi_f, 'w') as fw_affi, open(outfile, 'w') as fw_anno:
             mes = GFF_PARSER_COLS + GENE_ANNO_COLS + ['seqname_final']
@@ -106,9 +107,11 @@ def main(seqfile, outfile, gff, tax, group,
     prev_seqname = None
     for l in gen_gff:
         seqname = l[0]
+        # remove rbs info
         seqname_ori = seqname.rsplit('||', 1)[0]
         if not seqname_ori in name_st:
             continue
+
         if seqname != prev_seqname:
             df_tax_sel = df_tax_per_config(tax_f, seqname, taxwhm=True)
             if  pfamtax != None:
@@ -143,7 +146,6 @@ def main(seqfile, outfile, gff, tax, group,
         else:
             pfamhmm = 'NA'
 
-
         provirus = d_name2provirus[seqname_ori]
         is_hallmark = 0
         if not provirus:
@@ -173,7 +175,13 @@ def main(seqfile, outfile, gff, tax, group,
         gene_anno_lis.append(_l)
         prev_seqname = seqname
 
-    # continue work from here
+    # no seqs in this gff (split) has best score in this group; just exit
+    if len(gene_anno_lis) == 0:
+        with open(affi_f, 'w') as fw_affi, open(outfile, 'w') as fw_anno:
+            mes = GFF_PARSER_COLS + GENE_ANNO_COLS + ['seqname_final']
+            fw_anno.write('%s\n'.format('\t'.join(mes)))
+        return
+
     df_anno = pd.DataFrame(gene_anno_lis, 
             columns=(GFF_PARSER_COLS + GENE_ANNO_COLS))
 
@@ -192,9 +200,9 @@ def main(seqfile, outfile, gff, tax, group,
             shape = d_desc['shape']
             start_ind = d_desc['start_ind']
             end_ind = d_desc['end_ind']
-            group = d_desc['group']
+            best_group = d_desc['group']
 
-            _sel = ((df_anno['group'] == group) & 
+            _sel = ((df_anno['group'] == best_group) & 
                     (df_anno['seqname'] == seqname))
 
             _df = df_anno.loc[_sel, :]  # genes for only one seqname
