@@ -231,16 +231,21 @@ class provirus(object):
             # combinations
             lis = self.locate_ends(df_gff, df_tax, 
                     sel_index_w_hallmark, combs)
-            if len(lis) == 0:
+            try:
+                _, _, final_ind_start, final_ind_end, pr, pr_max, ftr_lis = lis
+            except ValueError as e:
+                #assert len(lis) == 0:
                 return
-            _, _, final_ind_start, final_ind_end, pr, pr_max, ftr_lis = \
-                    lis
         else:
             # try start and end separately
             start_combs = [ (x, -(size-1)) for x in starts ]
             lis = self.locate_ends(df_gff, df_tax, 
                     sel_index_w_hallmark, start_combs)
-            final_start, _, final_ind_start, _, _, _, _ = lis
+            try:
+                final_start, _, final_ind_start, _, _, _, _ = lis
+            except ValueError as e:
+                # assert len(lis) == 0
+                return
 
             end_combs = [ (final_start, y) for y in ends ]
             lis = self.locate_ends(df_gff, df_tax, 
