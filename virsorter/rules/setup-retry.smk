@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 import glob
+import logging
 from ruamel.yaml import YAML
 
 
@@ -21,7 +22,8 @@ def md5(fname):
     return hash_md5.hexdigest()
 
 D_FILE2MD5 = {
-        'db.tgz': '9703c2d4f17a9714b3304fabbdfae3b2',
+        #'db.tgz': '9703c2d4f17a9714b3304fabbdfae3b2',
+        'db.tgz': 'e0878db28819cd271a7c39d48890335a',
 }
 
 rule all:
@@ -37,15 +39,24 @@ rule download_db:
         echo "Download from osf finished.." | python {Scriptdir}/echo.py
         """
 
-rule install_dependencies:
-    output:
-        temp(touch('Done-install-dependencies'))
-    conda:
-        '{}/vs2.yaml'.format(ENV_YAML_DIR)
-    shell:
-        """
-        echo "Dependencies installed" | python {Scriptdir}/echo.py
-        """
+if not config['Skip_deps_install']:
+    rule install_dependencies:
+        output:
+            temp(touch('Done-install-dependencies'))
+        conda:
+            '{}/vs2.yaml'.format(ENV_YAML_DIR)
+        shell:
+            """
+            echo "Dependencies installed" | python {Scriptdir}/echo.py
+            """
+else:
+    rule install_dependencies:
+        output:
+            temp(touch('Done-install-dependencies'))
+        shell:
+            """
+            echo "Dependencies installation skipped; make sure dependencies are installed on your own as shown in development version installation" | python {Scriptdir}/echo.py
+            """
 
 rule setup:
     input:
@@ -63,13 +74,14 @@ rule setup:
         echo "All setup finished.." | python {Scriptdir}/echo.py
         """
         )
-        assert md5('db.tgz') == D_FILE2MD5['db.tgz'], \
-                '*** Invalid checksum in for db.tgz'
+        if md5('db.tgz') != D_FILE2MD5['db.tgz']:
+            logging.info('Invalid checksum in for db.tgz')
+            sys.exit(1)
 
 onstart:
     if not os.path.exists('Done-install-dependencies'):
-        shutil.rmtree('conda-envs', ignore_errors=True)
-        os.makedirs('conda-envs')
+        shutil.rmtree('conda_envs', ignore_errors=True)
+        os.makedirs('conda_envs')
 
     fs = glob.glob('combined.hmm.gz.split*')
     fs.extend(glob.glob('Pfam-A-*.hmm'))
@@ -83,10 +95,9 @@ onstart:
 
 onerror:
     dbdir=os.path.abspath(os.getcwd())
-    print(
-        ('*** Download database from server failed '
+    mes = ('*** Download database from server failed '
         '(due to server temporary not responding or internet issue); '
         'You can download on you own through this link:\n'
         'https://osf.io/v46sc/download\n'
         'then untar and copy directories in "db" to {}').format(dbdir)
-    )
+    logging.info(mes)
