@@ -12,7 +12,11 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 snakefile_dir = os.path.dirname(script_dir)
 pkg_dir = os.path.dirname(snakefile_dir)
 sys.path.append(pkg_dir)
-from virsorter.config import set_logger
+from virsorter.config import get_default_config, set_logger
+
+DEFAULT_CONFIG = get_default_config()
+MAX_SPLIT = DEFAULT_CONFIG['MAX_SPLIT']
+GFF_SEQNUM_PER_SPLIT = DEFAULT_CONFIG['GFF_SEQNUM_PER_SPLIT']
 
 set_logger()
 
@@ -151,6 +155,29 @@ def main():
     seqfile = sys.argv[1]
     outdir = sys.argv[2]
     n = int(sys.argv[3])
+    if n > MAX_SPLIT:
+        seqfile_bname = os.path.basename(seqfile)
+        if seqfile_bname.endswith('.faa'):
+            mes = (
+                f'Too many ({n}) splits requested on {seqfile_bname} that '
+                'may deteriate file system; reducing it '
+                f'to {MAX_SPLIT}..\n; If you are running in cluster mode '
+                '(virsorter run --cluster), this causes the run time '
+                'of "rule hmmsearch" for each split to increase and the '
+                'default walltime might may become not enough..\n'
+            )
+        else:
+            mes = (
+                f'Too many ({n}) splits requested on {seqfile_bname} that '
+                'may deteriate file system; reducing it '
+                f'to {MAX_SPLIT}..\n; If you are running in cluster mode '
+                '(virsorter run --cluster), this causes the run time '
+                'of "rule gene_call" for each split to increase and the '
+                'default walltime might may become not enough..\n'
+            )
+
+        logging.warning(mes)
+        n = MAX_SPLIT
 
     split_by_bp_per_group(seqfile, n, outdir)
 
