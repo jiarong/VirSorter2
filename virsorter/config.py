@@ -57,7 +57,7 @@ def init_config_template(src_config_dir, user_config_dir, db_dir):
     with open(src_template_ori) as fp:
         config = yaml.load(fp)
         config['DBDIR'] = db_dir
-        logging.info(f'saving to {db_dir} as DBDIR to config file {template}')
+        logging.info(f'saving {db_dir} as DBDIR to config file {template}')
 
     with open(template, 'w') as fw:
         yaml.dump(config, fw)
