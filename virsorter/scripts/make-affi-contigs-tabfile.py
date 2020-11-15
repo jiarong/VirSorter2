@@ -166,12 +166,12 @@ def main(seqfile, outfile, gff_list_str, tax_list_str, group_list_str,
 
             else:
                 if hallmark == 1:
-                    cat = 3
+                    cat = 0
                     is_hallmark = 1
                 elif tax == 'vir':
-                    cat = 4
+                    cat = 1
                 else:
-                    cat = 5
+                    cat = 2
 
             _l = list(l)
             _l[seqname_ind] = seqname_ori
