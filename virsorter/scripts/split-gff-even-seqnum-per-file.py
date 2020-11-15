@@ -57,17 +57,6 @@ def main():
     gff_f = sys.argv[1]
     outdir = sys.argv[2]
     n = int(sys.argv[3])
-    if n > MAX_SPLIT:
-        mes = (
-            f'Too many ({n}) splits requested on GFF file for provirus '
-            'extraction that may deteriate file system; reducing it '
-            f'to {MAX_SPLIT}..\n; If you are running in cluster mode '
-            '(virsorter run --cluster), this causes the run time for '
-            '"rule provirus" on each split to increase and the default '
-            'walltime might may become not enough..\n'
-        )
-        logging.warning(mes)
-        n = MAX_SPLIT
 
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
@@ -76,6 +65,24 @@ def main():
         split_idx = 0
         bname = os.path.basename(gff_f)
         fw = open('{}/{}.{}.split'.format(outdir, bname, split_idx), 'w')
+
+        gen = open_gff_by_contig(gff_f)
+        seqnum = sum(1 for _ in gen)
+        n_split = int(seqnum/n) + 1
+        if n_split > MAX_SPLIT:
+            n_new = seqnum/MAX_SPLIT
+            mes = (
+                f'Too many ({n_split}) splits requested on GFF file for '
+                'provirus extraction that may deteriate file system; '
+                f'reducing it to {MAX_SPLIT} by chaning per split seqnum from '
+                '{n} to {n_new}..\n; If you are running in '
+                'cluster mode (virsorter run --cluster), this causes the '
+                'run time for "rule provirus" on each split to increase and '
+                'the default walltime might become not enough..\n'
+            )
+            logging.warning(mes)
+            n = n_new
+
         gen = open_gff_by_contig(gff_f)
         for i, rec in enumerate(gen):
             if i < (split_idx + 1) * n:
