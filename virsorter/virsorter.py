@@ -30,8 +30,6 @@ def cli(obj):
     virsorter - workflow for identifying viral sequences
     """
 
-#cli.command('train') # work on this later
-
 def get_snakefile(f="Snakefile"):
     sf = os.path.join(os.path.dirname(os.path.abspath(__file__)), f)
     if not os.path.exists(sf):
@@ -72,12 +70,20 @@ def get_snakefile(f="Snakefile"):
             'by gzip or bz2)')
 )
 @click.option(
+    '-l',
+    '--label',
+    default='',
+    help=('add label as prefix to output files; this is useful when re-running '
+            'classify with different filtering options'),
+)
+@click.option(
     '--include-groups',
-    default='dsDNAphage,NCLDV,RNA,ssDNA,lavidaviridae',
+    default='dsDNAphage,RNA,ssDNA',
     type=str,
     show_default=True,
     help=('classifiers of viral groups to included '
-            '(comma separated and no space in between)')
+        '(comma separated and no space in between); available options are: '
+        'dsDNAphage,NCLDV,RNA,ssDNA,lavidaviridae'),
 )
 @click.option(
     '-j',
@@ -206,7 +212,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         jobs,  min_score, hallmark_required, hallmark_required_on_short,
         viral_gene_required, provirus_off, max_orf_per_seq, min_length,
         prep_for_dramv_off, tmpdir, rm_tmpdir, verbose, profile, dryrun,
-        use_conda_off, snakemake_args):
+        use_conda_off, snakemake_args, label):
     ''' Runs the virsorter main function to classify viral sequences
 
     This includes 3 steps: 1) preprocess, 2) feature extraction, and 3)
@@ -277,7 +283,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
             logging.critical(mes)
             sys.exit(1)
 
-        target_f = '{working_dir}/{tmpdir}/all-fullseq-proba.tsv'.format(
+        target_f = '{working_dir}/{tmpdir}/reclassify.trigger'.format(
                 working_dir=working_dir,
                 tmpdir=tmpdir,
         )
@@ -298,7 +304,8 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
             viral_gene_required=viral_gene_required,
             prep_for_dramv=prep_for_dramv,
             max_orf_per_seq=max_orf_per_seq, 
-            tmpdir=tmpdir, min_length=min_length, min_score=min_score,
+            tmpdir=tmpdir, min_length=min_length, min_score=min_score, 
+            label=label,
     )
     config = load_configfile(config_f)
 
