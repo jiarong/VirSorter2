@@ -27,11 +27,12 @@ Gff_seqnum_per_split = config['GFF_SEQNUM_PER_SPLIT']
 Max_orf_per_seq = config['MAX_ORF_PER_SEQ']
 
 Tmpdir=config['TMPDIR']
-#Local_scratch=config['LOCAL_SCRATCH']
-Local_scratch='/tmp'
+Local_scratch=config['LOCAL_SCRATCH']
 Prep_for_dramv = config['PREP_FOR_DRAMV']
+Label = config['LABEL']
 
 
+Label = f'{Label}-' if Label != '' else ''
 Srcdir = srcdir('.')
 Scriptdir='{}/scripts'.format(Srcdir)
 Wkdir=os.path.abspath(os.getcwd())
@@ -88,8 +89,8 @@ rule extract_feature:
 
 rule classify:
     input:
-        'final-viral-score.tsv',
-        'final-viral-combined.fa',
+        f'{Label}final-viral-score.tsv',
+        f'{Label}final-viral-combined.fa',
         'Done-extract-feature'
     output:
         temp(touch('Done-classify'))
