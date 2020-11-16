@@ -9,9 +9,16 @@ rule classify_by_group:
         python {Scriptdir}/classify.py {input} {Dbdir}/group/{wildcards.group}/model {wildcards.group} {output} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
         """
 
+localrules: check_point_for_reclassify
+rule check_point_for_reclassify:
+    input: expand(f'{Tmpdir}/{{group}}/all.pdg.clf', group=Groups)
+    output: touch(f'{Tmpdir}/reclassify.trigger')
+
 localrules: merge_classification
 rule merge_classification:
-    input: expand(f'{Tmpdir}/{{group}}/all.pdg.clf', group=Groups)
+    input: 
+        expand(f'{Tmpdir}/{{group}}/all.pdg.clf', group=Groups),
+        f'{Tmpdir}/reclassify.trigger',
     output: 
         clf=f'{Tmpdir}/all-fullseq-proba.tsv',
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
@@ -278,26 +285,26 @@ if Provirus:
         input:
             finalize_input_agg
         output: 
-            'final-viral-score.tsv',
-            'final-viral-combined.fa',
-            'final-viral-boundary.tsv',
+            score=f'{Label}final-viral-score.tsv',
+            fa=f'{Label}final-viral-combined.fa',
+            boundary=f'{Label}final-viral-boundary.tsv',
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             python {Scriptdir}/add-extra-to-table.py {Tmpdir}/viral-combined-proba.tsv {Tmpdir}/viral-combined.fa {Tmpdir}/viral-combined-proba-more-cols.tsv
-            python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
-            cp {Tmpdir}/viral-fullseq.tsv final-viral-boundary.tsv
-            grep -v '^seqname' {Tmpdir}/viral-partseq.tsv >> final-viral-boundary.tsv || : 
+            python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa {output.score} {output.fa}
+            cp {Tmpdir}/viral-fullseq.tsv {output.boundary}
+            grep -v '^seqname' {Tmpdir}/viral-partseq.tsv >> {output.boundary} || : 
             if [ {Prep_for_dramv} = "True" ]; then
-                mkdir -p for-dramv
-                python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o for-dramv/final-viral-combined-for-dramv.fa
-                cp {Tmpdir}/viral-affi-contigs-for-dramv.tab for-dramv
+                mkdir -p {Label}for-dramv
+                python {Scriptdir}/modify-seqname-for-dramv.py {output.fa} {output.score} -o {Label}for-dramv/final-viral-combined-for-dramv.fa
+                cp {Tmpdir}/viral-affi-contigs-for-dramv.tab {Label}for-dramv
             fi
-            N_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
-            N_lytic=$(grep -c '^>.*||full' final-viral-combined.fa || :)
-            N_lysogenic=$(grep -c '^>.*||.*_partial' final-viral-combined.fa || :)
+            N_lt2gene=$(grep -c '^>.*||lt2gene' {output.fa} || :)
+            N_lytic=$(grep -c '^>.*||full' {output.fa} || :)
+            N_lysogenic=$(grep -c '^>.*||.*_partial' {output.fa} || :)
             if [ {Prep_for_dramv} = True ]; then
-                Dramv_notes="for-dramv                   ==> dir with input files for dramv"
+                Dramv_notes="{Label}for-dramv                   ==> dir with input files for dramv"
                 Dramv_notes2="For seqnames in files for dramv, 
                     | is replaced with _ to be compatible with DRAMv
                 "
@@ -312,9 +319,9 @@ if Provirus:
             # of short   seqs (< 2 genes) as viral:\t$N_lt2gene
 
             Useful output files:
-            final-viral-score.tsv       ==> score table
-            final-viral-combined.fa     ==> all viral seqs
-            final-viral-boundary.tsv    ==> table with boundary info
+            {Label}final-viral-score.tsv       ==> score table
+            {Label}final-viral-combined.fa     ==> all viral seqs
+            {Label}final-viral-boundary.tsv    ==> table with boundary info
             $Dramv_notes
             
             Suffix is added to seq names in final-viral-combined.fa:
@@ -325,12 +332,12 @@ if Provirus:
 
             NOTES:
             Users can further screen the results based on the following 
-                columns in final-viral-score.tsv:
+                columns in {Label}final-viral-score.tsv:
                 - contig length (length) 
                 - hallmark gene count (hallmark)
                 - viral gene %% (viral) 
                 - cellular gene %% (cellular)
-            The "group" field in final-viral-score.tsv should NOT be used
+            The "group" field in {Label}final-viral-score.tsv should NOT be used
                 as reliable taxonomy info
 
             <====
@@ -464,21 +471,21 @@ else:
         input: 
             unpack(finalize_input_agg)
         output: 
-            combined='final-viral-combined.fa',
-            proba='final-viral-score.tsv',
+            fa=f'{Label}final-viral-combined.fa',
+            score=f'{Label}final-viral-score.tsv',
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa final-viral-score.tsv final-viral-combined.fa
+            python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa {output.score} {output.fa}
             if [ {Prep_for_dramv} = "True" ]; then
-                mkdir -p for-dramv
-                python {Scriptdir}/modify-seqname-for-dramv.py final-viral-combined.fa final-viral-score.tsv -o for-dramv/final-viral-combined-for-dramv.fa
-                cp {Tmpdir}/viral-affi-contigs-for-dramv.tab for-dramv
+                mkdir -p {Label}for-dramv
+                python {Scriptdir}/modify-seqname-for-dramv.py {output.fa} {output.score} -o {Label}for-dramv/final-viral-combined-for-dramv.fa
+                cp {Tmpdir}/viral-affi-contigs-for-dramv.tab {Label}for-dramv
             fi
-            N_viral_fullseq=$(grep -c '^>.*||full' final-viral-combined.fa || :)
-            N_viral_lt2gene=$(grep -c '^>.*||lt2gene' final-viral-combined.fa || :)
+            N_viral_fullseq=$(grep -c '^>.*||full' {output.fa} || :)
+            N_viral_lt2gene=$(grep -c '^>.*||lt2gene' {output.fa} || :)
             if [ {Prep_for_dramv} = True ]; then
-                Dramv_notes="for-dramv                  ==> dir with input files for dramv"
+                Dramv_notes="{Label}for-dramv                  ==> dir with input files for dramv"
                 Dramv_notes2="For seqnames in files for dramv, 
                     | is replaced with _ to be compatible with DRAMv
                 "
@@ -492,23 +499,23 @@ else:
             # of contigs w/ < 2 genes as viral:\t$N_viral_lt2gene
 
             Useful output files:
-            final-viral-score.tsv      ==> score table
-            final-viral-combined.fa    ==> all viral seqs
+            {output.score}      ==> score table
+            {output.fa}    ==> all viral seqs
             $Dramv_notes
 
-            Suffix is added to seq names in final-viral-combined.fa:
+            Suffix is added to seq names in {output.fa}:
             contigs (>=2 genes) as viral:\t||full
             contigs (< 2 genes) as viral:\t||lt2gene
             $Dramv_notes2
 
             NOTES: 
             Users can further screen the results based on the 
-                following columns in final-viral-score.tsv
+                following columns in {output.score}
                 - contig length (length) 
                 - hallmark gene count (hallmark)
                 - viral gene %% (viral) 
                 - cellular gene %% (cellular)
-            The "group" field in final-viral-score.tsv should NOT be used
+            The "group" field in {output.score} should NOT be used
                 as reliable taxonomy info
 
             <====
