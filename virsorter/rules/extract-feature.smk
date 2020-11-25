@@ -28,14 +28,17 @@ rule gff_feature_by_group:
 
 localrules: split_faa
 checkpoint split_faa:
-    input: 'iter-0/all.pdg.faa'
-    output: directory('iter-0/all.pdg.faa.splitdir')
+    input: f'{Tmpdir}/all.pdg.faa'
+    output: directory(f'{Tmpdir}/all.pdg.faa.splitdir')
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         Log={Wkdir}/log/iter-0/step1-pp/split-faa-common.log
         Total=$(grep -v '^>' {input} | wc -c)
         Bname=$(basename {input})
+
+        rm -f {Tmpdir}/all.pdg.faa.splitdir/all.pdg.faa.*.split.*.splithmmtbl
+
         if [ {Provirus} != True ] && [ {Max_orf_per_seq} -ne -1 ]; then
             echo "provirus mode is off; MAX_ORF_PER_SEQ set to {Max_orf_per_seq}; subsampling orf when orf number in a contig exceeds {Max_orf_per_seq} to speed up the run" | python {Scriptdir}/echo.py
             python {Scriptdir}/subsample-faa.py {Max_orf_per_seq} {input} > iter-0/$Bname.ss
@@ -117,8 +120,8 @@ rule merge_split_hmmtbl:
 
 localrules: split_faa_by_group
 checkpoint split_faa_by_group:
-    input: 'iter-0/{group}/all.pdg.faa'
-    output: directory('iter-0/{group}/all.pdg.faa.splitdir')
+    input: f'{Tmpdir}/{{group}}/all.pdg.faa'
+    output: directory(f'{Tmpdir}/{{group}}/all.pdg.faa.splitdir')
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
@@ -129,6 +132,8 @@ checkpoint split_faa_by_group:
         Group_specific_hmmdb={Dbdir}/group/{wildcards.group}/customized.hmm
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
         Bname=$(basename {input})
+
+        rm -f {Tmpdir}/{wildcards.group}/all.pdg.faa.splitdir/all.pdg.faa.*.split.*.splithmmtbl
 
         if [ {Provirus} != "True" ] && [ {Max_orf_per_seq} -ne -1 ]; then
             python {Scriptdir}/subsample-faa.py {Max_orf_per_seq} {input} > {input}.ss

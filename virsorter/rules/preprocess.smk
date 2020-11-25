@@ -67,6 +67,9 @@ checkpoint split_contig_file:
         Log={Wkdir}/log/iter-0/step1-pp/split-contig-file-{wildcards.shape}-common.log
         Total=$(grep -v '^>' {input} | wc -c)
         Bname=$(basename {input})
+        # clean up output from following steps to avoid bug with checkpoint
+        rm -f {Tmpdir}/pp-{wildcards.shape}.fna.splitdir/pp-{wildcards.shape}.fna.*.split.pdg.splitgff
+        rm -f {Tmpdir}/pp-{wildcards.shape}.fna.splitdir/pp-{wildcards.shape}.fna.*.split.pdg.splitfaa
         if [ $Total -gt {Contig_bp_per_split} ]; then
             python {Scriptdir}/split-seqfile-even-bp-per-file.py {input} {output} {Contig_bp_per_split} &> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
         else
@@ -130,6 +133,10 @@ checkpoint split_contig_file_by_group:
         Log={Wkdir}/log/iter-0/step1-pp/split-contig-file-{wildcards.shape}-{wildcards.group}.log
         Bname=$(basename {input})
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
+
+        rm -f {Tmpdir}/{wildcards.group}/pp-{wildcards.shape}.fna.splitdir/pp-{wildcards.shape}.fna.*.split.pdg.splitgff
+        rm -f {Tmpdir}/{wildcards.group}/pp-{wildcards.shape}.fna.splitdir/pp-{wildcards.shape}.fna.*.split.pdg.splitfaa
+
         if [ -s $Rbs_pdg_db ]; then
             Total=$(grep -v '^>' {input} | wc -c)
             if [ $Total -gt {Contig_bp_per_split} ]; then
