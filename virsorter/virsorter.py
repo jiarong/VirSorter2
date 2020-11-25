@@ -78,7 +78,7 @@ def get_snakefile(f="Snakefile"):
 )
 @click.option(
     '--include-groups',
-    default='dsDNAphage,RNA,ssDNA',
+    default='dsDNAphage,NCLDV,RNA,ssDNA,lavidaviridae',
     type=str,
     show_default=True,
     help=('classifiers of viral groups to included '
@@ -154,11 +154,11 @@ def get_snakefile(f="Snakefile"):
             'be removed'),
 )
 @click.option(
-    '--prep-for-dramv-off',
+    '--prep-for-dramv',
     default=False,
     is_flag=True,
     show_default=True,
-    help=('To turn off generating viral seqfile and viral-affi-contigs.tab '
+    help=('To turn on generating viral seqfile and viral-affi-contigs.tab '
             'for DRAMv'),
 )
 @click.option(
@@ -211,7 +211,7 @@ def get_snakefile(f="Snakefile"):
 def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         jobs,  min_score, hallmark_required, hallmark_required_on_short,
         viral_gene_required, provirus_off, max_orf_per_seq, min_length,
-        prep_for_dramv_off, tmpdir, rm_tmpdir, verbose, profile, dryrun,
+        prep_for_dramv, tmpdir, rm_tmpdir, verbose, profile, dryrun,
         use_conda_off, snakemake_args, label):
     ''' Runs the virsorter main function to classify viral sequences
 
@@ -243,19 +243,14 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
 
     if provirus_off:
         provirus = False
-        if max_orf_per_seq != -1 and not prep_for_dramv_off:
+        if max_orf_per_seq != -1 and prep_for_dramv:
             mes = ('--max-orf-per-seq CAN NOT be used with '
-                    '--prep-for-dramv-off; '
+                    '--prep-for-dramv; '
                     'outputs with ORFs subsampled are NOT '
                     'compatible with DRAMv')
     else:
         provirus = True
         max_orf_per_seq = -1
-
-    if prep_for_dramv_off:
-        prep_for_dramv = False
-    else:
-        prep_for_dramv = True
 
     if workflow == 'classify':
         if not os.path.exists(config_f):
