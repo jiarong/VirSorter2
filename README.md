@@ -249,9 +249,10 @@ gzip -d nonviral.ftr.gz
 virsorter train-model --viral-ftrfile autolyki-feature.out/all.pdg.ftr --nonviral-ftrfile nonviral.ftr --balanced --jobs 4 -w autolyki-model.out
 ```
 
-In `autolyki-model.out`, `feature-importances.tsv` shows the importance of each feature used. `model` is the classifier model we need. Then put the `model` and `hallmark-gene.list` in database directory as the existing viral groups.
+In `autolyki-model.out`, `feature-importances.tsv` shows the importance of each feature used. `model` is the classifier model we need. Then put the `model` and `hallmark-gene.list` in database directory as the existing viral groups. Note that *only letters* are allowed for group directory under `db/group/`.
 
 ```bash
+### attention: only letters (both upper and lower case) are allowed in group names
 mkdir db/group/autolykiviridae
 cp autolyki-model.out/model db/group/autolykiviridae
 cp hallmark-gene.list db/group/autolykiviridae/
