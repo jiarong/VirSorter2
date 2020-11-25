@@ -69,9 +69,10 @@ def main():
         <partseq.fa>: partial seq extracted according to boudary
 
     '''
-    if len(sys.argv) != 6:
+    if len(sys.argv) != 8:
         mes = ('*** python {} <input.contig> <input.full> <input.partial> '
-                '<output.lytic> <output.lysogenic>\n')
+                '<output.lytic> <output.lysogenic> '
+                '<output.full> <output.partial\n')
         sys.stderr.write(mes.format(os.path.basename(sys.argv[0])))
         sys.exit(1)
 
@@ -80,9 +81,16 @@ def main():
     part_f = sys.argv[3]
     lytic_f = sys.argv[4]
     lyso_f = sys.argv[5]
+    full_out = sys.argv[6]
+    part_out = sys.argv[7]
 
     df_full = pd.read_csv(full_f, header=0, sep='\t', index_col='seqname')
     df_part = pd.read_csv(part_f, header=0, sep='\t', index_col='seqname')
+
+    df_full['shape'] = 'NA'
+    df_part['shape'] = 'NA'
+    df_full['seqname_new'] = 'NA'
+    df_part['seqname_new'] = 'NA'
 
     with screed.open(seqfile) as sp, \
             open(lytic_f, 'w') as fw_lytic, \
@@ -101,6 +109,9 @@ def main():
             seqname = seqname.rsplit('||', 1)[0] # remove ||rbs:common
             if seqname in st_full:
                 ser = df_full.loc[seqname, :]
+                df_full.loc[seqname, 'shape'] = shape
+                df_full.loc[seqname, 'seqname_new'] = f'{seqname}||full'
+
                 full_start_ind = ser.loc['full_orf_index_start']
                 full_end_ind = ser.loc['full_orf_index_end']
                 full_start_bp = ser.loc['full_bp_start']
@@ -145,9 +156,19 @@ def main():
                     desc = FASTA_DESC_FORMAT_TEMPLATE.format(**d_desc)
                     seq = rec.sequence[(trim_start_bp-1):trim_end_bp]
 
+                    sel = (
+                        (df_part.index == seqname) & 
+                        (df_part['trim_orf_index_start'] == trim_start_ind)
+                    )
+                    df_part.loc[sel, 'shape'] = shape
+                    df_part.loc[sel, 'seqname_new'] = f'{seqname}||{i}_partial'
+
                     #save to lyso
                     mes = f'>{seqname}||{i}_partial  {desc}\n{seq}\n'
                     fw_lyso.write(mes)
+
+    df_full.to_csv(full_out, sep='\t', index_label='seqname')
+    df_part.to_csv(part_out, sep='\t', index_label='seqname')
 
 if __name__ == '__main__':
     main()

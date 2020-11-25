@@ -85,6 +85,10 @@ if Provirus:
         output: directory(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir')
         shell:
             """
+            rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.split.prv.bdy
+            rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.split.prv.ftr
+            rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.anno
+            rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.affi.tab
             python {Scriptdir}/split-gff-even-seqnum-per-file.py {input} {output} {Gff_seqnum_per_split}
             """
 
@@ -136,8 +140,8 @@ if Provirus:
     rule merge_provirus_call_from_groups:
         input: expand(f'{Tmpdir}/{{group}}/all.pdg.prv.bdy', group=Groups)
         output:
-            partial=f'{Tmpdir}/viral-partseq.tsv',
-            full=f'{Tmpdir}/viral-fullseq.tsv',
+            partial=temp(f'{Tmpdir}/viral.partseq.tsv.tmp'),
+            full=temp(f'{Tmpdir}/viral.fullseq.tsv.tmp'),
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         params:
             prv_fs_str = ','.join(
@@ -155,19 +159,21 @@ if Provirus:
         input:
             #contig={Seqfile},
             contig=f'{Tmpdir}/all.fna',
-            full=f'{Tmpdir}/viral-fullseq.tsv',
-            partial=f'{Tmpdir}/viral-partseq.tsv',
+            full=f'{Tmpdir}/viral.fullseq.tsv.tmp',
+            partial=f'{Tmpdir}/viral.partseq.tsv.tmp',
             hmk_cnt=f'{Tmpdir}/all-hallmark-cnt.tsv',
             lt2gene=f'{Tmpdir}/viral-lt2gene-w-hallmark.fa',
         output:
             fullseq=f'{Tmpdir}/viral-fullseq-trim.fa',
             partial=f'{Tmpdir}/viral-partseq.fa',
             combined=f'{Tmpdir}/viral-combined.fa',
+            fulltab=f'{Tmpdir}/viral-fullseq.tsv',
+            parttab=f'{Tmpdir}/viral-partseq.tsv',
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             Log={Wkdir}/log/{Tmpdir}/step3-classify/provirus-seq-extract.log
-            python {Scriptdir}/extract-provirus-seqs.py {input.contig} {input.full} {input.partial} {output.fullseq} {output.partial} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            python {Scriptdir}/extract-provirus-seqs.py {input.contig} {input.full} {input.partial} {output.fullseq} {output.partial} {output.fulltab} {output.parttab} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
 
             cat {output.fullseq} {output.partial} > {output.combined}
             python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {output.combined} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -369,6 +375,8 @@ else:
         output: directory(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir')
         shell:
             """
+            rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.anno
+            rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.affi.tab
             python {Scriptdir}/split-gff-even-seqnum-per-file.py {input} {output} {Gff_seqnum_per_split}
             """
 
