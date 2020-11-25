@@ -130,6 +130,7 @@ When you re-run any VirSorter2 command, it will pick up at the step (rule in sna
 ```bash
 rm -rf test.out
 virsorter run --prep-for-dramv -w test.out -i test.fa -j 4 all
+ls test.out/for-dramv
 ```
 
 # Detailed description on output files
@@ -137,7 +138,6 @@ virsorter run --prep-for-dramv -w test.out -i test.fa -j 4 all
 - final-viral-combined.fa
 
   > identified viral sequences, including two types:
-
   > - full sequences identified as viral (added with suffix `||full`);
   > - partial sequences identified as viral (added with suffix `||{i}_partial`); here `{i}` can be numbers starting from 0 to max number of viral fragments found in that contig;
   > - short (less then two genes) sequences with hallmark genes identified as viral (added with suffix `||lt2gene`);
@@ -249,7 +249,7 @@ gzip -d nonviral.ftr.gz
 virsorter train-model --viral-ftrfile autolyki-feature.out/all.pdg.ftr --nonviral-ftrfile nonviral.ftr --balanced --jobs 4 -w autolyki-model.out
 ```
 
-In `autolyki-model.out`, `feature-importances.tsv` shows the importance of each feature used. `model` is the classifier model we need. Then put the `model` and `hallmark-gene.list` in database directory as the existing viral groups. Note that *only letters* are allowed for group directory under `db/group/`.
+In `autolyki-model.out`, `feature-importances.tsv` shows the importance of each feature used. `model` is the classifier model we need. Then put the `model` and `hallmark-gene.list` in database directory as the existing viral groups. Note that **only letters** are allowed for group directory under `db/group/`.
 
 ```bash
 ### attention: only letters (both upper and lower case) are allowed in group names
