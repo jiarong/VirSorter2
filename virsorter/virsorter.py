@@ -721,7 +721,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced,
 )
 @click.option(
     '--db-dir',
-    type=click.Path(resolve_path=True),
+    type=click.Path(),
     help='directory for databases; required for --init-source',
 )
 @click.option(
@@ -756,6 +756,10 @@ def config(show, show_source, init_source, db_dir, set, get):
             mes = '--db-dir is required for --init-source'
             logging.critical(mes)
             sys.exit(1)
+        elif not os.path.exists(db_dir):
+            mes = f('--db-dir {db_dir} does NOT exist yet; Make sure it '
+                    'is created later\n')
+            logging.warning(mes)
         else:
             init_config_template(SRC_CONFIG_DIR, USER_CONFIG_DIR, db_dir)
             sys.exit(0)

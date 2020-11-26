@@ -31,7 +31,6 @@ Local_scratch=config['LOCAL_SCRATCH']
 Prep_for_dramv = config['PREP_FOR_DRAMV']
 Label = config['LABEL']
 
-
 Label = f'{Label}-' if Label != '' else ''
 Srcdir = srcdir('.')
 Scriptdir='{}/scripts'.format(Srcdir)
@@ -40,18 +39,14 @@ Groups_str=' '.join(Groups)
 Seqfile = os.path.abspath(Seqfile)
 Conda_yaml_dir = '../envs' # relative to rules/*.smk files
 
-
 pkg_dir = os.path.dirname(Srcdir)          
 sys.path.append(os.path.abspath(pkg_dir))  # add virsorter 
 sys.path.append(os.path.abspath(Scriptdir))   # add Scriptdir
-
 
 wildcard_constraints:
     group='[A-Za-z]+',
     domain='[A-Za-z]+',
     shape='circular|linear',
-
-
 
 include: 'rules/preprocess.smk'
 include: 'rules/extract-feature.smk'
