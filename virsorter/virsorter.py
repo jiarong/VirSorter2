@@ -756,11 +756,12 @@ def config(show, show_source, init_source, db_dir, set, get):
             mes = '--db-dir is required for --init-source'
             logging.critical(mes)
             sys.exit(1)
-        elif not os.path.exists(db_dir):
-            mes = (f'--db-dir {db_dir} does NOT exist yet; Make sure it '
-                    'is created later\n')
-            logging.warning(mes)
         else:
+            if not os.path.isdir(db_dir):
+                mes = (f'--db-dir {db_dir} does NOT exist yet; Make sure it '
+                        'is created later\n')
+                logging.warning(mes)
+
             init_config_template(SRC_CONFIG_DIR, USER_CONFIG_DIR, db_dir)
             sys.exit(0)
 
