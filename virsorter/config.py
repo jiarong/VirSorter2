@@ -92,10 +92,26 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir,
         with open(TEMPLATE) as fp:
             config = yaml.load(fp)
             logging.info(f'Using {TEMPLATE} as config template')
+            
+        if TEMPLATE.startswith(USER_CONFIG_DIR):
+            src_template_ori = os.path.join(SRC_CONFIG_DIR, 
+                    'template-config-original.yaml')
+            with open(src_template_ori) as fp:
+                config_src = yaml.load(fp)
+                st = set(config_src) - set(config)
+                if len(st) != 0:
+                    config.update(dict((i, config_src[i]) for i in st))
+                    with open(TEMPLATE, 'w') as fw:
+                        yaml.dump(config, fw)
+                    logging.info(
+                            f'{TEMPLATE} as config template does not '
+                            'have all variables needed; '
+                            'updating with those in {src_template_ori}')
+
     except FileNotFoundError as e:
         if db_dir != None:
             mes = ('"template-config.yaml" has not been initialized; '
-                    'initialing..')
+                    'initializing..')
             logging.info(mes)
             config = init_config_template(SRC_CONFIG_DIR, 
                                              USER_CONFIG_DIR, db_dir)
