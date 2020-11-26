@@ -24,5 +24,8 @@ From: ubuntu:18.04
     cd VirSorter2
     pip install .
 
+    # generate template-config.yaml; db_dir ONLY for cyverse app
+    virsorter config --init-source --db-dir /work/projects/Cyverse/iVirus/VirSorter2-db
+ 
     # TACC's Stampede compliant, for iVirus/CyVerse
     mkdir /home1 && mkdir /scratch && mkdir /work && mkdir /trigger-rebuild
