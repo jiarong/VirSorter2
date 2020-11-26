@@ -37,7 +37,7 @@ conda install -c bioconda virsorter=2
 The development version is most updated and recommended. To install the development version:
 
 ```bash
-conda create -n vs2 -c bioconda -c conda-forge "python>=3.6" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ruamel.yaml "snakemake>=5.16.0" click
+conda create -n vs2 -c bioconda -c conda-forge "python>=3.6" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ruamel.yaml "snakemake>=5.16,<=5.26" click
 conda activate vs2
 git clone https://github.com/jiarong/VirSorter2.git
 cd VirSorter2
