@@ -52,6 +52,7 @@ def init_config_template(src_config_dir, user_config_dir, db_dir):
 
         logging.info(mes)
         template = user_template
+        logging.info('Using {template} as config template')
 
     yaml = YAML()
     with open(src_template_ori) as fp:
@@ -90,6 +91,7 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir,
     try:
         with open(TEMPLATE) as fp:
             config = yaml.load(fp)
+            logging.info(f'Using {TEMPLATE} as config template')
     except FileNotFoundError as e:
         if db_dir != None:
             mes = ('"template-config.yaml" has not been initialized; '
@@ -101,6 +103,7 @@ def make_config(db_dir, seqfile, config_f, include_groups, tmpdir,
             mes = ('--db-dir must be provided since "template-config.yaml" '
                     'has not been initialized')
             logging.critical(mes)
+            sys.exit(1)
 
     if db_dir != None:
         config['DBDIR'] = db_dir
