@@ -104,6 +104,12 @@ VirSorter2 takes one positional argument, `all` or `classify`. The default is `a
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --min-score 0.8 classify
 ```
 
+The above overwrites the previous final output files. If you want to keep previous results, you can use `--label` to add prefix to new final output files.
+
+```bash
+virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --min-score 0.9 --label rerun classify
+```
+
 ## speed up a run (`--provirus-off`) 
 
 In case you need to have some results quickly, there are two options: 1) turn off provirus step with `--provirus-off`; this reduces sensitivity on sequences that are only partially viral; 2) subsample ORFs from each sequence with `--max-orf-per-seq`; This option subsamples ORFs to a cutoff if a sequence has more ORFs than that. Note that this option is only availale when `--provirus-off` is used. 
