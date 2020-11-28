@@ -83,6 +83,7 @@ if Provirus:
     checkpoint split_gff_by_group:
         input: f'{Tmpdir}/{{group}}/all.pdg.gff'
         output: directory(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir')
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.split.prv.bdy
@@ -226,6 +227,7 @@ if Provirus:
         output: 
             anno=temp(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir/all.pdg.gff.{{idx}}.anno'),
             affi=temp(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir/all.pdg.gff.{{idx}}.affi.tab'),
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             python {Scriptdir}/make-affi-contigs-tabfile-on-split-gff.py --pfamtax {input.taxpfam} {input.seqfile} {output.anno} {output.affi} {input.gff} {input.taxwhm} {wildcards.group}
@@ -373,6 +375,7 @@ else:
     checkpoint split_gff_by_group:
         input: f'{Tmpdir}/{{group}}/all.pdg.gff'
         output: directory(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir')
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.anno
@@ -389,6 +392,7 @@ else:
         output: 
             anno=temp(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir/all.pdg.gff.{{idx}}.anno'),
             affi=temp(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir/all.pdg.gff.{{idx}}.affi.tab'),
+        conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
             python {Scriptdir}/make-affi-contigs-tabfile-on-split-gff.py --pfamtax {input.taxpfam} {input.seqfile} {output.anno} {output.affi} {input.gff} {input.taxwhm} {wildcards.group}
