@@ -88,7 +88,7 @@ rule gene_call:
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        prodigal -p meta -i {input} -a {output.faa} -o {output.gff} -f gff  &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        prodigal -p meta -i {input} -a {output.faa} -o {output.gff} -f gff  &> {log} || {{ echo "See error details in {Wkdir}/{log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
         """
 
 def merge_split_faa_gff_input_agg(wildcards):
@@ -223,7 +223,7 @@ rule remove_partial_gene:
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log=log/iter-0/step1-pp/{wildcards.shape}-remove-partial-gene-common.log
+        Log={Wkdir}/log/iter-0/step1-pp/{wildcards.shape}-remove-partial-gene-common.log
         if [ {wildcards.shape} = "circular" ]; then
             python {Scriptdir}/circular-remove-partial-gene.py {input.gff} {output.gff} &> $Log || {{ echo "See error detail in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             python {Scriptdir}/filter-seqs-by-gff.py {output.gff} {input.faa} {output.faa}

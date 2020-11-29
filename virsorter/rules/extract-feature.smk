@@ -6,7 +6,7 @@ rule gff_feature:
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        python {Scriptdir}/extract-feature-from-gff.py {Dbdir}/rbs/rbs-catetory.tsv {input} {output} &> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        python {Scriptdir}/extract-feature-from-gff.py {Dbdir}/rbs/rbs-catetory.tsv {input} {output} &> {log} || {{ echo "See error details in {Wkdir}/{log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
         """
 
 rule gff_feature_by_group:
@@ -17,7 +17,7 @@ rule gff_feature_by_group:
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log=log/iter-0/step2-extract-feature/extract-feature-from-gff-{wildcards.group}.log
+        Log={Wkdir}/log/iter-0/step2-extract-feature/extract-feature-from-gff-{wildcards.group}.log
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
         if [ -s $Rbs_pdg_db ]; then
             python {Scriptdir}/extract-feature-from-gff.py {Dbdir}/rbs/rbs-catetory.tsv {input.gff} {output} &> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
@@ -92,7 +92,7 @@ rule hmmsearch:
             Inputseq={input}
         else
             # when To_scratch is true, Tmp and Bname should have been defined successfully
-            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname 2> {log} || {{ echo "See error details in {Wkdir}/{log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
             rm -f $Tmp/$Bname && rmdir $Tmp
         fi
         """
@@ -206,7 +206,7 @@ rule hmmsearch_by_group:
                 Inputseq={input}
             else
                 # when To_scratch is true, Tmp and Bname should have been defined successfully
-                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname 2> {log} || {{ echo "See error details in {Wkdir}/{log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
                 rm -f $Tmp/$Bname && rmdir $Tmp
             fi
         else
@@ -277,11 +277,11 @@ if Prep_for_dramv:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            python {Scriptdir}/extract-feature-from-hmmout.py {Hmmsearch_score_min} "{input.arc},{input.bac},{input.euk},{input.mix},{input.vir}" "arc,bac,euk,mixed,vir" > {output.tax} 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            python {Scriptdir}/extract-feature-from-hmmout.py {Hmmsearch_score_min} "{input.arc},{input.bac},{input.euk},{input.mix},{input.vir}" "arc,bac,euk,mixed,vir" > {output.tax} 2> {log} || {{ echo "See error details in {Wkdir}/{log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
             python {Scriptdir}/add-unaligned-to-hmm-featrues.py {input.faa} {output.tax} > {output.ftr}
 
             # pfam only annotation
-            python {Scriptdir}/extract-feature-from-hmmout.py {Hmmsearch_score_min} "{input.arc},{input.bac},{input.euk},{input.mix},{input.pfamvir}" "arc,bac,euk,mixed,vir" > {output.tax}pfam 2>> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            python {Scriptdir}/extract-feature-from-hmmout.py {Hmmsearch_score_min} "{input.arc},{input.bac},{input.euk},{input.mix},{input.pfamvir}" "arc,bac,euk,mixed,vir" > {output.tax}pfam 2>> {log} || {{ echo "See error details in {Wkdir}/{log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
             python {Scriptdir}/add-unaligned-to-hmm-featrues.py {input.faa} {output.tax}pfam > {output.ftr}pfam
 
             # add hallmark info to .tax file for making affi-contigs.tab file
@@ -304,7 +304,7 @@ else:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            python {Scriptdir}/extract-feature-from-hmmout.py {Hmmsearch_score_min} "{input.arc},{input.bac},{input.euk},{input.mix},{input.vir}" "arc,bac,euk,mixed,vir" > {output.tax} 2> {log} || {{ echo "See error details in {log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            python {Scriptdir}/extract-feature-from-hmmout.py {Hmmsearch_score_min} "{input.arc},{input.bac},{input.euk},{input.mix},{input.vir}" "arc,bac,euk,mixed,vir" > {output.tax} 2> {log} || {{ echo "See error details in {Wkdir}/{log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
             python {Scriptdir}/add-unaligned-to-hmm-featrues.py {input.faa} {output.tax} > {output.ftr}
 
             # add hallmark info to .tax file for making affi-contigs.tab file
