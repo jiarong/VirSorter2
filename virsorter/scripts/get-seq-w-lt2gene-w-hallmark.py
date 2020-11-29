@@ -4,6 +4,7 @@ import sys
 import os
 import screed
 import pandas as pd
+import numpy as np
 
 def main():
     '''Get short contigs (with less than 2 genes) but has hallmark genes
@@ -29,6 +30,9 @@ def main():
     fa_f = sys.argv[3]
 
     df = pd.read_csv(hmk_f, sep='\t', header=0, index_col='seqname')
+    if len(df) == 0:
+        df = df.astype(dtype=int)
+
     group_ser = df.idxmax(axis=1)
     max_cnt_ser = df.max(axis=1)
     df_max = pd.concat([group_ser, max_cnt_ser], 
@@ -39,6 +43,8 @@ def main():
     seqnames_w_hm = df_max.index.unique()
 
     df_proba = pd.read_csv(proba_f, sep='\t', header=0, index_col='seqname')
+    if len(df_proba) == 0:
+        df_proba = df_proba.astype(dtype=float)
     seqnames_w_mt2genes = df_proba.index.unique()
 
     st = set(seqnames_w_hm).difference(set(seqnames_w_mt2genes))

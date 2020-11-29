@@ -57,7 +57,7 @@ def main(config, intable, inseqfile, outtable, outseqfile, hallmark_required,
 
     config = YAML().load(open(config_f))
     df = pd.read_csv(score_f, sep='\t', header=0)
-    sel = pd.Series([True,] * len(df))
+    sel = pd.Series([True,] * len(df), dtype=pd.BooleanDtype())
     # require viral enrichment except for provirus
     sel_viral_enrich = df['viral'] > df['cellular']
     sel_provirus = df['seqname'].map(lambda x: x.endswith('_partial'))
