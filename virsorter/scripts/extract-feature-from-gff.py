@@ -16,13 +16,11 @@ sys.path.append(pkg_dir)
 from virsorter.config import get_default_config, set_logger
 from virsorter.utils import (
         load_rbs_category, df_tax_per_config, parse_hallmark_hmm,
-        parse_gff, extract_feature_gff, get_feature
+        parse_gff, extract_feature_gff, get_feature, 
+        GFF_FEATURE_LIST, GFF_PARSER_COLS,
 )
 
 DEFAULT_CONFIG = get_default_config() 
-
-TOTAL_FEATURE_LIST = DEFAULT_CONFIG['TOTAL_FEATURE_LIST']
-SELECT_FEATURE_LIST = DEFAULT_CONFIG['SELECT_FEATURE_LIST']
 
 set_logger()
 
@@ -45,8 +43,11 @@ class gff_ftr:
     def load_data(self):
         self.gff_gen = parse_gff(self.gff_f)
         self.rbs_cat_d = load_rbs_category(self.rbs_cat_f)
-        self.gff_mat_colnames = ('orf_index', 'start', 'end', 'strand', 
-                'partial', 'start_type', 'gc_cont', 'rbs_motif')
+        # exclude: seqname, seqlen, 
+        # ('orf_index', 'start', 'end', 'strand', 
+        #        'partial', 'start_type', 'gc_cont', 'rbs_motif')
+        self.gff_mat_colnames = GFF_PARSER_COLS[2:]
+
 
     def process_one_contig(self, seqname, mat):
         '''Process a contig
@@ -62,13 +63,6 @@ class gff_ftr:
         l = extract_feature_gff(df_gff, self.rbs_cat_d)
         # meet 1) >= 2 genes; 2) at least 1 full gene
         if len(l) != 0:
-            if self.header_written == False:
-                header_lis = TOTAL_FEATURE_LIST[:len(l)]
-                self.fw.write(
-                        'seqname\t{}\n'.format('\t'.join(header_lis))
-                )
-                self.header_written = True
-
             l = [str(i) for i in l]
             self.fw.write('{}\t{}\n'.format(seqname, '\t'.join(l)))
 
@@ -77,8 +71,12 @@ class gff_ftr:
         '''
         mat = []
         last_seqname = None
-        self.header_written = False
+
         with open(self.outfile, 'w') as self.fw:
+            header_lis = GFF_FEATURE_LIST
+            self.fw.write(
+                    'seqname\t{}\n'.format('\t'.join(header_lis))
+            )
 
             for lis in self.gff_gen:
                 seqname = lis[0]
