@@ -40,6 +40,15 @@ FASTA_DESC_FORMAT_TEMPLATE = (
 # tax feature extration
 TAXON_LIST = ['arc', 'bac', 'euk', 'vir', 'mixed']
 
+# gff featuure list
+GFF_FEATURE_LIST = [
+    'contig_size', 'gene_size', 'gene_overlap_perc', 'density', 
+    'strand_switch_perc', 'atg_perc', 'gtg_perc', 'ttg_perc', 'gc_mean', 
+    'gc_sd', 'rbs_DoubleA', 'rbs_DoubleT', 'rbs_NoA', 'rbs_None', 
+    'rbs_OnlyA', 'rbs_OnlyT', 'rbs_Other', 'rbs_Other_GA', 
+    'rbs_SD_Bacteroidetes', 'rbs_SD_Canonical', 'rbs_TATATA_3-6', 
+]
+
 def load_rbs_category(f):
     '''load into rbs site and rbs catetory mapping into a dict
     '''
