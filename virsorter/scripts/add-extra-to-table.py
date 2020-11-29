@@ -46,6 +46,12 @@ def main():
     df_info['seqname'] = df_info.index
 
     df = pd.read_csv(score_f, sep='\t', header=0)
+    if len(df) == 0:
+        cols = df.columns.values.tolist() + ['max_score_group', 
+                'length', 'hallmark', 'viral', 'cellular']
+        with open(outfile, 'w') as fw:
+            fw.write('{}\n'.format('\t'.join(cols)))
+            sys.exit(0)
 
     _df = df.drop('seqname', axis=1)
     _df.index = df.loc[:,'seqname']
@@ -53,6 +59,7 @@ def main():
     df['max_score'] = max_ser.values
 
     max_score_group_ser = _df.idxmax(axis=1)
+        
     for i in max_score_group_ser.index:
         if max_score_group_ser.loc[i] != df_info.loc[i, 'max_score_group']:
             df_info.loc[i, 'max_score_group'] = max_score_group_ser.loc[i]

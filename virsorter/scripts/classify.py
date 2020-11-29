@@ -47,6 +47,12 @@ def main():
     outfile = sys.argv[4]
 
     X = pd.read_csv(ftr_f, sep='\t', header=0, index_col=0)
+    if len(X) == 0:
+        cols = ['seqname', label]
+        with open(outfile, 'w') as fw:
+            fw.write('{}\n'.format('\t'.join(cols)))
+            sys.exit(0)
+
     X = X.loc[:, SELECT_FEATURE_LIST]
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', category=DeprecationWarning)
