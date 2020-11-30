@@ -81,7 +81,7 @@ More details of output can be found [here](#detailed-description-on-output-files
 ---
 **NOTE**
 
-Note that suffix `||full` and `||{i}_partial` (`{i}` can be numbers starting from 0 to max number of viral fragments found in that contig) have been added to original sequence names to differentiate sub-sequences in case of multiple viral subsequences found in one contig.
+Note that suffix `||full`, `||lt2gene` and `||{i}_partial` (`{i}` can be numbers starting from 0 to max number of viral fragments found in that contig) have been added to original sequence names to differentiate sub-sequences in case of multiple viral subsequences found in one contig.
 
 ---
 
