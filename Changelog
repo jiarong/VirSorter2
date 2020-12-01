@@ -1,0 +1,33 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+
+## [Unreleased]
+- Make genbank file with pfam annotation: desc field has format "tax:viral||anno:XXXX 
+- Check "suspicious" words in each contig: methyltransferase, epimerase, endonuclease
+- Mark short jobs as local_rules to optimaize for `virsorter run` --cluster mode
+
+## [2.0] - 2020-12-01
+
+### Added
+- Add --viral-gene-required
+- Add --hallmark-required
+- Add --hallmark-required-on-short
+- Add --prep-for-dramv
+- Add --label in virsorter run to allow adding prefix to output files
+- Add shape to boundry file
+
+### Changed
+- Apply length prefilter to provirus.py; skip all seqs length < min(3000, MIN_GENOME_SIZE)
+- Limit max file splits to 1000
+
+## [v2.0.beta] - 2020-06-19
+### Added
+- Make score table for trimmed viral seqs after provirus extraction
+- Add length to score table
+- Add subcommand `virsorter train-feature` and `virsorter train-model` for training customized classifiers of new viral groups, `virsorter config` for change configurations
+
+# [2.0.alpha] - 2020-06-07
+### Added
+- First release 
