@@ -17,8 +17,8 @@
 
 VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse DNA and RNA virus genomes. It has made major updates to its [previous version](https://github.com/simroux/VirSorter):
 
-- work with more viral groups including dsDNAphage, ssDNA, RNA, NCLDV (Nucleocytoviricota), *lavidaviridae*;
-- apply machine learning to estimate viralness using genomic and taxonomic features and hallmark gene counts;
+- work with more viral groups including dsDNA phages, ssDNA viruses, RNA viruses, NCLDV (Nucleocytoviricota), *lavidaviridae* (virophages);
+- apply machine learning to estimate viralness using genomic features including structural/functional/taxonomic annotation and viral hallmark genes;
 - train with high quality virus genomes from metagenomes or other sources.
 
 
@@ -76,12 +76,12 @@ Due to the large HMM database that VirSorter2 uses, this small dataset takes a f
 - `final-viral-score.tsv`:    table with score of each viral sequences across groups
 - `final-viral-boundary.tsv`: table with boundary information
 
-More details of output can be found [here](#detailed-description-on-output-files).
+More details about each of these output files can be found [here](#detailed-description-on-output-files).
 
 ---
 **NOTE**
 
-Note that suffix `||full` and `||{i}_partial` (`{i}` can be numbers starting from 0 to max number of viral fragments found in that contig) have been added to original sequence names to differentiate sub-sequences in case of multiple viral subsequences found in one contig.
+Note that suffix `||full`, `||lt2gene`, and `||{i}_partial` (`{i}` can be numbers starting from 0 to max number of viral fragments found in that contig) have been added to original sequence names to differentiate sub-sequences in case of multiple viral subsequences found in one contig.
 
 ---
 
@@ -98,13 +98,13 @@ virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 al
 
 ## re-run with different score cutoff (`--min-score` and `--classify`)
 
-VirSorter2 takes one positional argument, `all` or `classify`. The default is `all`, which means running the whole pipeline, including 1) preprocessing, 2) annotation (feature extraction), and 3) classification. The main computational bottleneck is the annotation step, taking about 95% of CPU time. In case you just want to re-run with different score cutoff (--min-score), `classify` argument can skip the annotation steps, and only re-run classify step.
+VirSorter2 takes one positional argument, `all` or `classify`. The default is `all`, which means running the whole pipeline, including 1) preprocessing, 2) annotation (feature extraction), and 3) classification. The main computational bottleneck is the annotation step, taking about 95% of CPU time. In case you just want to re-run with different score cutoff (--min-score), `classify` argument can skip the annotation steps, and only re-run only the classify step.
 
 ```bash
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --min-score 0.8 classify
 ```
 
-The above overwrites the previous final output files. If you want to keep previous results, you can use `--label` to add prefix to new final output files.
+The above overwrites the previous final output files. If you want to keep previous results, you can use `--label` to add a prefix to the new final output files.
 
 ```bash
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --min-score 0.9 --label rerun classify
@@ -112,7 +112,7 @@ virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --
 
 ## speed up a run (`--provirus-off`) 
 
-In case you need to have some results quickly, there are two options: 1) turn off provirus step with `--provirus-off`; this reduces sensitivity on sequences that are only partially viral; 2) subsample ORFs from each sequence with `--max-orf-per-seq`; This option subsamples ORFs to a cutoff if a sequence has more ORFs than that. Note that this option is only availale when `--provirus-off` is used. 
+In case you need to have some results quickly, there are two options: 1) turn off provirus step with `--provirus-off`; this reduces sensitivity on sequences that are only partially viral; 2) subsample ORFs from each sequence with `--max-orf-per-seq`; This option subsamples ORFs if a sequence has more ORFs than the number provided. Note that this option is only availale when `--provirus-off` is used. 
 
 ```bash
 rm -rf test.out
@@ -144,15 +144,15 @@ ls test.out/for-dramv
 - final-viral-combined.fa
 
   > identified viral sequences, including two types:
-  > - full sequences identified as viral (added with suffix `||full`);
-  > - partial sequences identified as viral (added with suffix `||{i}_partial`); here `{i}` can be numbers starting from 0 to max number of viral fragments found in that contig;
-  > - short (less then two genes) sequences with hallmark genes identified as viral (added with suffix `||lt2gene`);
+  > - full sequences identified as viral (identified with suffix `||full`);
+  > - partial sequences identified as viral (identified with suffix `||{i}_partial`); here `{i}` can be numbers starting from 0 to max number of viral fragments found in that contig;
+  > - short (less than two genes) sequences with hallmark genes identified as viral (identified with suffix `||lt2gene`);
 
  
 - final-viral-score.tsv
 
   > This table can be used for further screening of results. It includes the following columns:
-  >   - seqname
+  >   - sequence name
   >   - score of each viral sequences across groups (multiple columns)
   >   - max score across groups
   >   - max score group
@@ -164,7 +164,7 @@ ls test.out/for-dramv
 ---
 **NOTE**
 
-Note that classifiers of different viral groups are not exclusive from each other, and may have overlap in their target viral sequence space, which means this info should not be used as reliable classification. We limit the purpose of VirSorter2 to viral idenfication only.
+Note that classifiers of different viral groups are not exclusive from each other, and may have overlap in their target viral sequence space, which means this information should not be used or considered as reliable taxonomic classification. We limit the purpose of VirSorter2 to viral idenfication only.
 
 ---
 
@@ -207,7 +207,7 @@ VirSorter2 currently has classifiers of five viral groups (dsDNAphage, NCLDV, RN
 
   > prodigal RBS (ribosomal binding site) motif training model; this can be produced with `-t` option in prodigal; This is useful feature for NCLDV due to large genome size for training; For other viral groups, it's OK to skip this file.
 
-In this tutorial, I will show how to make `model` for *autolykiviridae*.
+In this tutorial, I will show how to make `model` for the *autolykiviridae* family.
 
 First, prepare the dataset needed: 1) high quality viral genomes 2) protein sequence of hallmark gene; and install two more dependecies.
 
