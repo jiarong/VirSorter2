@@ -68,9 +68,15 @@ class clf_trim:
 
         df_tax_all = pd.read_csv(self.tax_f, sep='\t', header=None, 
                 names=['orfname', 'tax', 'hmm', 'score'])
-        seqnames, indice = zip(
-                *[orfname.rsplit('_', 1) for orfname in df_tax_all['orfname']]
-        )
+        try:
+            seqnames, indice = zip(
+                    *[orfname.rsplit('_', 1) 
+                        for orfname in df_tax_all['orfname']]
+            )
+        except ValueError as e:
+            seqnames = []
+            indice = []
+
         df_tax_all['seqname'] = seqnames
         # convert to int to match orf_index in df_gff
         indice = [ int(i) for i in indice ]

@@ -82,11 +82,11 @@ def df_tax_per_config(tax_f, seqname, taxwhm=False):
     if taxwhm:
         cols = cols + ['hallmark']
     df_tax_all = pd.read_csv(fw, sep='\t', header=None, names=cols)
-    if len(df_tax_all) != 0:
+    try:
         seqnames, indice = zip(
             *[orfname.rsplit('_', 1) for orfname in df_tax_all['orfname']]
         )
-    else:
+    except ValueError as e:
         seqnames = []
         indice = []
 

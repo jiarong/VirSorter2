@@ -27,5 +27,5 @@ From: ubuntu:18.04
     # generate template-config.yaml;   db_dir ONLY for cyverse  app
     virsorter config --init-source --db-dir /work/02515/tg818108/stampede2/db/vs2/db
  
-    # TACC's Stampede compliant, for iVirus/CyVerse
+    # TACC's Stampede compliant,  for iVirus/CyVerse
     mkdir /home1 && mkdir /scratch && mkdir /work && mkdir /trigger-rebuild
