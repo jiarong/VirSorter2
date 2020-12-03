@@ -29,7 +29,8 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
 ```bash
-conda install -c bioconda virsorter=2
+conda create -n vs2 -c bioconda virsorter=2
+conda activate vs2
 ```
 
 ## Option 2
