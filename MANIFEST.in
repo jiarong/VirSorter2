@@ -1,1 +1,11 @@
+# Include all non-python files
 recursive-include virsorter *
+
+# new file for metadata
+include pyproject.toml
+
+# Include the README
+include README*
+
+# Include the license file
+include LICENSE*

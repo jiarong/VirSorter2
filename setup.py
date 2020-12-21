@@ -31,16 +31,21 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=['virsorter'],
+    # use MANIFEST.in instead
     #package_data={
     #    #'': ["virsorter/*", ]  
     #    # include anything under virsorter; 
     #    'virsorter': ['*']
     #},
+    # include_package_data flag controls whether non-python files 
+    #  distributed in the sdist AND existing in a package 
+    #  (directory with __init__.py) install to the site-packages location. 
+    #  So in order for non-python files to install with your code 
+    #  they need to a) be in the sdist (controlled by MANIFEST.in) and 
+    #  b) exist inside an installable python package.
     include_package_data=True,  # include all files in MANIFEST.in
-    data_files=[(".", ["README.md", "LICENSE"])],
-    install_requires= [
-    ],
-    # install via conda: click, ruamel.yaml, snakemake
+    data_files=[],
+    install_requires= [], # install via conda instead
     entry_points={
           'console_scripts': [
               'virsorter = virsorter.virsorter:cli'
