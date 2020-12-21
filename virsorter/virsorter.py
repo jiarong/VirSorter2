@@ -13,6 +13,7 @@ from virsorter import __version__
 from virsorter.config import get_default_config, set_logger, make_config
 
 set_logger()
+logging.info(f'VirSorter {__version__}')
 
 def log_exception(msg):
     logging.critical(msg)
