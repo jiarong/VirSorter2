@@ -19,7 +19,7 @@ dependencies:
   - click=7.1
   - enum34=1.1
   - freetype=2.10
-  - hmmer=3.2
+  - hmmer==3.3
   - icu=64.2
   - idna=2.9
   - imbalanced-learn=0.6
