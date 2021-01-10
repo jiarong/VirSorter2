@@ -300,14 +300,24 @@ if Provirus:
         shell:
             """
             python {Scriptdir}/add-extra-to-table.py {Tmpdir}/viral-combined-proba.tsv {Tmpdir}/viral-combined.fa {Tmpdir}/viral-combined-proba-more-cols.tsv
-            python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa {output.score} {output.fa}
+            python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa {output.score} {output.fa}.trim
+            python {Scriptdir}/keep-original-seq.py {output.fa}.trim {Seqfile} > {output.fa}.original
             cp {Tmpdir}/viral-fullseq.tsv {output.boundary}
-            grep -v '^seqname' {Tmpdir}/viral-partseq.tsv >> {output.boundary} || : 
+            tail -n +2 {Tmpdir}/viral-partseq.tsv >> {output.boundary} 
+
+            if [ {Keep_original_seq} = "True" ]; then
+                cp {output.fa}.original {output.fa}
+            else
+                cp {output.fa}.trim {output.fa}
+            fi
+
             if [ {Prep_for_dramv} = "True" ]; then
                 mkdir -p {Label}for-dramv
-                python {Scriptdir}/modify-seqname-for-dramv.py {output.fa} {output.score} -o {Label}for-dramv/final-viral-combined-for-dramv.fa
+                python {Scriptdir}/modify-seqname-for-dramv.py {output.fa}.original {output.score} -o {Label}for-dramv/final-viral-combined-for-dramv.fa
                 cp {Tmpdir}/viral-affi-contigs-for-dramv.tab {Label}for-dramv
             fi
+            rm -f {output.fa}.trim {output.fa}.original
+
             N_lt2gene=$(grep -c '^>.*||lt2gene' {output.fa} || :)
             N_lytic=$(grep -c '^>.*||full' {output.fa} || :)
             N_lysogenic=$(grep -c '^>.*||.*_partial' {output.fa} || :)
@@ -489,11 +499,13 @@ else:
         shell:
             """
             python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa {output.score} {output.fa}
+
             if [ {Prep_for_dramv} = "True" ]; then
                 mkdir -p {Label}for-dramv
                 python {Scriptdir}/modify-seqname-for-dramv.py {output.fa} {output.score} -o {Label}for-dramv/final-viral-combined-for-dramv.fa
                 cp {Tmpdir}/viral-affi-contigs-for-dramv.tab {Label}for-dramv
             fi
+
             N_viral_fullseq=$(grep -c '^>.*||full' {output.fa} || :)
             N_viral_lt2gene=$(grep -c '^>.*||lt2gene' {output.fa} || :)
             if [ {Prep_for_dramv} = True ]; then

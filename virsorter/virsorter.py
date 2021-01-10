@@ -102,6 +102,17 @@ def get_snakefile(f="Snakefile"):
     help='minimal score to be identified as viral',
 )
 @click.option(
+    '--keep-original-seq',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help=('keep the original sequences instead of trimmed; By default, '
+            'the untranslated regions at both ends of identified viral '
+            'seqs are trimmed; circular sequences are modified to remove '
+            'overlap between both ends and adjusted for the gene splitted '
+            'into two ends;'),
+)
+@click.option(
     '--hallmark-required',
     default=False,
     is_flag=True,
@@ -213,7 +224,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         jobs,  min_score, hallmark_required, hallmark_required_on_short,
         viral_gene_required, provirus_off, max_orf_per_seq, min_length,
         prep_for_dramv, tmpdir, rm_tmpdir, verbose, profile, dryrun,
-        use_conda_off, snakemake_args, label):
+        use_conda_off, snakemake_args, label, keep_original_seq):
     ''' Runs the virsorter main function to classify viral sequences
 
     This includes 3 steps: 1) preprocess, 2) feature extraction, and 3)
@@ -301,7 +312,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
             prep_for_dramv=prep_for_dramv,
             max_orf_per_seq=max_orf_per_seq, 
             tmpdir=tmpdir, min_length=min_length, min_score=min_score, 
-            label=label,
+            label=label, keep_original_seq=keep_original_seq,
     )
     config = load_configfile(config_f)
 
@@ -337,6 +348,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
     except subprocess.CalledProcessError as e:
         # removes the traceback
         #logging.critical(e)
+        #e.cmd, e.returncode, e.output
         sys.exit(1)
 
     if rm_tmpdir:
