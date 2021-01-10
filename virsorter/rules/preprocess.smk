@@ -84,11 +84,11 @@ rule gene_call:
     output: 
         gff=temp('iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitgff'),
         faa=temp('iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitfaa'),
-    log: 'iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.log'
+        log=temp('iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.log'),
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        prodigal -p meta -i {input} -a {output.faa} -o {output.gff} -f gff  &> {log} || {{ echo "See error details in {Wkdir}/{log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        prodigal -p meta -i {input} -a {output.faa} -o {output.gff} -f gff  &> {output.log} || {{ echo "See error details in {Wkdir}/{output.log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
         """
 
 def merge_split_faa_gff_input_agg(wildcards):
@@ -297,8 +297,9 @@ rule combine_linear_circular:
         cat {input.faa} > {output.faa}
         cat {input.contig} > {output.contig}
         if [ ! -s {output.faa} ]; then
-            echo "No genes from the contigs are left in {output.faa} after preprocess; virsorter replies on features from these genes for prediction; check quality of your contigs (too short or strange sequence composition)" | python {Scriptdir}/echo.py --level error
-            exit 1
+            printf "*** NOTE:\n No genes from the contigs are left in {output.faa} after preprocess; virsorter replies on features from these genes for prediction; check quality of your contigs (too short or strange sequence composition), or just discard this sample\n\n" | python {Scriptdir}/echo.py
+            touch EARLY-EXIT
+            exit 234
         fi
         """
 
@@ -334,8 +335,9 @@ rule combine_linear_circular_by_group:
             cat {input.group_faa} > {output.faa}
             cat {input.group_gff} > {output.gff}
             if [ ! -s {output.faa} ]; then
-                echo "No genes from the contigs are left in {output.faa} after preprocess; virsorter replies on features from these genes for prediction; check quality of your contigs (too short or strange sequence composition) or remove {wildcards.group} from Groups" | python {Scriptdir}/echo.py --level error
-                exit 1
+                printf "*** NOTE: \nNo genes from the contigs are left in {output.faa} after preprocess; virsorter replies on features from these genes for prediction; check quality of your contigs (too short or strange sequence composition) or remove {wildcards.group} from Groups; or just discard this sample\n\n" | python {Scriptdir}/echo.py
+                touch EARLY-EXIT
+                exit 234
             fi
         else
             (cd iter-0/{wildcards.group} && ln -sf ../all.pdg.gff && ln -sf ../all.pdg.faa)
