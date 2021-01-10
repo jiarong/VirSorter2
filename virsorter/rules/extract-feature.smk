@@ -11,9 +11,9 @@ rule gff_feature:
 
 rule gff_feature_by_group:
     input:
-        ftr='{Tmpdir}/all.pdg.gff.ftr',
-        gff='{Tmpdir}/{group}/all.pdg.gff'
-    output: '{Tmpdir}/{group}/all.pdg.gff.ftr'
+        ftr=f'{Tmpdir}/all.pdg.gff.ftr',
+        gff=f'{Tmpdir}/{{group}}/all.pdg.gff'
+    output: f'{Tmpdir}/{{group}}/all.pdg.gff.ftr'
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
@@ -111,7 +111,7 @@ def merge_split_hmmtbl_input_agg(wildcards):
 localrules: merge_split_hmmtbl
 rule merge_split_hmmtbl:
     input: merge_split_hmmtbl_input_agg
-    output: '{Tmpdir}/all.pdg.{domain}.hmmtbl',
+    output: f'{Tmpdir}/all.pdg.{{domain}}.hmmtbl',
     shell:
         """
         printf "%s\n" {input} | xargs cat > {output}
@@ -286,7 +286,7 @@ if Prep_for_dramv:
             python {Scriptdir}/add-hallmark-to-taxfile.py {output.tax} {output.tax}whm
 
             # remove split faa files
-            rm -f {Tmpdir}/all.pdg.faa.*.split
+            echo {Tmpdir}/all.pdg.faa.*.split | xargs rm -f
             """
 else:
     rule hmm_sort_to_best_hit_taxon:
@@ -311,7 +311,7 @@ else:
             # add hallmark info to .tax file for making affi-contigs.tab file
             python {Scriptdir}/add-hallmark-to-taxfile.py {output.tax} {output.tax}whm
             # remove split faa files
-            rm -f {Tmpdir}/all.pdg.faa.*.split
+            echo {Tmpdir}/all.pdg.faa.*.split | xargs rm -f
             """
 
 if Prep_for_dramv:
@@ -353,7 +353,7 @@ if Prep_for_dramv:
             fi
 
             # remove split faa files
-            rm -f {Tmpdir}/{wildcards.group}/all.pdg.faa.*.split
+            echo {Tmpdir}/{wildcards.group}/all.pdg.faa.*.split | xargs rm -f
             """
 else:
     rule hmm_sort_to_best_hit_taxon_by_group:
@@ -388,7 +388,7 @@ else:
                 python {Scriptdir}/add-hallmark-to-taxfile.py {output.tax} {output.tax}whm 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             fi
             # remove split faa files
-            rm -f {Tmpdir}/{wildcards.group}/all.pdg.faa.*.split
+            echo {Tmpdir}/{wildcards.group}/all.pdg.faa.*.split | xargs rm -f
             """
 
 localrules: hmm_features_by_group

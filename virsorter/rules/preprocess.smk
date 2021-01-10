@@ -85,7 +85,7 @@ rule gene_call:
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log='{Tmpdir}/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.log'
+        Log='{Tmpdir}/pp-{wildcards.shape}.fna.splitdir/pp-{wildcards.shape}.fna.{wildcards.i}.split.pdg.log'
         prodigal -p meta -i {input} -a {output.faa} -o {output.gff} -f gff  &> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
         rm -f $Log
         """
