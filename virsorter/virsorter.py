@@ -5,6 +5,7 @@ import multiprocessing
 import subprocess
 import glob
 import shutil
+import shlex
 import click
 
 from snakemake import load_configfile
@@ -14,6 +15,7 @@ from virsorter.config import get_default_config, set_logger, make_config
 
 set_logger()
 logging.info(f'VirSorter {__version__}')
+logging.info(' '.join(map(shlex.quote, sys.argv)))
 
 def log_exception(msg):
     logging.critical(msg)
