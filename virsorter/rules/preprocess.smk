@@ -2,14 +2,13 @@
 # detect circular, predict genes on contigs, and filter on size (# of genes) and/or if circular
 localrules: circular_linear_split
 checkpoint circular_linear_split:
-    input: {Seqfile}
-    output: 
-        'iter-0/pp-seqname-length.tsv',
+    input: f'{Seqfile}'
+    output: f'{Tmpdir}/pp-seqname-length.tsv',
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell: 
         """
         # prep_logdir
-        mkdir -p log/iter-0/step1-pp log/iter-0/step2-extract-feature log/iter-0/step3-classify
+        mkdir -p log/{Tmpdir}/step1-pp log/{Tmpdir}/step2-extract-feature log/{Tmpdir}/step3-classify
 
         Cnt=$(grep -c '^>' {input})
         if [ ${{Cnt}} = 0 ]; then
@@ -20,51 +19,50 @@ checkpoint circular_linear_split:
 
         python {Scriptdir}/circular-linear-split.py \
           {input} \
-          iter-0/pp-circular.fna.preext\
-          iter-0/pp-linear.fna \
+          {Tmpdir}/pp-circular.fna.preext\
+          {Tmpdir}/pp-linear.fna \
           {output[0]} \
           "||rbs:common" \
           {Min_length}
 
-        if [ ! -s iter-0/pp-circular.fna.preext ]; then
+        if [ ! -s {Tmpdir}/pp-circular.fna.preext ]; then
             echo "No circular seqs found in contig file" \
               | python {Scriptdir}/echo.py
-            rm iter-0/pp-circular.fna.preext
+            rm {Tmpdir}/pp-circular.fna.preext
         else
             python {Scriptdir}/circular-extend.py \
-              iter-0/pp-circular.fna.preext iter-0/pp-circular.fna
+              {Tmpdir}/pp-circular.fna.preext {Tmpdir}/pp-circular.fna
         fi
 
-        if [ ! -s iter-0/pp-linear.fna ]; then
+        if [ ! -s {Tmpdir}/pp-linear.fna ]; then
             echo "No linear seqs found in contig file" \
               | python {Scriptdir}/echo.py
-            rm iter-0/pp-linear.fna
+            rm {Tmpdir}/pp-linear.fna
         fi
         """
 
 localrules: circular_linear_split_by_group
 rule circular_linear_split_by_group:
-    input: 
-        'iter-0/pp-{shape}.fna',
-    output: 'iter-0/{group}/pp-{shape}.fna'
+    input: f'{Tmpdir}/pp-{{shape}}.fna',
+    output: f'{Tmpdir}/{{group}}/pp-{{shape}}.fna'
     shell: 
         """
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
         if [ -s $Rbs_pdg_db ]; then
             sed 's/rbs:common/rbs:{wildcards.group}/g' {input} > {output}
         else
-            (cd iter-0/{wildcards.group} && ln -sf ../pp-{wildcards.shape}.fna .)
+            (cd {Tmpdir}/{wildcards.group} && ln -sf ../pp-{wildcards.shape}.fna .)
         fi
         """
 
 localrules: split_contig_file
 checkpoint split_contig_file:
-    input: 'iter-0/pp-{shape}.fna'
-    output: directory('iter-0/pp-{shape}.fna.splitdir')
+    input: f'{Tmpdir}/pp-{{shape}}.fna'
+    output: directory(f'{Tmpdir}/pp-{{shape}}.fna.splitdir')
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log={Wkdir}/log/iter-0/step1-pp/split-contig-file-{wildcards.shape}-common.log
+        Log={Wkdir}/log/{Tmpdir}/step1-pp/split-contig-file-{wildcards.shape}-common.log
         Total=$(grep -v '^>' {input} | wc -c)
         Bname=$(basename {input})
         # clean up output from following steps to avoid bug with checkpoint
@@ -80,15 +78,16 @@ checkpoint split_contig_file:
         """
 
 rule gene_call: 
-    input: 'iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split'
+    input: f'{Tmpdir}/pp-{{shape}}.fna.splitdir/pp-{{shape}}.fna.{{i}}.split'
     output: 
-        gff=temp('iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitgff'),
-        faa=temp('iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitfaa'),
-        log=temp('iter-0/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.log'),
+        gff=temp(f'{Tmpdir}/pp-{{shape}}.fna.splitdir/pp-{{shape}}.fna.{{i}}.split.pdg.splitgff'),
+        faa=temp(f'{Tmpdir}/pp-{{shape}}.fna.splitdir/pp-{{shape}}.fna.{{i}}.split.pdg.splitfaa'),
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        prodigal -p meta -i {input} -a {output.faa} -o {output.gff} -f gff  &> {output.log} || {{ echo "See error details in {Wkdir}/{output.log}" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        Log='{Tmpdir}/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.log'
+        prodigal -p meta -i {input} -a {output.faa} -o {output.gff} -f gff  &> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+        rm -f $Log
         """
 
 def merge_split_faa_gff_input_agg(wildcards):
@@ -100,6 +99,9 @@ def merge_split_faa_gff_input_agg(wildcards):
     _s = 'pp-{shape}.fna.{{i}}.split'.format(shape=wildcards.shape)
     splits = glob_wildcards(os.path.join(contig_split_dir, _s)).i
 
+    _s = os.path.join(contig_split_dir, _s)
+    contig = expand(_s, i=splits)
+
     _s = 'pp-{shape}.fna.{{i}}.split.pdg.splitgff'.format(shape=wildcards.shape)
     _s = os.path.join(contig_split_dir, _s)
     gff = expand(_s, i=splits)
@@ -108,29 +110,30 @@ def merge_split_faa_gff_input_agg(wildcards):
     _s = os.path.join(contig_split_dir, _s)
     faa = expand(_s, i=splits)
 
-    return {'gff': gff, 'faa': faa}
+    return {'gff': gff, 'faa': faa, 'contig': contig}
 
 localrules: merge_split_faa_gff
 rule merge_split_faa_gff:
     input: unpack(merge_split_faa_gff_input_agg)
     output:
-        gff='iter-0/pp-{shape}.gff',
-        faa='iter-0/pp-{shape}.faa',
+        gff=f'{Tmpdir}/pp-{{shape}}.gff',
+        faa=f'{Tmpdir}/pp-{{shape}}.faa',
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
         printf "%s\n" {input.gff} | xargs cat > {output.gff}
         printf "%s\n" {input.faa} | xargs cat > {output.faa}
+        printf "%s\n" {input.contig} | xargs rm -f
         """
 
 localrules: split_contig_file_by_group
 checkpoint split_contig_file_by_group:
-    input: 'iter-0/{group}/pp-{shape}.fna'
-    output: directory('iter-0/{group}/pp-{shape}.fna.splitdir')
+    input: f'{Tmpdir}/{{group}}/pp-{{shape}}.fna'
+    output: directory(f'{Tmpdir}/{{group}}/pp-{{shape}}.fna.splitdir')
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log={Wkdir}/log/iter-0/step1-pp/split-contig-file-{wildcards.shape}-{wildcards.group}.log
+        Log={Wkdir}/log/{Tmpdir}/step1-pp/split-contig-file-{wildcards.shape}-{wildcards.group}.log
         Bname=$(basename {input})
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
 
@@ -152,20 +155,21 @@ checkpoint split_contig_file_by_group:
         """
 
 rule gene_call_by_group_tmp:
-    input: 'iter-0/{group}/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split'
+    input: f'{Tmpdir}/{{group}}/pp-{{shape}}.fna.splitdir/pp-{{shape}}.fna.{{i}}.split'
     output: 
-        gff=temp('iter-0/{group}/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitgff'),
-        faa=temp('iter-0/{group}/pp-{shape}.fna.splitdir/pp-{shape}.fna.{i}.split.pdg.splitfaa'),
+        gff=temp(f'{Tmpdir}/{{group}}/pp-{{shape}}.fna.splitdir/pp-{{shape}}.fna.{{i}}.split.pdg.splitgff'),
+        faa=temp(f'{Tmpdir}/{{group}}/pp-{{shape}}.fna.splitdir/pp-{{shape}}.fna.{{i}}.split.pdg.splitfaa'),
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log={Wkdir}/iter-0/{wildcards.group}/pp-{wildcards.shape}.fna.splitdir/pp-{wildcards.shape}.fna.{wildcards.i}.split.pdg.log
+        Log={Wkdir}/{Tmpdir}/{wildcards.group}/pp-{wildcards.shape}.fna.splitdir/pp-{wildcards.shape}.fna.{wildcards.i}.split.pdg.log
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
         if [ -s $Rbs_pdg_db ]; then
             prodigal -t $Rbs_pdg_db -i {input} -a {output.faa} -o {output.gff} -f gff &> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
         else
             touch {output.gff} {output.faa}
         fi
+        rm -f $Log
         """
 
 def merge_split_faa_gff_by_group_input_agg(wildcards):
@@ -176,6 +180,14 @@ def merge_split_faa_gff_by_group_input_agg(wildcards):
     #fs = glob.glob('{}/circular.ext.fna.*.split'.format(cp_output))
     _s = 'pp-{shape}.fna.{{i}}.split'.format(shape=wildcards.shape)
     splits = glob_wildcards(os.path.join(contig_split_dir, _s)).i
+
+    _s = 'pp-{shape}.fna.{{i}}.split.pdg.splitgff'.format(
+        group=wildcards.group, 
+        shape=wildcards.shape,
+    )
+    _s = os.path.join(contig_split_dir, _s)
+    contig = expand(_s, i=splits)
+
     _s = 'pp-{shape}.fna.{{i}}.split.pdg.splitgff'.format(
         group=wildcards.group, 
         shape=wildcards.shape,
@@ -190,17 +202,17 @@ def merge_split_faa_gff_by_group_input_agg(wildcards):
     _s = os.path.join(contig_split_dir, _s)
     faa = expand(_s, i=splits)
 
-    return {'gff': gff, 'faa': faa}
+    return {'gff': gff, 'faa': faa, 'contig': contig}
 
 localrules: merge_split_faa_gff_by_group
 rule merge_split_faa_gff_by_group:
     input: 
         unpack(merge_split_faa_gff_by_group_input_agg),
-        common_gff='iter-0/pp-{shape}.gff',
-        common_faa='iter-0/pp-{shape}.faa',
+        common_gff=f'{Tmpdir}/pp-{{shape}}.gff',
+        common_faa=f'{Tmpdir}/pp-{{shape}}.faa',
     output:
-        gff='iter-0/{group}/pp-{shape}.gff',
-        faa='iter-0/{group}/pp-{shape}.faa',
+        gff=f'{Tmpdir}/{{group}}/pp-{{shape}}.gff',
+        faa=f'{Tmpdir}/{{group}}/pp-{{shape}}.faa',
     shell:
         """
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
@@ -208,61 +220,62 @@ rule merge_split_faa_gff_by_group:
             printf "%s\n" {input.gff} | xargs cat > {output.gff}
             printf "%s\n" {input.faa} | xargs cat > {output.faa}
         else
-            (cd iter-0/{wildcards.group} && ln -s ../pp-{wildcards.shape}.gff && ln -s ../pp-{wildcards.shape}.faa)
+            (cd {Tmpdir}/{wildcards.group} && ln -s ../pp-{wildcards.shape}.gff && ln -s ../pp-{wildcards.shape}.faa)
         fi
+        printf "%s\n" {input.contig} | xargs rm -f
         """
 
 localrules: remove_partial_gene
 rule remove_partial_gene:
     input:
-        gff='iter-0/pp-{shape}.gff',
-        faa='iter-0/pp-{shape}.faa'
+        gff=f'{Tmpdir}/pp-{{shape}}.gff',
+        faa=f'{Tmpdir}/pp-{{shape}}.faa'
     output: 
-        gff='iter-0/pp-{shape}-flt.gff',
-        faa='iter-0/pp-{shape}-flt.faa'
+        gff=f'{Tmpdir}/pp-{{shape}}-flt.gff',
+        faa=f'{Tmpdir}/pp-{{shape}}-flt.faa'
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log={Wkdir}/log/iter-0/step1-pp/{wildcards.shape}-remove-partial-gene-common.log
+        Log={Wkdir}/log/{Tmpdir}/step1-pp/{wildcards.shape}-remove-partial-gene-common.log
         if [ {wildcards.shape} = "circular" ]; then
             python {Scriptdir}/circular-remove-partial-gene.py {input.gff} {output.gff} &> $Log || {{ echo "See error detail in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             python {Scriptdir}/filter-seqs-by-gff.py {output.gff} {input.faa} {output.faa}
         else
-            (cd iter-0 && ln -s pp-{wildcards.shape}.gff pp-{wildcards.shape}-flt.gff)
-            (cd iter-0 && ln -s pp-{wildcards.shape}.faa pp-{wildcards.shape}-flt.faa)
+            (cd {Tmpdir} && ln -s pp-{wildcards.shape}.gff pp-{wildcards.shape}-flt.gff)
+            (cd {Tmpdir} && ln -s pp-{wildcards.shape}.faa pp-{wildcards.shape}-flt.faa)
         fi
         """
 
 localrules: remove_partial_gene_by_group
 rule remove_partial_gene_by_group:
     input:
-        gff='iter-0/pp-{shape}-flt.gff',
-        faa='iter-0/pp-{shape}-flt.faa',
-        group_gff='iter-0/{group}/pp-{shape}.gff',
-        group_faa='iter-0/{group}/pp-{shape}.faa'
+        gff=f'{Tmpdir}/pp-{{shape}}-flt.gff',
+        faa=f'{Tmpdir}/pp-{{shape}}-flt.faa',
+        group_gff=f'{Tmpdir}/{{group}}/pp-{{shape}}.gff',
+        group_faa=f'{Tmpdir}/{{group}}/pp-{{shape}}.faa'
     output: 
-        gff='iter-0/{group}/pp-{shape}-flt.gff',
-        faa='iter-0/{group}/pp-{shape}-flt.faa'
+        gff=f'{Tmpdir}/{{group}}/pp-{{shape}}-flt.gff',
+        faa=f'{Tmpdir}/{{group}}/pp-{{shape}}-flt.faa'
     conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
     shell:
         """
-        Log={Wkdir}/log/iter-0/step1-pp/{wildcards.shape}-remove-partial-gene-{wildcards.group}.log
+        Log={Wkdir}/log/{Tmpdir}/step1-pp/{wildcards.shape}-remove-partial-gene-{wildcards.group}.log
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
         if [ -s $Rbs_pdg_db ]; then
             if [ {wildcards.shape} = "circular" ]; then
                 python {Scriptdir}/circular-remove-partial-gene.py {input.group_gff} {output.gff} &> $Log || {{ echo "See error detail in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
                 python {Scriptdir}/filter-seqs-by-gff.py {output.gff} {input.group_faa} {output.faa}
             else
-                (cd iter-0/{wildcards.group} && ln -s pp-{wildcards.shape}.gff pp-{wildcards.shape}-flt.gff)
-                (cd iter-0/{wildcards.group} && ln -s pp-{wildcards.shape}.faa pp-{wildcards.shape}-flt.faa)
+                (cd {Tmpdir}/{wildcards.group} && ln -s pp-{wildcards.shape}.gff pp-{wildcards.shape}-flt.gff)
+                (cd {Tmpdir}/{wildcards.group} && ln -s pp-{wildcards.shape}.faa pp-{wildcards.shape}-flt.faa)
             fi
         else
-            (cd iter-0/{wildcards.group} && ln -sf ../pp-{wildcards.shape}-flt.gff && ln -sf ../pp-{wildcards.shape}-flt.faa)
+            (cd {Tmpdir}/{wildcards.group} && ln -sf ../pp-{wildcards.shape}-flt.gff && ln -sf ../pp-{wildcards.shape}-flt.faa)
         fi
         """
 
 def combine_linear_circular_input_agg(wildcards):
-    # iter-0/seqname-length.tsv
+    # {Tmpdir}/seqname-length.tsv
     out = checkpoints.circular_linear_split.get(**wildcards).output[0]
     outdir = os.path.dirname(out)
     pat = os.path.join(outdir, 'pp-{shape}.fna')
@@ -287,9 +300,9 @@ rule combine_linear_circular:
     input:
         unpack(combine_linear_circular_input_agg)
     output:
-        faa='iter-0/all.pdg.faa',
-        gff='iter-0/all.pdg.gff',
-        contig='iter-0/all.fna',
+        faa=f'{Tmpdir}/all.pdg.faa',
+        gff=f'{Tmpdir}/all.pdg.gff',
+        contig=f'{Tmpdir}/all.fna',
     shell:
         """
         # it's OK to cat gff directly
@@ -304,7 +317,7 @@ rule combine_linear_circular:
         """
 
 def combine_linear_circular_by_group_input_agg(wildcards):
-    # iter-0/seqname-length.tsv
+    # {Tmpdir}/seqname-length.tsv
     out = checkpoints.circular_linear_split.get(**wildcards).output[0]
     outdir = os.path.dirname(out)
     pat = os.path.join(outdir, 'pp-{shape}.fna')
@@ -320,14 +333,14 @@ localrules: combine_linear_circular_by_group
 rule combine_linear_circular_by_group:
     input:
         unpack(combine_linear_circular_by_group_input_agg),
-        faa='iter-0/all.pdg.faa',
-        gff='iter-0/all.pdg.gff',
+        faa=f'{Tmpdir}/all.pdg.faa',
+        gff=f'{Tmpdir}/all.pdg.gff',
         #group_faa=combine_linear_circular_by_group_input_agg_faa,
         #group_faa=combine_linear_circular_by_group_input_agg_faa,
         #group_gff=combine_linear_circular_by_group_input_agg_gff,
     output: 
-        faa='iter-0/{group}/all.pdg.faa',
-        gff='iter-0/{group}/all.pdg.gff',
+        faa=f'{Tmpdir}/{{group}}/all.pdg.faa',
+        gff=f'{Tmpdir}/{{group}}/all.pdg.gff',
     shell:
         """
         Rbs_pdg_db={Dbdir}/group/{wildcards.group}/rbs-prodigal-train.db
@@ -340,6 +353,6 @@ rule combine_linear_circular_by_group:
                 exit 234
             fi
         else
-            (cd iter-0/{wildcards.group} && ln -sf ../all.pdg.gff && ln -sf ../all.pdg.faa)
+            (cd {Tmpdir}/{wildcards.group} && ln -sf ../all.pdg.gff && ln -sf ../all.pdg.faa)
         fi
         """
