@@ -170,20 +170,21 @@ def parse_gff(gff):
                 s = line.split('Sequence Data:')[1].strip()
                 try:
                     seq_data = OrderedDict(
-                            i.strip().split('=') for i in s.split(';')
+                            i.strip().split('=', 1) for i in s.split(';')
                     )
                 except ValueError as e:
                     seq_data = OrderedDict()
-                    # in case there are ";" in the seq description
+                    # in case there are ";" in the seq name or description
                     for i in s.split(';'):
                         if not '=' in i:
                             continue
-                        m, n = i.strip().split('=',1)
+                        m, n = i.strip().split('=', 1)
                         seq_data[m] = n
 
                 seqlen = int(seq_data['seqlen'])
                 seqhdr = seq_data['seqhdr'].strip('"')
-                seqname = seqhdr.split(None, 1)[0]
+                #seqname = seqhdr.split(None, 1)[0]
+                seqname = None # find in rows below intead
                 continue
 
             elif line.startswith('#'):
@@ -210,6 +211,8 @@ def parse_gff(gff):
             """
             items = line.split('\t')
 
+            if not seqname:
+                seqname = items[0]
             start = int(items[3])
             end = int(items[4])
             strand = items[6]
