@@ -111,6 +111,7 @@ if Provirus:
             else
                 python {Scriptdir}/provirus.py {input.gff} {input.tax} {Dbdir}/rbs/rbs-catetory.tsv {Dbdir}/group/{wildcards.group}/model {output.boundry} {output.ftr} --fullseq-clf {input.clf} --group {wildcards.group} --proba {Proba_cutoff} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             fi
+            rm -f $Log
             """
 
     def merge_provirus_call_by_group_by_split_input_agg(wildcards):
@@ -120,6 +121,7 @@ if Provirus:
                 '{}/all.pdg.gff.{{idx}}.split'.format(split_dir)).idx
         bdy_str = '{}/all.pdg.gff.{{idx}}.split.prv.bdy'.format(split_dir)
         ftr_str = '{}/all.pdg.gff.{{idx}}.split.prv.ftr'.format(split_dir)
+
         bdy_lis = expand(bdy_str, idx=idx_lis)
         ftr_lis = expand(ftr_str, idx=idx_lis)
         return {'bdy': bdy_lis, 'ftr': ftr_lis}
@@ -299,6 +301,7 @@ if Provirus:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
+            echo {Tmpdir}/*/all.pdg.gff.splitdir/all.pdg.gff.*.split | xargs rm -f
             python {Scriptdir}/add-extra-to-table.py {Tmpdir}/viral-combined-proba.tsv {Tmpdir}/viral-combined.fa {Tmpdir}/viral-combined-proba-more-cols.tsv
             python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa {output.score} {output.fa}.trim
             python {Scriptdir}/keep-original-seq.py {output.fa}.trim {Seqfile} > {output.fa}.original
@@ -498,6 +501,7 @@ else:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
+            echo {Tmpdir}/*/all.pdg.gff.splitdir/all.pdg.gff.*.split | xargs rm -f
             python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa {output.score} {output.fa}
 
             if [ {Prep_for_dramv} = "True" ]; then
