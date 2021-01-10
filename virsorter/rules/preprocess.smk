@@ -297,7 +297,7 @@ rule combine_linear_circular:
         cat {input.faa} > {output.faa}
         cat {input.contig} > {output.contig}
         if [ ! -s {output.faa} ]; then
-            printf "*** NOTE:\n No genes from the contigs are left in {output.faa} after preprocess; virsorter replies on features from these genes for prediction; check quality of your contigs (too short or strange sequence composition), or just discard this sample\n\n" | python {Scriptdir}/echo.py
+            printf "\n*** NOTE: No genes from the contigs are left in {output.faa} after preprocess; virsorter replies on features from these genes for prediction; check quality of your contigs (too short or strange sequence composition), or just discard this sample\n\n" | python {Scriptdir}/echo.py
             touch EARLY-EXIT
             exit 234
         fi
@@ -335,7 +335,7 @@ rule combine_linear_circular_by_group:
             cat {input.group_faa} > {output.faa}
             cat {input.group_gff} > {output.gff}
             if [ ! -s {output.faa} ]; then
-                printf "*** NOTE: \nNo genes from the contigs are left in {output.faa} after preprocess; virsorter replies on features from these genes for prediction; check quality of your contigs (too short or strange sequence composition) or remove {wildcards.group} from Groups; or just discard this sample\n\n" | python {Scriptdir}/echo.py
+                printf "\n*** NOTE: No genes from the contigs are left in {output.faa} after preprocess; virsorter replies on features from these genes for prediction; check quality of your contigs (too short or strange sequence composition) or remove {wildcards.group} from Groups; or just discard this sample\n\n" | python {Scriptdir}/echo.py
                 touch EARLY-EXIT
                 exit 234
             fi
