@@ -66,8 +66,10 @@ def main(config, intable, inseqfile, outtable, outseqfile, hallmark_required,
     if config['HIGH_CONFIDENCE_ONLY']:
         # max_score >= 0.9 OR (max_score >= 0.7 AND hallmark >= 1)
         sel = sel & (
-                df['max_score'] >= 0.9 |
-                (df['max_score'] >= 0.7 & df['hallmark'] >= 1)
+                (df['max_score'] >= 0.9) |
+                (
+                    (df['max_score'] >= 0.7) & (df['hallmark'] >= 1)
+                )
         )
     elif config['HALLMARK_REQUIRED']:
         sel = sel & (df['hallmark'] > 0)
