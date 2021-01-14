@@ -348,8 +348,10 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
     cmd = (
         'snakemake --snakefile {snakefile} --directory {working_dir} '
         '--jobs {jobs} '
-        '--configfile {config_file} {conda_prefix} '
-        '--rerun-incomplete {use_conda_off} --nolock --latency-wait 600'
+        '--configfile {config_file} '
+        '--latency-wait 600 '
+        '--rerun-incomplete --nolock '
+        ' {conda_frontend} {conda_prefix} {use_conda_off} '
         ' {profile} {dryrun} {verbose} '
         ' {target_rule} '
         ' {args} '
@@ -361,6 +363,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         profile='' if (profile is None) else '--profile {}'.format(profile),
         dryrun='--dryrun' if dryrun else '',
         use_conda_off='' if use_conda_off else '--use-conda',
+        conda_frontend='' if use_conda_off else '--conda-frontend mamba',
         verbose='' if verbose else '--quiet',
         args=' '.join(snakemake_args),
         target_rule='-R {}'.format(workflow) if workflow!='all' else workflow,
@@ -416,12 +419,14 @@ def run_setup(db_dir,jobs, skip_deps_install, snakemake_args):
     Executes a snakemake workflow to download reference database files
     and validate based on their MD5 checksum, and install dependencies
     '''
+    db_dir = os.path.abspath(db_dir)
     cmd = (
         'snakemake --snakefile {snakefile} '
         '--directory {db_dir} --quiet '
         '--config Skip_deps_install={skip_deps_install} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
         '--nolock  --use-conda --conda-prefix {conda_prefix} '
+        '--conda-frontend mamba '
         '{args}'
     )
     cmd_str = cmd.format(
@@ -604,7 +609,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train,
             'Viral_genome_as_bin={genome_as_bin} '
             'Fragments_per_genome={frags_per_genome} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
-        '--nolock  {use_conda_off} --quiet {conda_prefix} '
+        '--nolock --quiet {use_conda_off} {conda_prefix} '
         '{add_args} {args}'
     ).format(
         snakefile=get_snakefile('rules/train-feature.smk'),
@@ -704,7 +709,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced,
             'Balanced={balanced} '
             'Jobs={jobs} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
-        '--nolock {use_conda_off} --quiet {conda_prefix} '
+        '--nolock --quiet {use_conda_off} {conda_prefix} '
         '{add_args} {args}'
     ).format(
         snakefile=get_snakefile('rules/train-model.smk'),
@@ -801,6 +806,7 @@ def config(show, show_source, init_source, db_dir, set, get):
                         'is created later\n')
                 logging.warning(mes)
 
+            db_dir = os.path.abspath(db_dir)
             init_config_template(SRC_CONFIG_DIR, USER_CONFIG_DIR, db_dir)
             sys.exit(0)
 

@@ -3,10 +3,11 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - python >3.6
+  - python >=3.6
   - ruamel.yaml =0.16.6
-  - snakemake-minimal =5.16.0
+  - snakemake-minimal >=5.18,<=5.26
   - click >=7
   - git
   - cookiecutter
+  - mamba
 
