@@ -39,7 +39,7 @@ LOCAL_SCRATCH: /tmp
 MIN_LENGTH: 0
 
 # hmmsearch
-HMMSEARCH_THREADS: 1
+HMMSEARCH_THREADS: 4
 HMMSEARCH_SCORE_MIN: 30
 
 # split contig, protein seq (faa), gff
