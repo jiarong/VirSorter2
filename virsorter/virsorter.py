@@ -123,6 +123,15 @@ def get_snakefile(f="Snakefile"):
             'into two ends;'),
 )
 @click.option(
+    '--exclude-lt2gene',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help=('short seqs (less than 2 genes) does not have any scores, but '
+            'those with hallmark genes are included as viral by default; ' 
+            'use this option to exclude them'),
+)
+@click.option(
     '--prep-for-dramv',
     default=False,
     is_flag=True,
@@ -239,7 +248,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         viral_gene_required, provirus_off, max_orf_per_seq, min_length,
         prep_for_dramv, tmpdir, rm_tmpdir, verbose, profile, dryrun,
         use_conda_off, snakemake_args, label, keep_original_seq, 
-        high_confidence_only):
+        high_confidence_only, exclude_lt2gene):
     ''' Runs the virsorter main function to classify viral sequences
 
     This includes 3 steps: 1) preprocess, 2) feature extraction, and 3)
@@ -247,9 +256,9 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
     only run the 3) classify step without previous steps that are
     computationally heavy, good for rerunning with different filtering
     options (--min-score, --high-confidence-only, --hallmark-required,
-    --hallmark-required-on-short, --viral-gene-required). Most snakemake
-    arguments can be appended to the command for more info see
-    'snakemake --help'.
+    --hallmark-required-on-short, --viral-gene-required, --exclude-lt2gene).
+    Most snakemake arguments can be appended to the command for more 
+    info see 'snakemake --help'.
     '''
 
     # hard coded, need to change all "iter-0" to Tmpdir in smk
@@ -328,7 +337,8 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
             max_orf_per_seq=max_orf_per_seq, 
             tmpdir=tmpdir, min_length=min_length, min_score=min_score, 
             label=label, keep_original_seq=keep_original_seq,
-            high_confidence_only=high_confidence_only,
+            high_confidence_only=high_confidence_only, 
+            exclude_lt2gene=exclude_lt2gene,
     )
     config = load_configfile(config_f)
 

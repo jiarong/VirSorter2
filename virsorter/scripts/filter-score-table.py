@@ -84,6 +84,9 @@ def main(config, intable, inseqfile, outtable, outseqfile, hallmark_required,
 
     if config['VIRAL_GENE_REQUIRED']:
         sel = sel & (df['viral'] > 0)
+    if config['EXCLUDE_LT2GENE']:
+        sel_lt2gene = df['seqname'].map(lambda x: x.endswith('lt2gene'))
+        sel = sel & (~sel_lt2gene)
 
     df = df.loc[sel,:]
 
