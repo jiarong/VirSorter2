@@ -9,6 +9,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Mark short jobs as local_rules to optimaize for `virsorter run` --cluster mode
 - Add "all" in --include-groups
 
+
+## [2.1] - 2021-01-15
+### Added
+- Add --keep-original-seq option
+- Add --exclude-lt2gene option
+
+### Changed
+- Remove more itermediate files by default
+- Change HMMER3.3.1 to HMMER3.3; HMMER3.3.1 throws seg fault with low complexity
+sequences
+
+
 ## [2.0] - 2020-12-01
 ### Added
 - Add --viral-gene-required
