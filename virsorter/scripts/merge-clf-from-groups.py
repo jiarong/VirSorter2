@@ -38,8 +38,10 @@ def main():
         prev = merged
         cnt += 1
 
+    merged.index = merged['seqname']
+    merged = merged.drop(['seqname'], axis=1)
     merged.to_csv(outfile, sep='\t', na_rep='NaN',
-            index=False, float_format='%.3f')
+            index_label='seqname', float_format='%.3f')
 
 if __name__ == '__main__':
     main()
