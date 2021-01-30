@@ -85,7 +85,10 @@ def main():
     part_out = sys.argv[7]
 
     df_full = pd.read_csv(full_f, header=0, sep='\t', index_col='seqname')
+    df_full.index = df_full.index.astype('str')
     df_part = pd.read_csv(part_f, header=0, sep='\t', index_col='seqname')
+    df_part.index = df_part.index.astype('str')
+
 
     df_full['shape'] = 'NA'
     df_part['shape'] = 'NA'

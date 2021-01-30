@@ -88,6 +88,9 @@ class provirus(object):
 
         if self.fullseq_clf_f != None:
             df = pd.read_csv(self.fullseq_clf_f, sep='\t', header=0)
+            # force seqname col to be str dtype in case seqname are 
+            #   numbers only
+            df = df.astype({'seqname': 'str'})
             decoy_lis = [i for i in df.columns if i.startswith('decoy')]
             df = df.drop(decoy_lis, axis=1)
             self.df_fullseq_clf = df
