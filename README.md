@@ -24,7 +24,7 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 
 # Installation (tested on CentOS linux; should work in all linux; MacOS is not supported at the moment)
 
-## Option 1 (bioconda: virsorter version 2.0)
+## Option 1 (bioconda: virsorter version 2.1)
 
 Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
@@ -38,7 +38,7 @@ conda activate vs2
 The development version is most updated and recommended. To install the development version:
 
 ```bash
-conda create -n vs2 -c bioconda -c conda-forge "python>=3.6" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer prodigal screed ruamel.yaml "snakemake>=5.16,<=5.26" click
+conda create -n vs2 -c bioconda -c conda-forge "python>=3.6" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer==3.3 prodigal screed ruamel.yaml "snakemake>=5.18,<=5.26" click mamba
 conda activate vs2
 git clone https://github.com/jiarong/VirSorter2.git
 cd VirSorter2
@@ -49,7 +49,7 @@ pip install -e .
 
 Before running VirSorter2, users must download all databases and install dependencies (takes 10+ mins, but this only need to be done once). The following command line downloads databases and dependencies to `db` directory, and its location is recorded in the tool configuration as a default, so you do not need to type `--db-dir` for other `virsorter` subcommands.
 
-Note that this step takes > 10 mins. If you feel impatient and cancel the process, make sure to **remove the diretory specified by `-d/--db-dir` (`db` in this case) before running again**.
+Note that this step takes ~ 10 mins. If you feel impatient and cancel the process, make sure to **remove the diretory specified by `-d/--db-dir` (`db` in this case) before running again**.
 
 ```bash
 # just in case there is a failed attemp before; 
@@ -57,6 +57,12 @@ Note that this step takes > 10 mins. If you feel impatient and cancel the proces
 rm -rf db
 # run setup
 virsorter setup -d db -j 4
+```
+
+If you have issues with setup the database with the above `setup` command (e.g. server firewall setting does not allow `wget`), you can download the database manually at `https://osf.io/v46sc/download`. The name of downloaded file should be `db.tgz` if downloaded from a brower. Next move/upload it to the current diretory and then run the following commands to extract the database and setup configuration:
+```bash
+tar -xzf db.tgz
+virsorter config --init-source --db-dir=./db
 ```
 
 # Quick run

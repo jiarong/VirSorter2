@@ -104,6 +104,14 @@ def get_snakefile(f="Snakefile"):
     help='minimal score to be identified as viral',
 )
 @click.option(
+    '--min-length',
+    default=0,
+    type=int,
+    show_default=True,
+    help=('minimal seq length required; all seqs shorter than this will '
+            'be removed'),
+)
+@click.option(
     '--keep-original-seq',
     default=False,
     is_flag=True,
@@ -115,18 +123,44 @@ def get_snakefile(f="Snakefile"):
             'into two ends;'),
 )
 @click.option(
+    '--exclude-lt2gene',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help=('short seqs (less than 2 genes) does not have any scores, but '
+            'those with hallmark genes are included as viral by default; ' 
+            'use this option to exclude them'),
+)
+@click.option(
+    '--prep-for-dramv',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help=('turn on generating viral seqfile and viral-affi-contigs.tab '
+            'for DRAMv'),
+)
+@click.option(
+    '--high-confidence-only',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help=('only output high confidence viral sequences; this is equivalent '
+            'to screening final-viral-score.tsv with the following criteria: '
+            '(max_score >= 0.9) OR (max_score >=0.7 AND hallmark >= 1)'),
+)
+@click.option(
     '--hallmark-required',
     default=False,
     is_flag=True,
     show_default=True,
-    help='require hallmark gene on all seqs',
+    help='require hallmark gene on all viral seqs',
 )
 @click.option(
     '--hallmark-required-on-short',
     default=False,
     is_flag=True,
     show_default=True,
-    help=('require hallmark gene on short seqs (length cutoff '
+    help=('require hallmark gene on short viral seqs (length cutoff '
             'as "short" were set by "MIN_SIZE_ALLOWED_WO_HALLMARK_GENE" in '
             'template-config.yaml file, default 3kbp); this can reduce '
             'false positives at reasonable cost of sensitivity'),
@@ -145,7 +179,7 @@ def get_snakefile(f="Snakefile"):
     default=False,
     is_flag=True,
     show_default=True,
-    help=('To turn off extracting provirus after classifying full contigs; '
+    help=('turn off extracting provirus after classifying full contigs; '
             'Togetehr with lower --max-orf-per-seq, can speed up a run '
             'significantly'),
 )
@@ -154,31 +188,25 @@ def get_snakefile(f="Snakefile"):
     default=-1,
     type=int,
     show_default=True,
-    help=('Max # of orf used for computing taxonomic feature; this option '
+    help=('max # of orf used for computing taxonomic feature; this option '
             'can only be used in --provirus-off mode; if # of orf in a seq '
             'exceeds the max limit, it is sub-sampled to this # '
             'to reduce computation')
 )
 @click.option(
-    '--min-length',
-    default=0,
-    type=int,
-    show_default=True,
-    help=('minimal seq length required; all seqs shorter than this will '
-            'be removed'),
-)
-@click.option(
-    '--prep-for-dramv',
-    default=False,
-    is_flag=True,
-    show_default=True,
-    help=('To turn on generating viral seqfile and viral-affi-contigs.tab '
-            'for DRAMv'),
-)
-@click.option(
     '--tmpdir',
     default='iter-0',
-    help='Directory name for intermediate files',
+    help='directory name for intermediate files',
+)
+@click.option(
+    '--rm-tmpdir',
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help=('remove intermediate file directory (--tmpdir); More than 100 '
+            'intermediate files are created for each run, so this is '
+            'recommended when 100s of samples are processed to avoid '
+            'exceeding file # quota for user')
 )
 @click.option(
     '--verbose',
@@ -210,13 +238,6 @@ def get_snakefile(f="Snakefile"):
             'Only useful when you want to install dependencies on your own '
             'with your own prefer versions'),
 )
-@click.option(
-    '--rm-tmpdir',
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help='Remove intermediate file directory (--tmpdir)'
-)
 @click.argument(
     'snakemake_args', 
     nargs=-1, 
@@ -226,17 +247,18 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         jobs,  min_score, hallmark_required, hallmark_required_on_short,
         viral_gene_required, provirus_off, max_orf_per_seq, min_length,
         prep_for_dramv, tmpdir, rm_tmpdir, verbose, profile, dryrun,
-        use_conda_off, snakemake_args, label, keep_original_seq):
+        use_conda_off, snakemake_args, label, keep_original_seq, 
+        high_confidence_only, exclude_lt2gene):
     ''' Runs the virsorter main function to classify viral sequences
 
     This includes 3 steps: 1) preprocess, 2) feature extraction, and 3)
     classify. By default ("all") all steps are executed. The "classify"
     only run the 3) classify step without previous steps that are
     computationally heavy, good for rerunning with different filtering
-    options (--min-score, --hallmark-required,
-    --hallmark-required-on-short, --viral-gene-required). Most snakemake
-    arguments can be appended to the command for more info see
-    'snakemake --help'.
+    options (--min-score, --high-confidence-only, --hallmark-required,
+    --hallmark-required-on-short, --viral-gene-required, --exclude-lt2gene).
+    Most snakemake arguments can be appended to the command for more 
+    info see 'snakemake --help'.
     '''
 
     # hard coded, need to change all "iter-0" to Tmpdir in smk
@@ -315,6 +337,8 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
             max_orf_per_seq=max_orf_per_seq, 
             tmpdir=tmpdir, min_length=min_length, min_score=min_score, 
             label=label, keep_original_seq=keep_original_seq,
+            high_confidence_only=high_confidence_only, 
+            exclude_lt2gene=exclude_lt2gene,
     )
     config = load_configfile(config_f)
 
@@ -324,8 +348,10 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
     cmd = (
         'snakemake --snakefile {snakefile} --directory {working_dir} '
         '--jobs {jobs} '
-        '--configfile {config_file} {conda_prefix} '
-        '--rerun-incomplete {use_conda_off} --nolock --latency-wait 600'
+        '--configfile {config_file} '
+        '--latency-wait 600 '
+        '--rerun-incomplete --nolock '
+        ' {conda_frontend} {conda_prefix} {use_conda_off} '
         ' {profile} {dryrun} {verbose} '
         ' {target_rule} '
         ' {args} '
@@ -337,6 +363,7 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         profile='' if (profile is None) else '--profile {}'.format(profile),
         dryrun='--dryrun' if dryrun else '',
         use_conda_off='' if use_conda_off else '--use-conda',
+        conda_frontend='' if use_conda_off else '--conda-frontend mamba',
         verbose='' if verbose else '--quiet',
         args=' '.join(snakemake_args),
         target_rule='-R {}'.format(workflow) if workflow!='all' else workflow,
@@ -392,12 +419,14 @@ def run_setup(db_dir,jobs, skip_deps_install, snakemake_args):
     Executes a snakemake workflow to download reference database files
     and validate based on their MD5 checksum, and install dependencies
     '''
+    db_dir = os.path.abspath(db_dir)
     cmd = (
         'snakemake --snakefile {snakefile} '
         '--directory {db_dir} --quiet '
         '--config Skip_deps_install={skip_deps_install} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
         '--nolock  --use-conda --conda-prefix {conda_prefix} '
+        '--conda-frontend mamba '
         '{args}'
     )
     cmd_str = cmd.format(
@@ -580,7 +609,7 @@ def train_feature(working_dir, seqfile, hmm, hallmark, prodigal_train,
             'Viral_genome_as_bin={genome_as_bin} '
             'Fragments_per_genome={frags_per_genome} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
-        '--nolock  {use_conda_off} --quiet {conda_prefix} '
+        '--nolock --quiet {use_conda_off} {conda_prefix} '
         '{add_args} {args}'
     ).format(
         snakefile=get_snakefile('rules/train-feature.smk'),
@@ -680,7 +709,7 @@ def train_model(working_dir, viral_ftrfile, nonviral_ftrfile, balanced,
             'Balanced={balanced} '
             'Jobs={jobs} '
         '--jobs {jobs} --rerun-incomplete --latency-wait 600 '
-        '--nolock {use_conda_off} --quiet {conda_prefix} '
+        '--nolock --quiet {use_conda_off} {conda_prefix} '
         '{add_args} {args}'
     ).format(
         snakefile=get_snakefile('rules/train-model.smk'),
@@ -777,6 +806,7 @@ def config(show, show_source, init_source, db_dir, set, get):
                         'is created later\n')
                 logging.warning(mes)
 
+            db_dir = os.path.abspath(db_dir)
             init_config_template(SRC_CONFIG_DIR, USER_CONFIG_DIR, db_dir)
             sys.exit(0)
 

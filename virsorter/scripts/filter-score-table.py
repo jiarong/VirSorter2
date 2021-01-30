@@ -63,7 +63,15 @@ def main(config, intable, inseqfile, outtable, outseqfile, hallmark_required,
     sel_provirus = df['seqname'].map(lambda x: x.endswith('_partial'))
     sel_hallmark = df['hallmark'] > 1
     sel = sel & (sel_viral_enrich | sel_provirus | sel_hallmark)
-    if config['HALLMARK_REQUIRED']:
+    if config['HIGH_CONFIDENCE_ONLY']:
+        # max_score >= 0.9 OR (max_score >= 0.7 AND hallmark >= 1)
+        sel = sel & (
+                (df['max_score'] >= 0.9) |
+                (
+                    (df['max_score'] >= 0.7) & (df['hallmark'] >= 1)
+                )
+        )
+    elif config['HALLMARK_REQUIRED']:
         sel = sel & (df['hallmark'] > 0)
     elif config['HALLMARK_REQUIRED_ON_SHORT']:
         length_cutoff_ser = df['max_score_group'].map(
@@ -76,6 +84,9 @@ def main(config, intable, inseqfile, outtable, outseqfile, hallmark_required,
 
     if config['VIRAL_GENE_REQUIRED']:
         sel = sel & (df['viral'] > 0)
+    if config['EXCLUDE_LT2GENE']:
+        sel_lt2gene = df['seqname'].map(lambda x: x.endswith('lt2gene'))
+        sel = sel & (~sel_lt2gene)
 
     df = df.loc[sel,:]
 
