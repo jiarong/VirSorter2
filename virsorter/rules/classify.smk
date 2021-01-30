@@ -81,7 +81,9 @@ rule pick_viral_fullseq:
 
 if Provirus:
     checkpoint split_gff_by_group:
-        input: f'{Tmpdir}/{{group}}/all.pdg.gff'
+        input: 
+            gff=f'{Tmpdir}/{{group}}/all.pdg.gff',
+            clf=f'{Tmpdir}/all-fullseq-proba.tsv',
         output: directory(f'{Tmpdir}/{{group}}/all.pdg.gff.splitdir')
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
@@ -90,7 +92,7 @@ if Provirus:
             rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.split.prv.ftr
             rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.anno
             rm -f {Tmpdir}/{wildcards.group}/all.pdg.gff.splitdir/all.pdg.gff.*.affi.tab
-            python {Scriptdir}/split-gff-even-seqnum-per-file.py {input} {output} {Gff_seqnum_per_split}
+            python {Scriptdir}/split-gff-even-seqnum-per-file.py {input.gff} {output} {Gff_seqnum_per_split}
             """
 
     rule provirus_call_by_group_by_split:
