@@ -380,9 +380,15 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         #e.cmd, e.returncode, e.output
         sys.exit(1)
 
+    to_remove = ['.snakemake']
+    for di in to_remove:
+        _path = os.path.join(working_dir, di)
+        shutil.rmtree(_path, ignore_errors=True)
     if rm_tmpdir:
-        tmpdir_path = os.path.join(working_dir, tmpdir)
-        shutil.rmtree(tmpdir_path, ignore_errors=True)
+        to_remove = [tmpdir]
+        for di in to_remove:
+            _path = os.path.join(working_dir, di)
+            shutil.rmtree(_path, ignore_errors=True)
 
 # initialize
 @cli.command(
