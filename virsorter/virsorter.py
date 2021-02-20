@@ -878,6 +878,23 @@ def config(show, show_source, init_source, db_dir, set, get):
 
             try:
                 old_val = temp[last_key]
+                if isinstance(old_val, int):
+                    try:
+                        val = int(val)
+                    except ValueError as e:
+                        mes = f'{var} is supposed to be an integer'
+                        logging.critical(mes)
+                        sys.exit(1)
+                if isinstance(old_val, float):
+                    val = float(val)
+                    try:
+                        val = float(val)
+                    except ValueError as e:
+                        mes = f'{var} is supposed to be a float'
+                        logging.critical(mes)
+                        sys.exit(1)
+                # only convert to abspath when the old one exists
+                #   since sometimes just want to set relative path
                 if os.path.exists(old_val):
                     val = os.path.abspath(val)
                 temp[last_key] = val
