@@ -170,8 +170,8 @@ def main():
                     mes = f'>{seqname}||{i}_partial  {desc}\n{seq}\n'
                     fw_lyso.write(mes)
 
-    df_full.to_csv(full_out, sep='\t', index_label='seqname')
-    df_part.to_csv(part_out, sep='\t', index_label='seqname')
+    df_full.to_csv(full_out, sep='\t', na_rep='nan', index_label='seqname')
+    df_part.to_csv(part_out, sep='\t', na_rep='nan', index_label='seqname')
 
 if __name__ == '__main__':
     main()
