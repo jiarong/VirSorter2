@@ -88,7 +88,8 @@ rule hmmsearch:
         fi
 
         if [ "$To_scratch" = false ]; then
-            Inputseq={input}
+            # local scratch not set or not enough space in local scratch
+            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input}
         else
             # when To_scratch is true, Tmp and Bname should have been defined successfully
             hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname
@@ -201,7 +202,8 @@ rule hmmsearch_by_group:
             fi
 
             if [ "$To_scratch" = false ]; then
-                Inputseq={input}
+                # local scratch not set or not enough space in local scratch
+                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input}
             else
                 # when To_scratch is true, Tmp and Bname should have been defined successfully
                 hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname
