@@ -310,16 +310,23 @@ class provirus(object):
             _df.index = _df['seqname']
             _df = _df.drop(['seqname'], axis=1)
             pr_full = _df.at[seqname_ori, self.group]
+            if isinstance(pr_full, np.ndarray):
+                mes = (f'multiple contigs named {seqname_ori} found in '
+                       'data and are ignored; please make sure each '
+                       'contig has unique names.')
+                logging.warning(mes)
+                return
+
             pr_full_max_groups = max(_df.loc[seqname_ori,:])
             #if pr_full < self.proba and pr_full_max_groups >= self.proba:
             if pr_full < PROVIRUS_CHECK_MAX_FULLSEQ_PROBA and \
                     pr_full_max_groups >= max(self.proba,
                             PROVIRUS_CHECK_MAX_FULLSEQ_PROBA):
-                # skip when another group is significant with full seq,
-                #  so do not need go through sliding window, save computation
-                #  in merge-provirus-from-groups.py step, provirus is selected
-                #  based on longer length, 
-                #  and full seq is always longer than partial, thus preferred
+                # skip when another group is significant with full seq, so
+                # do not need go through sliding window, save computation
+                # in merge-provirus-from-groups.py step, provirus is
+                # selected based on longer length, and full seq is always
+                # longer than partial, thus preferred
                 return
 
 
