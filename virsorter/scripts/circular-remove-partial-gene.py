@@ -75,12 +75,25 @@ def main():
                 cnt_gene = 0
                 line = line.rstrip()
                 s = line.split('Sequence Data:')[1].strip()
-                seq_data = OrderedDict(
-                        i.strip().split('=') for i in s.split(';')
-                        )
+                try:
+                    seq_data = OrderedDict(
+                            i.strip().split('=', 1) for i in s.split(';')
+                    )
+                except ValueError as e:
+                    seq_data = OrderedDict()
+                    # in case there are ";" in the seq name or description
+                    for i in s.split(';'):
+                        if not '=' in i:
+                            continue
+                        m, n = i.strip().split('=', 1)
+                        seq_data[m] = n
+
                 seqlen = seq_data['seqlen']
+                #seqname could be truncated if there is ; in it 
+                #if needed, find it in rows below intead
                 seqhdr = seq_data['seqhdr'].strip('"')
                 seqname = seqhdr.split(None, 1)[0]
+
                 # circular was duplicated after removing overlap
                 seqlen = int(int(seqlen)/2.0)
                 seq_data['seqlen'] = str(seqlen)
