@@ -323,9 +323,9 @@ if Provirus:
             fi
             rm -f {output.fa}.trim {output.fa}.original
 
-            N_lt2gene=$(grep -c '^>.*||lt2gene' {output.fa} || :)
-            N_lytic=$(grep -c '^>.*||full' {output.fa} || :)
-            N_lysogenic=$(grep -c '^>.*||.*_partial' {output.fa} || :)
+            N_lt2gene=$(grep -c '^>.*||lt2gene$' {output.fa} || :)
+            N_lytic=$(grep -c '^>.*||full$' {output.fa} || :)
+            N_lysogenic=$(grep -c '^>.*||.*_partial$' {output.fa} || :)
             if [ {Prep_for_dramv} = True ]; then
                 Dramv_notes="{Label}for-dramv                   ==> dir with input files for dramv"
                 Dramv_notes2="For seqnames in files for dramv, 
@@ -512,8 +512,8 @@ else:
                 cp {Tmpdir}/viral-affi-contigs-for-dramv.tab {Label}for-dramv
             fi
 
-            N_viral_fullseq=$(grep -c '^>.*||full' {output.fa} || :)
-            N_viral_lt2gene=$(grep -c '^>.*||lt2gene' {output.fa} || :)
+            N_viral_fullseq=$(grep -c '^>.*||full$' {output.fa} || :)
+            N_viral_lt2gene=$(grep -c '^>.*||lt2gene$' {output.fa} || :)
             if [ {Prep_for_dramv} = True ]; then
                 Dramv_notes="{Label}for-dramv                  ==> dir with input files for dramv"
                 Dramv_notes2="For seqnames in files for dramv, 
