@@ -170,9 +170,30 @@ def get_snakefile(f="Snakefile"):
     default=False,
     is_flag=True,
     show_default=True,
-    help=('requires viral genes annotated, removing putative viral seqs '
+    help=('require viral genes annotated, removing putative viral seqs '
             'with no genes annotated; this can reduce false positives at '
             'reasonable cost of sensitivity'),
+)
+@click.option(
+    '--viral-gene-enrich-off',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help=('turn off the requirement of more viral than cellular genes '
+            'for calling full sequence viral; this is useful when only '
+            'using VirSorter2 to produce DRAMv input with viral sequence '
+            'identified from other tools, or those trimmed by checkV'),
+)
+@click.option(
+    '--seqname-suffix-off',
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help=('turn off adding suffix (||full, ||{i}_partial, ||lt2gene) '
+          'to sequence names; note that this might cause partial seqs '
+          'from the same contig to have the same name; this option is '
+          'could be used when you are sure there is one partial sequence '
+          'at max from each contig'),
 )
 @click.option(
     '--provirus-off',
@@ -243,12 +264,14 @@ def get_snakefile(f="Snakefile"):
     nargs=-1, 
     type=click.UNPROCESSED, 
 )
-def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
-        jobs,  min_score, hallmark_required, hallmark_required_on_short,
-        viral_gene_required, provirus_off, max_orf_per_seq, min_length,
-        prep_for_dramv, tmpdir, rm_tmpdir, verbose, profile, dryrun,
-        use_conda_off, snakemake_args, label, keep_original_seq, 
-        high_confidence_only, exclude_lt2gene):
+def run_workflow(workflow, working_dir, db_dir, seqfile,
+                 include_groups, jobs,  min_score, hallmark_required, 
+                 hallmark_required_on_short, viral_gene_required, 
+                 provirus_off, max_orf_per_seq, min_length, 
+                 prep_for_dramv, tmpdir, rm_tmpdir, verbose, profile, 
+                 dryrun, use_conda_off, snakemake_args, label, 
+                 keep_original_seq, high_confidence_only, exclude_lt2gene, 
+                 seqname_suffix_off, viral_gene_enrich_off):
     ''' Runs the virsorter main function to classify viral sequences
 
     This includes 3 steps: 1) preprocess, 2) feature extraction, and 3)
@@ -328,17 +351,19 @@ def run_workflow(workflow, working_dir, db_dir, seqfile, include_groups,
         os.rename(config_f, os.path.join(working_dir,'config.yaml.bak'))
 
     make_config(
-            db_dir=db_dir, seqfile=seqfile, include_groups=include_groups,
-            threads=jobs, config_f=config_f, provirus=provirus,
-            hallmark_required=hallmark_required,
-            hallmark_required_on_short=hallmark_required_on_short,
-            viral_gene_required=viral_gene_required,
-            prep_for_dramv=prep_for_dramv,
-            max_orf_per_seq=max_orf_per_seq, 
-            tmpdir=tmpdir, min_length=min_length, min_score=min_score, 
-            label=label, keep_original_seq=keep_original_seq,
-            high_confidence_only=high_confidence_only, 
-            exclude_lt2gene=exclude_lt2gene,
+        db_dir=db_dir, seqfile=seqfile, include_groups=include_groups,
+        threads=jobs, config_f=config_f, provirus=provirus,
+        hallmark_required=hallmark_required,
+        hallmark_required_on_short=hallmark_required_on_short,
+        viral_gene_required=viral_gene_required,
+        prep_for_dramv=prep_for_dramv,
+        max_orf_per_seq=max_orf_per_seq, 
+        tmpdir=tmpdir, min_length=min_length, min_score=min_score, 
+        label=label, keep_original_seq=keep_original_seq,
+        high_confidence_only=high_confidence_only, 
+        exclude_lt2gene=exclude_lt2gene,
+        seqname_suffix_off=seqname_suffix_off,
+        viral_gene_enrich_off=viral_gene_enrich_off,
     )
     config = load_configfile(config_f)
 

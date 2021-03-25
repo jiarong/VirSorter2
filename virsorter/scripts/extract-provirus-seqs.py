@@ -5,6 +5,7 @@ import os
 import screed
 import logging
 import pandas as pd
+import click
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 snakefile_dir = os.path.dirname(script_dir)
@@ -53,36 +54,34 @@ def get_fasta_desc_d(ser, shape):
 
     return d_desc
 
-
-def main():
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+@click.command(context_settings=CONTEXT_SETTINGS)
+@click.option('--seqname-suffix-off', default=False, is_flag=True, 
+              show_default=True, 
+              help='turn off adding suffix to sequence names')
+@click.argument('seqfile', type=click.Path(exists=True))
+@click.argument('full-f', type=click.Path(exists=True))
+@click.argument('part-f', type=click.Path(exists=True))
+@click.argument('full-seq', type=click.Path())
+@click.argument('part-seq', type=click.Path())
+@click.argument('full-out', type=click.Path())
+@click.argument('part-out', type=click.Path())
+def main(seqfile, full_f, part_f, full_seq, part_seq, full_out,
+         part_out, seqname_suffix_off):
     '''Extract substring sequences based in boundries
 
-    Example:
-        python extract-provirus-seqs.py \
-                <contig.fa> <fullseq.tsv> <partseq.tsv> \
-                <fullsesq-trim.fa> <partseq.fa>
-
-        <config.fa>: contig file
-        <fullseq.tsv>: full seq boudary info
-        <partseq.tsv>: partial seq bourdary info
-        <fullseq-trim.fa>: full seq trimmed according to boudary
-        <partseq.fa>: partial seq extracted according to boudary
+        \b
+        <SEQFILE>: contig file
+        <FULL-F>: full seq boudary info
+        <PART-F>: partial seq boudary info
+        <FULL-SEQ>: full seq trimmed according to boudary
+        <PART-SEQ>: partial seq extracted according to boudary
+        <FULL-OUT>: new full seq bourdary info
+        <PART-OUT>: new partial seq bourdary info
 
     '''
-    if len(sys.argv) != 8:
-        mes = ('*** python {} <input.contig> <input.full> <input.partial> '
-                '<output.lytic> <output.lysogenic> '
-                '<output.full> <output.partial\n')
-        sys.stderr.write(mes.format(os.path.basename(sys.argv[0])))
-        sys.exit(1)
-
-    seqfile = sys.argv[1]
-    full_f = sys.argv[2]
-    part_f = sys.argv[3]
-    lytic_f = sys.argv[4]
-    lyso_f = sys.argv[5]
-    full_out = sys.argv[6]
-    part_out = sys.argv[7]
+    lytic_f = full_seq
+    lyso_f = part_seq
 
     df_full = pd.read_csv(full_f, header=0, sep='\t', index_col='seqname')
     df_full.index = df_full.index.astype('str')
@@ -113,7 +112,6 @@ def main():
             if seqname in st_full:
                 ser = df_full.loc[seqname, :]
                 df_full.loc[seqname, 'shape'] = shape
-                df_full.loc[seqname, 'seqname_new'] = f'{seqname}||full'
 
                 full_start_ind = ser.loc['full_orf_index_start']
                 full_end_ind = ser.loc['full_orf_index_end']
@@ -144,7 +142,13 @@ def main():
                     #   interpret lytic or lyso here
                     seq = rec.sequence[(trim_start_bp_adj-1):trim_end_bp]
 
-                mes = f'>{seqname}||full  {desc}\n{seq}\n'
+                if seqname_suffix_off:
+                    df_full.loc[seqname, 'seqname_new'] = f'{seqname}'
+                    mes = f'>{seqname}  {desc}\n{seq}\n'
+                else:
+                    df_full.loc[seqname, 'seqname_new'] = f'{seqname}||full'
+                    mes = f'>{seqname}||full  {desc}\n{seq}\n'
+
                 fw_lytic.write(mes)
 
             elif seqname in st_part:
@@ -164,10 +168,16 @@ def main():
                         (df_part['trim_orf_index_start'] == trim_start_ind)
                     )
                     df_part.loc[sel, 'shape'] = shape
-                    df_part.loc[sel, 'seqname_new'] = f'{seqname}||{i}_partial'
 
+                    if seqname_suffix_off:
+                        mes = f'>{seqname}  {desc}\n{seq}\n'
+                        seqname_new = f'{seqname}'
+                    else:
+                        mes = f'>{seqname}||{i}_partial  {desc}\n{seq}\n'
+                        seqname_new = f'{seqname}||{i}_partial'
+
+                    df_part.loc[sel, 'seqname_new'] = seqname_new
                     #save to lyso
-                    mes = f'>{seqname}||{i}_partial  {desc}\n{seq}\n'
                     fw_lyso.write(mes)
 
     df_full.to_csv(full_out, sep='\t', na_rep='nan', index_label='seqname')

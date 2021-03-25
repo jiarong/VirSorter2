@@ -4,7 +4,6 @@ import sys
 import os
 import screed
 
-
 def main():
     '''Add suffix to sequence name and keep description in header
 

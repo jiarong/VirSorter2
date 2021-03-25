@@ -178,11 +178,15 @@ if Provirus:
         shell:
             """
             Log={Wkdir}/log/{Tmpdir}/step3-classify/provirus-seq-extract.log
-            python {Scriptdir}/extract-provirus-seqs.py {input.contig} {input.full} {input.partial} {output.fullseq} {output.partial} {output.fulltab} {output.parttab} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
 
-            cat {output.fullseq} {output.partial} > {output.combined}
-            python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {output.combined} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
-
+            if [ {Seqname_suffix_off} = "True" ]; then
+                python {Scriptdir}/extract-provirus-seqs.py --seqname-suffix-off {input.contig} {input.full} {input.partial} {output.fullseq} {output.partial} {output.fulltab} {output.parttab} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+                cat {output.fullseq} {output.partial} {input.lt2gene} > {output.combined}
+            else
+                python {Scriptdir}/extract-provirus-seqs.py {input.contig} {input.full} {input.partial} {output.fullseq} {output.partial} {output.fulltab} {output.parttab} 2> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+                cat {output.fullseq} {output.partial} > {output.combined}
+                python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {output.combined} 2>> $Log || {{ echo "See error details in $Log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+            fi
             """
 
     ##### add score for non-best-scoring groups
@@ -335,24 +339,34 @@ if Provirus:
                 Dramv_notes=""
                 Dramv_notes2=""
             fi
+
+            if [ {Seqname_suffix_off} = True ]; then
+                Seqcnt_notes=""
+                Suffix_notes=""
+            else
+                Seqcnt_notes="
+                # of full    seqs (>=2 genes) as viral:\t$N_lytic
+                # of partial seqs (>=2 genes) as viral:\t$N_lysogenic
+                # of short   seqs (< 2 genes) as viral:\t$N_lt2gene
+                "
+                Suffix_notes="
+                Suffix is added to seq names in final-viral-combined.fa:
+                full    seqs (>=2 genes) as viral:\t||full
+                partial seqs (>=2 genes) as viral:\t||partial
+                short   seqs (< 2 genes) as viral:\t||lt2gene
+                $Dramv_notes2
+                "
+            fi
+
             printf "
             ====> VirSorter run (provirus mode) finished.
-            # of full    seqs (>=2 genes) as viral:\t$N_lytic
-            # of partial seqs (>=2 genes) as viral:\t$N_lysogenic
-            # of short   seqs (< 2 genes) as viral:\t$N_lt2gene
-
+            $Seqcnt_notes
             Useful output files:
-            {Label}final-viral-score.tsv       ==> score table
-            {Label}final-viral-combined.fa     ==> all viral seqs
-            {Label}final-viral-boundary.tsv    ==> table with boundary info
-            $Dramv_notes
-            
-            Suffix is added to seq names in final-viral-combined.fa:
-            full    seqs (>=2 genes) as viral:\t||full
-            partial seqs (>=2 genes) as viral:\t||partial
-            short   seqs (< 2 genes) as viral:\t||lt2gene
-            $Dramv_notes2
-
+                {Label}final-viral-score.tsv       ==> score table
+                {Label}final-viral-combined.fa     ==> all viral seqs
+                {Label}final-viral-boundary.tsv    ==> table with boundary info
+                $Dramv_notes
+            $Suffix_notes
             NOTES:
             Users can further screen the results based on the following 
                 columns in {Label}final-viral-score.tsv:
@@ -380,9 +394,15 @@ else:
         conda: '{}/vs2.yaml'.format(Conda_yaml_dir)
         shell:
             """
-            python {Scriptdir}/filter-table-and-add-suffix-to-seqname.py "||full" {Tmpdir}/all-fullseq-proba.tsv {Tmpdir}/viral-fullseq.fa {Tmpdir}/viral-combined-proba.tsv
-            python {Scriptdir}/add-suffix-seqname-keep-desc.py {Tmpdir}/viral-fullseq.fa "||full" > {Tmpdir}/viral-combined.fa
-            python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {Tmpdir}/viral-combined.fa
+
+            if [ {Seqname_suffix_off} = True ]; then
+                python {Scriptdir}/filter-table-and-add-suffix-to-seqname.py {Tmpdir}/all-fullseq-proba.tsv {Tmpdir}/viral-fullseq.fa {Tmpdir}/viral-combined-proba.tsv
+                cat {Tmpdir}/viral-fullseq.fa {input.lt2gene} > {Tmpdir}/viral-combined.fa
+            else
+                python {Scriptdir}/filter-table-and-add-suffix-to-seqname.py --suffix "||full" {Tmpdir}/all-fullseq-proba.tsv {Tmpdir}/viral-fullseq.fa {Tmpdir}/viral-combined-proba.tsv
+                python {Scriptdir}/add-suffix-seqname-keep-desc.py {Tmpdir}/viral-fullseq.fa "||full" > {Tmpdir}/viral-combined.fa
+                python {Scriptdir}/add-suffix-seqname-keep-desc.py {input.lt2gene} "||lt2gene" >> {Tmpdir}/viral-combined.fa
+            fi
             python {Scriptdir}/add-extra-to-table.py {Tmpdir}/viral-combined-proba.tsv {Tmpdir}/viral-combined.fa {Tmpdir}/viral-combined-proba-more-cols.tsv
             """
 
@@ -517,27 +537,36 @@ else:
             if [ {Prep_for_dramv} = True ]; then
                 Dramv_notes="{Label}for-dramv                  ==> dir with input files for dramv"
                 Dramv_notes2="For seqnames in files for dramv, 
-                    | is replaced with _ to be compatible with DRAMv
-                "
+                    | is replaced with _ to be compatible with DRAMv"
             else
                 Dramv_notes=""
                 Dramv_notes2=""
             fi
+            if [ {Seqname_suffix_off} = True ]; then
+                Seqcnt_notes=""
+                Suffix_notes=""
+            else
+                Seqcnt_notes="
+                # of contigs w/ >=2 genes as viral:\t$N_viral_fullseq
+                # of contigs w/ < 2 genes as viral:\t$N_viral_lt2gene
+                "
+
+                Suffix_notes="
+                Suffix is added to seq names in {output.fa}:
+                contigs (>=2 genes) as viral:\t||full
+                contigs (< 2 genes) as viral:\t||lt2gene
+                $Dramv_notes2
+                "
+            fi
+                
             printf "
             ====> VirSorter run (non-provirus mode) finished.
-            # of contigs w/ >=2 genes as viral:\t$N_viral_fullseq
-            # of contigs w/ < 2 genes as viral:\t$N_viral_lt2gene
-
+            $Seqcnt_notes
             Useful output files:
-            {output.score}      ==> score table
-            {output.fa}    ==> all viral seqs
+                {output.score}      ==> score table
+                {output.fa}    ==> all viral seqs
             $Dramv_notes
-
-            Suffix is added to seq names in {output.fa}:
-            contigs (>=2 genes) as viral:\t||full
-            contigs (< 2 genes) as viral:\t||lt2gene
-            $Dramv_notes2
-
+            $Suffix_notes
             NOTES: 
             Users can further screen the results based on the 
                 following columns in {output.score}
@@ -550,4 +579,5 @@ else:
 
             <====
             " | python {Scriptdir}/echo.py
+
             """

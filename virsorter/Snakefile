@@ -31,6 +31,7 @@ Local_scratch=config['LOCAL_SCRATCH']
 Prep_for_dramv = config['PREP_FOR_DRAMV']
 Label = config['LABEL']
 Keep_original_seq = config['KEEP_ORIGINAL_SEQ']
+Seqname_suffix_off = config['SEQNAME_SUFFIX_OFF']
 
 Label = f'{Label}-' if Label != '' else ''
 Srcdir = srcdir('.')
