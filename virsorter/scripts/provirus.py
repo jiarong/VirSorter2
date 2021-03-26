@@ -29,6 +29,7 @@ GROUP_DICT = DEFAULT_CONFIG['GROUP_INFO']
 GENE_OVERLAP_MIN = DEFAULT_CONFIG['GENE_OVERLAP_MIN']
 CLASSIFY_THREADS = DEFAULT_CONFIG['CLASSIFY_THREADS']
 MIN_FRAC_OF_MAX_SCORE = DEFAULT_CONFIG['MIN_FRAC_OF_MAX_SCORE']
+MIN_FRAC_OF_PEAK_SCORE = DEFAULT_CONFIG['MIN_FRAC_OF_PEAK_SCORE']
 MAX_RETRY_TIMES = DEFAULT_CONFIG['MAX_RETRY_TIMES']
 TOTAL_FEATURE_LIST = DEFAULT_CONFIG['TOTAL_FEATURE_LIST']
 SELECT_FEATURE_LIST = DEFAULT_CONFIG['SELECT_FEATURE_LIST']
@@ -466,14 +467,14 @@ class provirus(object):
                     if pr > pr_max:
                         pr_max = pr
                 #elif trigger == True and pr >= self.proba:
-                elif trigger == True and pr >= pr_max * 0.95:
+                elif trigger == True and pr >= pr_max * MIN_FRAC_OF_PEAK_SCORE:
                     ind_end += 1
                     retry_cnt = 0
                     pr_last_valid = pr
                     if pr > pr_max:
                         pr_max = pr
                 #elif trigger == True and pr < self.proba:
-                elif trigger == True and pr < pr_max * 0.95:
+                elif trigger == True and pr < pr_max * MIN_FRAC_OF_PEAK_SCORE:
                     if retry_cnt <= MAX_RETRY_TIMES:
                         retry_cnt += 1
                         ind_end += 1
