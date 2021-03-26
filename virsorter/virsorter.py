@@ -81,7 +81,7 @@ def get_snakefile(f="Snakefile"):
 )
 @click.option(
     '--include-groups',
-    default='dsDNAphage,NCLDV,RNA,ssDNA,lavidaviridae',
+    default='dsDNAphage,ssDNA',
     type=str,
     show_default=True,
     help=('classifiers of viral groups to included '
