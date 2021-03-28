@@ -256,8 +256,9 @@ def get_snakefile(f="Snakefile"):
     show_default=True,
     help=('Stop using the conda envs (vs2.yaml) that come with this '
             'package and use what are installed in current system; '
-            'Only useful when you want to install dependencies on your own '
-            'with your own prefer versions'),
+            'Only useful when you want to install dependencies on '
+            'your own with your own prefer version; this option '
+            'works with the development version'),
 )
 @click.argument(
     'snakemake_args', 
