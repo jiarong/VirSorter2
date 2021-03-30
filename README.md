@@ -26,9 +26,9 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 # Important updates
 
 - The newest stable version is 2.2. 
-- An tutorial/SOP on how to VirSorter2 results is avaiable.
-- A few new options are added to acommodate the SOP (see details in [change log](Changelog.md)).
-- The default --include-groups is change for all viral groups to dsDNAphage and ssDNA since this should be used for what most people interested in phage.
+- A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](link).
+- A few new options are added to accommodate the SOP (see details in [change log](Changelog.md)).
+- The default --include-groups is changed from all viral groups to dsDNAphage and ssDNA since this should be used for what most people interested in phage.
 - A new FAQ section is available at the bottom of this doc.
 
 # Installation (tested on CentOS linux; should work in all linux; MacOS is not supported at the moment)
@@ -299,12 +299,11 @@ cat autolyki-model-test.out/final-viral-score.tsv
 
 #### Q: How should I pick a score cutoff?
 
-A: Generally, those with score >0.9 are high confidence. Those with score between 0.5 and 0.9 could be a mixture of viral and non-viral. It's hard to find a optimal score separating viral and non-viral since it depends on % of host sequence and unknown sequences. So we recommend using the default cutoff (0.5) for maximal sensitivity and then a quality checking step using checkV to for removing false positives (other than predicting completeness). Here is a tutorial used as [viral identification SOP in the Sullivan Lab](link).
+A: Generally, those with score >0.9 are high confidence. Those with score between 0.5 and 0.9 could be a mixture of viral and non-viral. It's hard to find a optimal score separating viral and non-viral since it depends on % of host sequence and unknown sequences. So we recommend using the default cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV to for removing false positives (other than predicting completeness). Here is the [viral identification SOP in the Sullivan Lab](link).
 
+#### Q: Why does virsorter work in when running interactively but does not work when submit as batch script (e.g. showing error `No module name screed`)?
 
-#### Q: Why the virsorter works in when running interactively but does not work when submit as batch script (showing `No module name screed`)?
-
-A: This is usually caused by the incompatibility between the two different package/environment managing tools: Modules (`module load`) and conda (`conda activate`). There are two solutions: 1) install conda on your own (user level) instead of using the system conda, and thus avoiding `module load`; 2) Sometimes server system admins discourage users to install conda at user level. If so, you can remove the `module load` or `module use` in batch scripts, and instead run them interactively in the terminal to load necessary packages before submitting the batch scripts.
+A: This is usually caused by the incompatibility between two different package/environment managing tools: Modules (`module load`) and conda (`conda activate`). There are two solutions: 1) install conda on your own (user level) instead of using the system conda, and thus avoiding `module load`; 2) Sometimes server system admins discourage users to install conda at user level. If so, you can remove the `module load` or `module use` in batch scripts, and instead run them interactively in the terminal to load necessary packages before submitting the batch scripts.
 
 #### Q: Why is there installation error with macOS?
 
@@ -312,7 +311,7 @@ A: MacOS is not supported currently. VirSorter2 runs are typically computational
 
 #### Q: How can I speed up the run?
 
-A: Here are a few ways: 1) use more cpu cores (-j); 2) filter your contig with length (>1500 or >5000); 3) reduce the viral groups in `--include-groups`. For most people interestd in phage, only dsDNAphage and ssDNA are needed, which is the default since version 2.2; 4) increase the threads for hmmsearch (the default is 2) by `virsorter config --set HMMSEARCH_THREADS=4`. Usually the IO is the bottleneck, not the CPU though.
+A: Here are a few ways: 1) use more cpu cores (-j); 2) filter your contigs on length (>1500 or >5000) with `--min-length`; 3) reduce the viral groups in `--include-groups`. For most people interestd in phage, only dsDNAphage and ssDNA are needed, which is the default since version 2.2; 4) increase the threads for hmmsearch (the default is 2) by `virsorter config --set HMMSEARCH_THREADS=4`. Usually the IO is the bottleneck, not the CPU though.
 
 #### Q: How can I tell if an identified viral sequence is provirus?
 
@@ -324,11 +323,11 @@ A: The provirus boundary dectection algorithm in VirSorter2 tends to overextend 
 
 #### Q: Why am I getting many false positives (non-viral sequences)?
 
-A: The default score cutoff (0.5) has high sensitivity but also brings in many non-viral sequences. For phages, we recommend using [checkV](https://bitbucket.org/berkeleylab/checkv/src/master) to remove those non-viral sequences following this [protocol](link). See more details in the answer to Q1 - [how can I pick a score cutoff](#Q-how-can-i-pick-a-score-cutoff).
+A: The default score cutoff (0.5) has high sensitivity but also brings in many non-viral sequences. For phages, we recommend using [checkV](https://bitbucket.org/berkeleylab/checkv/src/master) to remove those non-viral sequences following this [protocol](link). See more details in the answer to the [how should I pick a score cutoff](#Q-how-should-i-pick-a-score-cutoff).
 
 #### Q: Why are fully viral sequences (ending with ||full) trimmed?
 
-A: There are three situations that a fully viral sequence can be trimmed. 1) VirSorter2 is based on genes called by prodigal. A few bases overhang beyond the first and last gene are ignored by prodigal and also VirSorter2 by default; 2) Circular sequences are usually split in the middle of a gene and have duplicate segments. VirSorter2 trims the duplicate segments and fixes the split gene by moving the partial gene the start to the end. 3) fully viral sequences only means the whole sequence has strong viral signal (score >=0.95 by default), but VirSorter2 still applies an end trimming step (10% of genes on each end) on them to find the optimal viral segments (longest within 95% of peak score by default). Again, the "full" sequences trimmed by the end trimming step should not be interpreted as provirus, since genes that have low impact on score, such as unknown gene or genes shared by host and virus, could be trimmed. If you prefer the full sequences (ending with ||full) not to be trimmed and leave it to specialized tools such as checkV, you can use `--keep-original-seq` option.
+A: There are three situations that a fully viral sequence can be trimmed. 1) VirSorter2 is based on genes called by prodigal. A few bases overhang beyond the first and last gene are ignored by prodigal and also ignored VirSorter2 by default; 2) Circular sequences are usually split in the middle of a gene and have duplicate segments. VirSorter2 trims the duplicate segments and fixes the split gene by moving the partial gene the start to the end. 3) fully viral sequences only means the whole sequence has strong viral signal (score >=0.95 by default), but VirSorter2 still applies an end trimming step (10% of genes on each end) on them to find the optimal viral segments (longest within 95% of peak score by default). Again, the "full" sequences trimmed by the end trimming step should not be interpreted as provirus, since genes that have low impact on score, such as unknown gene or genes shared by host and virus, could be trimmed. If you prefer the full sequences (ending with ||full) not to be trimmed and leave it to specialized tools such as checkV, you can use `--keep-original-seq` option.
 
 # Acknowledgement
 VirSorter 2 is jointly developed by the Sullivan Lab at Ohio State University (https://u.osu.edu/viruslab/) and the Viral Genomics Group at the DOE Joint Genome Institute (https://jgi.doe.gov/our-science/scientists-jgi/viral-genomics/).  Funding was provided by NSF (#OCE1829831, #ABI1758974), the U.S. Department of Energy (#DE-SC0020173), and the Gordon and Betty Moore Foundation (#3790). The work conducted by the U.S. Department of Energy Joint Genome Institute is supported by the Office of Science of the U.S. Department of Energy under contract no. DE-AC02-05CH11231.
