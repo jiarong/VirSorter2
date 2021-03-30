@@ -33,7 +33,7 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 # Installation (tested on CentOS linux; should work in all linux; MacOS is not supported at the moment)
 
-## Option 1 (bioconda: virsorter version 2.1)
+## Option 1 (bioconda: virsorter version 2.2)
 
 Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
