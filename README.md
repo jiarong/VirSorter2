@@ -21,6 +21,15 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 - apply machine learning to estimate viralness using genomic features including structural/functional/taxonomic annotation and viral hallmark genes;
 - train with high quality virus genomes from metagenomes or other sources.
 
+See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
+
+# Important updates
+
+- The newest stable version is 2.2. 
+- An tutorial/SOP on how to VirSorter2 results is avaiable.
+- A few new options are added to acommodate the SOP (see details in [change log](Changelog.md)).
+- The default --include-groups is change for all viral groups to dsDNAphage and ssDNA since this should be used for what most people interested in phage.
+- A new FAQ section is available at the bottom of this doc.
 
 # Installation (tested on CentOS linux; should work in all linux; MacOS is not supported at the moment)
 
@@ -29,7 +38,7 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
 ```bash
-conda create -n vs2 -c bioconda -c conda-forge virsorter=2
+conda create -n vs2 -c conda-forge -c bioconda virsorter=2
 conda activate vs2
 ```
 
@@ -38,7 +47,7 @@ conda activate vs2
 The development version is most updated and recommended. To install the development version:
 
 ```bash
-conda create -n vs2 -c bioconda -c conda-forge "python>=3.6" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer==3.3 prodigal screed ruamel.yaml "snakemake>=5.18,<=5.26" click mamba
+conda create -n vs2 -c conda-forge -c bioconda "python>=3.6" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer==3.3 prodigal screed ruamel.yaml "snakemake>=5.18,<=5.26" click mamba
 conda activate vs2
 git clone https://github.com/jiarong/VirSorter2.git
 cd VirSorter2
@@ -73,34 +82,38 @@ To run viral sequence identification on a test dataset:
 # fetch testing data
 wget -O test.fa https://raw.githubusercontent.com/jiarong/VirSorter2/master/test/8seq.fa
 # run classification with 4 threads (-j) and test-out as output diretory (-w)
-virsorter run -w test.out -i test.fa -j 4 all
+virsorter run -w test.out -i test.fa --min-length 1500 -j 4 all
 ls test.out
 ```
 
 Due to the large HMM database that VirSorter2 uses, this small dataset takes a few mins to finish. In the output directory (test.out), three files are useful:
 
 - `final-viral-combined.fa`:  identified viral sequences
-- `final-viral-score.tsv`:    table with score of each viral sequences across groups
-- `final-viral-boundary.tsv`: table with boundary information
+- `final-viral-score.tsv`:    table with score of each viral sequences across groups and a few more key features, which can be used for further filtering
+- `final-viral-boundary.tsv`: table with boundary information (might have extra records compared to other two files)
 
 More details about each of these output files can be found [here](#detailed-description-on-output-files).
 
 ---
 **NOTE**
 
-Note that suffix `||full`, `||lt2gene` and `||{i}_partial` (`{i}` can be numbers starting from 0 to max number of viral fragments found in that contig) have been added to original sequence names to differentiate sub-sequences in case of multiple viral subsequences found in one contig.
+Note that suffix `||full`, `||lt2gene` and `||{i}_partial` (`{i}` can be numbers starting from 0 to max number of viral fragments found in that contig) have been added to original sequence names to differentiate sub-sequences in case of multiple viral subsequences found in one contig. Partial sequences can be treated as proviruses since they are extracted from longer host sequences. **Full sequences, however, can be proviruses or free virus** since it can be a short fragment sequenced from a provirus region. Moreover, "full" sequences are just sequences with strong viral signal as a whole ("nearly full" is more accurate). They might be trimmed due to partial gene overhang at ends, duplicate segments from circular genomes, and an end trimming step for all identified viral sequences to find the optimal viral segments (longest within 95% of peak score by default). Again, the "full" sequences trimmed by the end trimming step should not be interpreted as provirus, since genes that have low impact on score, such as unknown gene or genes shared by host and virus, could be trimmed. If you prefer the full sequences (ending with ||full) not to be trimmed and leave it to specialized tools such as checkV, you can use `--keep-original-seq` option. 
 
 ---
+
+# Quality control
+
+The default score cutoff (0.5) works well known viruses (RefSeq). For the real environmental data, we can expect to get false positives (non-viral) with the default cutoff. Generally, samples with more host (e.g. bulk metaG) and unknown sequences (e.g. soil) tends to have more false positives. We find a score cutoff of 0.9 work well as a cutoff for high confidence hits, but there are also many viral hits with score <0.9. It's difficult to separate the viral and non-viral hits by score alone. So we recommend using the default score cutoff (0.5) for maximal sensitivity and then quality checking step using checkV. Here is a tutorial of [viral identity SOP](link) used in Sullivan Lab.
 
 # More options  
 
 ## choosing viral groups (`--include-groups`)
 
-VirSorter2 finds all viral groups currently included (ssDNAphage, NCLDV , RNA, ssDNA virus, and *lavidaviridae*) by default. You can use `--include-groups` to select only specific groups. For those only interested in phage:
+The available options are ssDNAphage, NCLDV , RNA, ssDNA virus, and *lavidaviridae*. The default is dsDNAphage and ssDNA (changed from all groups since version 2.2), suitable for those only interested in phage. If you are only interested in RNA virus, you can run:
 
 ```bash
 rm -rf test.out
-virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 all
+virsorter run -w test.out -i test.fa --include-groups RNA -j 4 all
 ```
 
 ## re-run with different score cutoff (`--min-score` and `--classify`)
@@ -282,6 +295,40 @@ virsorter run -w autolyki-model-test.out -i test.fa --include-groups "dsDNAphage
 cat autolyki-model-test.out/final-viral-score.tsv
 ```
 
+# FAQ
+
+#### Q: How should I pick a score cutoff?
+
+A: Generally, those with score >0.9 are high confidence. Those with score between 0.5 and 0.9 could be a mixture of viral and non-viral. It's hard to find a optimal score separating viral and non-viral since it depends on % of host sequence and unknown sequences. So we recommend using the default cutoff (0.5) for maximal sensitivity and then a quality checking step using checkV to for removing false positives (other than predicting completeness). Here is a tutorial used as [viral identification SOP in the Sullivan Lab](link).
+
+
+#### Q: Why the virsorter works in when running interactively but does not work when submit as batch script (showing `No module name screed`)?
+
+A: This is usually caused by the incompatibility between the two different package/environment managing tools: Modules (`module load`) and conda (`conda activate`). There are two solutions: 1) install conda on your own (user level) instead of using the system conda, and thus avoiding `module load`; 2) Sometimes server system admins discourage users to install conda at user level. If so, you can remove the `module load` or `module use` in batch scripts, and instead run them interactively in the terminal to load necessary packages before submitting the batch scripts.
+
+#### Q: Why is there installation error with macOS?
+
+A: MacOS is not supported currently. VirSorter2 runs are typically computationally expensive, and should be run in servers (typically Linux). VirSorter2 leverages large viral protein HMM reference databases to achieve its high sensitivity, and the flip side is that its computationally expensive.
+
+#### Q: How can I speed up the run?
+
+A: Here are a few ways: 1) use more cpu cores (-j); 2) filter your contig with length (>1500 or >5000); 3) reduce the viral groups in `--include-groups`. For most people interestd in phage, only dsDNAphage and ssDNA are needed, which is the default since version 2.2; 4) increase the threads for hmmsearch (the default is 2) by `virsorter config --set HMMSEARCH_THREADS=4`. Usually the IO is the bottleneck, not the CPU though.
+
+#### Q: How can I tell if an identified viral sequence is provirus?
+
+A: Only partially viral sequences (ending with \_partial) can be confirmed as provirus. Fully viral sequences (ending with ||full) in VirSorter2 defined as contigs with strong viral signal (score >=0.95) as a whole sequene. Thus some could be provirus too: 1) they could be a fragment from within a provirus; 2) the whole sequence has strong viral signal (score >0.95) in spite of some host genes at ends.
+
+#### Q: Why are there host genes left at ends of predicted viral sequences?
+
+A: The provirus boundary dectection algorithm in VirSorter2 tends to overextend to host regions. VirSorter2 estimate boundaries by looking at the peak score of sub-sequences and then overextend a bit (within 95% of peak score by default). This is a design decision so that predicted viral sequences can be further passed to a more specialized provirus boundary prediction tool.
+
+#### Q: Why am I getting many false positives (non-viral sequences)?
+
+A: The default score cutoff (0.5) has high sensitivity but also brings in many non-viral sequences. For phages, we recommend using [checkV](https://bitbucket.org/berkeleylab/checkv/src/master) to remove those non-viral sequences following this [protocol](link). See more details in the answer to Q1 - [how can I pick a score cutoff](#Q-how-can-i-pick-a-score-cutoff).
+
+#### Q: Why are fully viral sequences (ending with ||full) trimmed?
+
+A: There are three situations that a fully viral sequence can be trimmed. 1) VirSorter2 is based on genes called by prodigal. A few bases overhang beyond the first and last gene are ignored by prodigal and also VirSorter2 by default; 2) Circular sequences are usually split in the middle of a gene and have duplicate segments. VirSorter2 trims the duplicate segments and fixes the split gene by moving the partial gene the start to the end. 3) fully viral sequences only means the whole sequence has strong viral signal (score >=0.95 by default), but VirSorter2 still applies an end trimming step (10% of genes on each end) on them to find the optimal viral segments (longest within 95% of peak score by default). Again, the "full" sequences trimmed by the end trimming step should not be interpreted as provirus, since genes that have low impact on score, such as unknown gene or genes shared by host and virus, could be trimmed. If you prefer the full sequences (ending with ||full) not to be trimmed and leave it to specialized tools such as checkV, you can use `--keep-original-seq` option.
 
 # Acknowledgement
 VirSorter 2 is jointly developed by the Sullivan Lab at Ohio State University (https://u.osu.edu/viruslab/) and the Viral Genomics Group at the DOE Joint Genome Institute (https://jgi.doe.gov/our-science/scientists-jgi/viral-genomics/).  Funding was provided by NSF (#OCE1829831, #ABI1758974), the U.S. Department of Energy (#DE-SC0020173), and the Gordon and Betty Moore Foundation (#3790). The work conducted by the U.S. Department of Energy Joint Genome Institute is supported by the Office of Science of the U.S. Department of Energy under contract no. DE-AC02-05CH11231.
