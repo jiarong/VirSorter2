@@ -103,7 +103,7 @@ Note that suffix `||full`, `||lt2gene` and `||{i}_partial` (`{i}` can be numbers
 
 # Quality control
 
-The default score cutoff (0.5) works well known viruses (RefSeq). For the real environmental data, we can expect to get false positives (non-viral) with the default cutoff. Generally, samples with more host (e.g. bulk metaG) and unknown sequences (e.g. soil) tends to have more false positives. We find a score cutoff of 0.9 work well as a cutoff for high confidence hits, but there are also many viral hits with score <0.9. It's difficult to separate the viral and non-viral hits by score alone. So we recommend using the default score cutoff (0.5) for maximal sensitivity and then quality checking step using checkV. Here is a tutorial of [viral identity SOP](link) used in Sullivan Lab.
+The default score cutoff (0.5) works well known viruses (RefSeq). For the real environmental data, we can expect to get false positives (non-viral) with the default cutoff. Generally, samples with more host (e.g. bulk metaG) and unknown sequences (e.g. soil) tends to have more false positives. We find a score cutoff of 0.9 work well as a cutoff for high confidence hits, but there are also many viral hits with score <0.9. It's difficult to separate the viral and non-viral hits by score alone. So we recommend using the default score cutoff (0.5) for maximal sensitivity and then quality checking step using checkV. Here is a tutorial of [viral identification SOP](link) in Sullivan Lab.
 
 # More options  
 
