@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Mark short jobs as local_rules to optimaize for `virsorter run` --cluster mode
 - Add "all" in --include-groups
 
+## [2.2] - 2021-03-30
+- Add --viral-gene-enrich-off option
+- Add --seqname-suffix-off option
+- Change default --include-groups from all groups to dsDNAphage and ssDNA
+- Add FAQ, viral identification SOP link in README
 
 ## [2.1] - 2021-01-15
 ### Added
