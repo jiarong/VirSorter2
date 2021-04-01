@@ -64,9 +64,10 @@ def main():
         # ignore those already processed in full (whole seq as viral)
         sel_seqname = df_merged_partial['seqname'].isin(seqnames_full)
         df_merged_partial = df_merged_partial.loc[~sel_seqname,:]
-        sel_peak_proba = \
-                df_merged_partial['prox_pr_max'] >= PROVIRUS_MIN_PEAK_PROBA
-        df_merged_partial = df_merged_partial.loc[sel_peak_proba,:]
+	### moved the filtering to provirus.py
+        #sel_peak_proba = \
+        #        df_merged_partial['prox_pr_max'] >= PROVIRUS_MIN_PEAK_PROBA
+        #df_merged_partial = df_merged_partial.loc[sel_peak_proba,:]
 
         # a copy is made in background with sorting
         df_merged_partial = df_merged_partial.sort_values(
@@ -74,13 +75,14 @@ def main():
                 ascending=False,
         )
 
-        min_genome_sizes = df_merged_partial['group'].map(
-                lambda x: DEFAULT_CONFIG['GROUP_INFO'][x]['MIN_GENOME_SIZE'])
-        sel_size = (
-                (df_merged_partial['trim_bp_end'] - 
-                    df_merged_partial['trim_bp_start']) >= min_genome_sizes
-        )
-        df_merged_partial = df_merged_partial.loc[sel_size,:]
+	### moved the filtering to provirus.py
+        #min_genome_sizes = df_merged_partial['group'].map(
+        #        lambda x: DEFAULT_CONFIG['GROUP_INFO'][x]['MIN_GENOME_SIZE'])
+        #sel_size = (
+        #        (df_merged_partial['trim_bp_end'] - 
+        #            df_merged_partial['trim_bp_start']) >= min_genome_sizes
+        #)
+        #df_merged_partial = df_merged_partial.loc[sel_size,:]
         df_merged_partial = df_merged_partial.drop(['size'], axis=1)
         # write the headers
         string_lis = df_merged_partial.columns
