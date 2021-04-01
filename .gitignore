@@ -8,6 +8,7 @@ install-deps
 test/*
 !test/test.sh
 !test/8seq.fa
+!test/test-for-sop.fa
 *template-config.yaml
 todo
 notes
