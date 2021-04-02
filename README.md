@@ -8,7 +8,7 @@
 
 # VirSorter 2 
 
-[![Version](https://anaconda.org/bioconda/virsorter/badges/version.svg)](https://anaconda.org/bioconda/virsorter)
+[![Bioconda](https://img.shields.io/conda/vn/bioconda/virsorter.svg?color=43b02a)](https://anaconda.org/bioconda/virsorter)
 [![Build Status](https://travis-ci.org/jiarong/VirSorter2.svg?branch=master)](https://travis-ci.org/jiarong/VirSorter2)
 <!--
 [![Bioconda](https://img.shields.io/conda/dn/bioconda/virsorter.svg?label=Bioconda )](https://anaconda.org/bioconda/virsorter)
@@ -26,7 +26,7 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 # Important updates
 
 - The newest stable version is 2.2.1. 
-- A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](dx.doi.org/10.17504/protocols.io.btv8nn9w).
+- A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w).
 - A few new options are added to accommodate the SOP (see details in [change log](Changelog.md)).
 - The default --include-groups is changed from all viral groups to dsDNAphage and ssDNA since this should be used for what most people interested in phage.
 - A new FAQ section is available at the bottom of this doc.
@@ -103,7 +103,7 @@ Note that suffix `||full`, `||lt2gene` and `||{i}_partial` (`{i}` can be numbers
 
 # Quality control
 
-The default score cutoff (0.5) works well known viruses (RefSeq). For the real environmental data, we can expect to get false positives (non-viral) with the default cutoff. Generally, samples with more host (e.g. bulk metaG) and unknown sequences (e.g. soil) tends to have more false positives. We find a score cutoff of 0.9 work well as a cutoff for high confidence hits, but there are also many viral hits with score <0.9. It's difficult to separate the viral and non-viral hits by score alone. So we recommend using the default score cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV. Here is a tutorial of [viral identification SOP](dx.doi.org/10.17504/protocols.io.btv8nn9w) used in Sullivan Lab.
+The default score cutoff (0.5) works well known viruses (RefSeq). For the real environmental data, we can expect to get false positives (non-viral) with the default cutoff. Generally, samples with more host (e.g. bulk metaG) and unknown sequences (e.g. soil) tends to have more false positives. We find a score cutoff of 0.9 work well as a cutoff for high confidence hits, but there are also many viral hits with score <0.9. It's difficult to separate the viral and non-viral hits by score alone. So we recommend using the default score cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV. Here is a tutorial of [viral identification SOP](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w) used in Sullivan Lab.
 
 # More options  
 
@@ -299,7 +299,7 @@ cat autolyki-model-test.out/final-viral-score.tsv
 
 #### Q: How should I pick a score cutoff?
 
-A: Generally, those with score >0.9 are high confidence. Those with score between 0.5 and 0.9 could be a mixture of viral and non-viral. It's hard to find a optimal score separating viral and non-viral since it depends on % of host sequence and unknown sequences. So we recommend using the default cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV to for removing false positives (other than predicting completeness). Here is the [viral identification SOP in the Sullivan Lab](dx.doi.org/10.17504/protocols.io.btv8nn9w).
+A: Generally, those with score >0.9 are high confidence. Those with score between 0.5 and 0.9 could be a mixture of viral and non-viral. It's hard to find a optimal score separating viral and non-viral since it depends on % of host sequence and unknown sequences. So we recommend using the default cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV to for removing false positives (other than predicting completeness). Here is the [viral identification SOP in the Sullivan Lab](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w).
 
 #### Q: Why does virsorter work in when running interactively but does not work when submit as batch script (e.g. showing error `No module name screed`)?
 
@@ -323,7 +323,7 @@ A: The provirus boundary dectection algorithm in VirSorter2 tends to overextend 
 
 #### Q: Why am I getting many false positives (non-viral sequences)?
 
-A: The default score cutoff (0.5) has high sensitivity but also brings in many non-viral sequences. For phages, we recommend using [checkV](https://bitbucket.org/berkeleylab/checkv/src/master) to remove those non-viral sequences following this [protocol](dx.doi.org/10.17504/protocols.io.btv8nn9w). See more details in the answer to the [how should I pick a score cutoff](#Q-how-should-i-pick-a-score-cutoff).
+A: The default score cutoff (0.5) has high sensitivity but also brings in many non-viral sequences. For phages, we recommend using [checkV](https://bitbucket.org/berkeleylab/checkv/src/master) to remove those non-viral sequences following this [protocol](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w). See more details in the answer to the [how should I pick a score cutoff](#Q-how-should-i-pick-a-score-cutoff).
 
 #### Q: Why are fully viral sequences (ending with ||full) trimmed?
 
