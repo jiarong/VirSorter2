@@ -25,15 +25,15 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 # Important updates
 
-- The newest stable version is 2.2. 
-- A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](link).
+- The newest stable version is 2.2.1. 
+- A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](dx.doi.org/10.17504/protocols.io.btv8nn9w).
 - A few new options are added to accommodate the SOP (see details in [change log](Changelog.md)).
 - The default --include-groups is changed from all viral groups to dsDNAphage and ssDNA since this should be used for what most people interested in phage.
 - A new FAQ section is available at the bottom of this doc.
 
 # Installation (tested on CentOS linux; should work in all linux; MacOS is not supported at the moment)
 
-## Option 1 (bioconda: virsorter version 2.2)
+## Option 1 (bioconda: virsorter version 2.2.1)
 
 Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
@@ -103,7 +103,7 @@ Note that suffix `||full`, `||lt2gene` and `||{i}_partial` (`{i}` can be numbers
 
 # Quality control
 
-The default score cutoff (0.5) works well known viruses (RefSeq). For the real environmental data, we can expect to get false positives (non-viral) with the default cutoff. Generally, samples with more host (e.g. bulk metaG) and unknown sequences (e.g. soil) tends to have more false positives. We find a score cutoff of 0.9 work well as a cutoff for high confidence hits, but there are also many viral hits with score <0.9. It's difficult to separate the viral and non-viral hits by score alone. So we recommend using the default score cutoff (0.5) for maximal sensitivity and then quality checking step using checkV. Here is a tutorial of [viral identification SOP](link) in Sullivan Lab.
+The default score cutoff (0.5) works well known viruses (RefSeq). For the real environmental data, we can expect to get false positives (non-viral) with the default cutoff. Generally, samples with more host (e.g. bulk metaG) and unknown sequences (e.g. soil) tends to have more false positives. We find a score cutoff of 0.9 work well as a cutoff for high confidence hits, but there are also many viral hits with score <0.9. It's difficult to separate the viral and non-viral hits by score alone. So we recommend using the default score cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV. Here is a tutorial of [viral identification SOP](dx.doi.org/10.17504/protocols.io.btv8nn9w) used in Sullivan Lab.
 
 # More options  
 
@@ -299,7 +299,7 @@ cat autolyki-model-test.out/final-viral-score.tsv
 
 #### Q: How should I pick a score cutoff?
 
-A: Generally, those with score >0.9 are high confidence. Those with score between 0.5 and 0.9 could be a mixture of viral and non-viral. It's hard to find a optimal score separating viral and non-viral since it depends on % of host sequence and unknown sequences. So we recommend using the default cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV to for removing false positives (other than predicting completeness). Here is the [viral identification SOP in the Sullivan Lab](link).
+A: Generally, those with score >0.9 are high confidence. Those with score between 0.5 and 0.9 could be a mixture of viral and non-viral. It's hard to find a optimal score separating viral and non-viral since it depends on % of host sequence and unknown sequences. So we recommend using the default cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV to for removing false positives (other than predicting completeness). Here is the [viral identification SOP in the Sullivan Lab](dx.doi.org/10.17504/protocols.io.btv8nn9w).
 
 #### Q: Why does virsorter work in when running interactively but does not work when submit as batch script (e.g. showing error `No module name screed`)?
 
@@ -315,7 +315,7 @@ A: Here are a few ways: 1) use more cpu cores (-j); 2) filter your contigs on le
 
 #### Q: How can I tell if an identified viral sequence is provirus?
 
-A: Only partially viral sequences (ending with \_partial) can be confirmed as provirus. Fully viral sequences (ending with ||full) in VirSorter2 defined as contigs with strong viral signal (score >=0.95) as a whole sequene. Thus some could be provirus too: 1) they could be a fragment from within a provirus; 2) the whole sequence has strong viral signal (score >0.95) in spite of some host genes at ends.
+A: Only partially viral sequences (ending with \_partial) can be confirmed as provirus. Fully viral sequences (ending with ||full) in VirSorter2 defined as contigs with significant viral signal (score >=0.8) as a whole sequene. Thus some could be provirus too: 1) they could be a fragment from within a provirus; 2) the whole sequence has strong viral signal in spite of some host genes at ends.
 
 #### Q: Why are there host genes left at ends of predicted viral sequences?
 
@@ -323,11 +323,11 @@ A: The provirus boundary dectection algorithm in VirSorter2 tends to overextend 
 
 #### Q: Why am I getting many false positives (non-viral sequences)?
 
-A: The default score cutoff (0.5) has high sensitivity but also brings in many non-viral sequences. For phages, we recommend using [checkV](https://bitbucket.org/berkeleylab/checkv/src/master) to remove those non-viral sequences following this [protocol](link). See more details in the answer to the [how should I pick a score cutoff](#Q-how-should-i-pick-a-score-cutoff).
+A: The default score cutoff (0.5) has high sensitivity but also brings in many non-viral sequences. For phages, we recommend using [checkV](https://bitbucket.org/berkeleylab/checkv/src/master) to remove those non-viral sequences following this [protocol](dx.doi.org/10.17504/protocols.io.btv8nn9w). See more details in the answer to the [how should I pick a score cutoff](#Q-how-should-i-pick-a-score-cutoff).
 
 #### Q: Why are fully viral sequences (ending with ||full) trimmed?
 
-A: There are three situations that a fully viral sequence can be trimmed. 1) VirSorter2 is based on genes called by prodigal. A few bases overhang beyond the first and last gene are ignored by prodigal and also ignored VirSorter2 by default; 2) Circular sequences are usually split in the middle of a gene and have duplicate segments. VirSorter2 trims the duplicate segments and fixes the split gene by moving the partial gene the start to the end. 3) fully viral sequences only means the whole sequence has strong viral signal (score >=0.95 by default), but VirSorter2 still applies an end trimming step (10% of genes on each end) on them to find the optimal viral segments (longest within 95% of peak score by default). Again, the "full" sequences trimmed by the end trimming step should not be interpreted as provirus, since genes that have low impact on score, such as unknown gene or genes shared by host and virus, could be trimmed. If you prefer the full sequences (ending with ||full) not to be trimmed and leave it to specialized tools such as checkV, you can use `--keep-original-seq` option.
+A: There are three situations that a fully viral sequence can be trimmed. 1) VirSorter2 is based on genes called by prodigal. A few bases overhang beyond the first and last gene are ignored by prodigal and also ignored VirSorter2 by default; 2) Circular sequences are usually split in the middle of a gene and have duplicate segments. VirSorter2 trims the duplicate segments and fixes the split gene by moving the partial gene the start to the end. 3) fully viral sequences only means the whole sequence has significant viral signal (score >=0.95 by default), but VirSorter2 still applies an end trimming step (10% of genes on each end) on them to find the optimal viral segments (longest within 95% of peak score by default). Again, the "full" sequences trimmed by the end trimming step should not be interpreted as provirus, since genes that have low impact on score, such as unknown gene or genes shared by host and virus, could be trimmed. If you prefer the full sequences (ending with ||full) not to be trimmed and leave it to specialized tools such as checkV, you can use `--keep-original-seq` option.
 
 # Acknowledgement
 VirSorter 2 is jointly developed by the Sullivan Lab at Ohio State University (https://u.osu.edu/viruslab/) and the Viral Genomics Group at the DOE Joint Genome Institute (https://jgi.doe.gov/our-science/scientists-jgi/viral-genomics/).  Funding was provided by NSF (#OCE1829831, #ABI1758974), the U.S. Department of Energy (#DE-SC0020173), and the Gordon and Betty Moore Foundation (#3790). The work conducted by the U.S. Department of Energy Joint Genome Institute is supported by the Office of Science of the U.S. Department of Energy under contract no. DE-AC02-05CH11231.
