@@ -338,8 +338,8 @@ if Provirus:
                 sed -i -E 's/\|\|full([[:space:]]+)/\\1/; s/\|\|[0-9]+_partial([[:space:]]+)/\\1/; s/\|\|lt2gene([[:space:]]+)/\\1/;' {output.score}
                 sed -i -E 's/\|\|full$//; s/\|\|[0-9]+_partial$//; s/\|\|lt2gene$//;' {output.fa} {output.boundary}
                 if [ {Prep_for_dramv} = True ]; then
-                    sed -i -E 's/__full(\|[0-9]+\|(c|l)$)/\\1/; s/__[0-9]+_partial(\|[0-9]+\|(c|l)$)/\\1/; s/\|\|lt2gene(\|[0-9]+\|(c|l)$)/\\1/;  s/__full(__[0-9]+\|)/\\1/; s/__[0-9]+_partial(__[0-9]+\|)/\\1/; s/__lt2gene(__[0-9]+\|)/\\1/;' {Label}for-dramv/viral-affi-contigs-for-dramv.tab
-                    sed -i -E 's/__full(-cat_[1-6]$)/\\1/; s/__[0-9]+_partial(-cat_[1-6][[:space:]]+)/\\1/; s/\|\|lt2gene(-cat_[1-6][[:space:]]+)/\\1/;' {Label}for-dramv/final-viral-combined-for-dramv.fa 
+                    sed -i -E 's/__full(\|[0-9]+\|(c|l)$)/\\1/; s/__[0-9]+_partial(\|[0-9]+\|(c|l)$)/\\1/; s/__lt2gene(\|[0-9]+\|(c|l)$)/\\1/;  s/__full(__[0-9]+\|)/\\1/; s/__[0-9]+_partial(__[0-9]+\|)/\\1/; s/__lt2gene(__[0-9]+\|)/\\1/;' {Label}for-dramv/viral-affi-contigs-for-dramv.tab
+                    sed -i -E 's/__full(-cat_[1-6]$)/\\1/; s/__[0-9]+_partial(-cat_[1-6]$)/\\1/; s/__lt2gene(-cat_[1-6]$)/\\1/;' {Label}for-dramv/final-viral-combined-for-dramv.fa 
                 fi
                 Suffix_notes=""
             else
@@ -538,7 +538,7 @@ else:
                 sed -i -E 's/\|\|full$//; s/\|\|[0-9]+_partial$//; s/\|\|lt2gene$//;' {output.fa}
                 if [ {Prep_for_dramv} = True ]; then
                     sed -i -E 's/__full(\|[0-9]+\|(c|l)$)/\\1/; s/__[0-9]+_partial(\|[0-9]+\|(c|l)$)/\\1/; s/\|\|lt2gene(\|[0-9]+\|(c|l)$)/\\1/;  s/__full(__[0-9]+\|)/\\1/; s/__[0-9]+_partial(__[0-9]+\|)/\\1/; s/__lt2gene(__[0-9]+\|)/\\1/;' {Label}for-dramv/viral-affi-contigs-for-dramv.tab
-                    sed -i -E 's/__full(-cat_[1-6]$)/\\1/; s/__[0-9]+_partial(-cat_[1-6][[:space:]]+)/\\1/; s/\|\|lt2gene(-cat_[1-6][[:space:]]+)/\\1/;' {Label}for-dramv/final-viral-combined-for-dramv.fa 
+                    sed -i -E 's/__full(-cat_[1-6]$)/\\1/; s/__[0-9]+_partial(-cat_[1-6]$)/\\1/; s/\|\|lt2gene(-cat_[1-6]$)/\\1/;' {Label}for-dramv/final-viral-combined-for-dramv.fa 
                 fi
                 Suffix_notes=""
             else
