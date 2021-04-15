@@ -61,8 +61,14 @@ def main():
     max_score_group_ser = _df.idxmax(axis=1)
         
     for i in max_score_group_ser.index:
-        if max_score_group_ser.loc[i] != df_info.loc[i, 'max_score_group']:
-            df_info.loc[i, 'max_score_group'] = max_score_group_ser.loc[i]
+        try:
+            if max_score_group_ser.loc[i] != df_info.loc[i, 'max_score_group']:
+                df_info.loc[i, 'max_score_group'] = max_score_group_ser.loc[i]
+        except ValueError as e:
+            mes = ('*** Duplicate seqnames are found in input contig '
+                   'sequence file; Please fix them and rerun..\n')
+            sys.stderr.write(mes)
+            sys.exit(1)
 
     df_merge = pd.merge(df, df_info, on=['seqname'], how='right')
     df_merge.to_csv(outfile, sep='\t', na_rep='NaN', 

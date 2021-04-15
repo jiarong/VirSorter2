@@ -55,9 +55,17 @@ def main():
         cnt1 = 0
         cnt2 = 0
         cnt3 = 0
+        st = set()
         for rec in screed.open(infile):
             header = rec.name
             name = header.split(None, 1)[0]
+            if name in st:
+                mes = (f'Duplicate seqname detected in {infile}; '
+                        'Please make sure all sequence names are unique..\n')
+                logging.error(mes)
+                sys.exit(1)
+
+            st.add(name)
             seq = rec.sequence
             if len(seq) < min_length:
                 cnt3 += 1
