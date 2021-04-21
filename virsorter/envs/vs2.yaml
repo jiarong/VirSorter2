@@ -1,85 +1,18 @@
 name: vs2
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
-  - _libgcc_mutex=0.1
-  - _openmp_mutex=4.5
-  - appdirs=1.4.3
-  - blas=2.16
-  - brotlipy=0.7.0
-  - bz2file=0.98
-  - ca-certificates=2020.4.5.1
-  - certifi=2020.4.5.1
-  - cffi=1.14.0
-  - chardet=3.0.4
-  - cryptography=2.9.2
-  - cycler=0.10.0
-  - click=7.1
-  - enum34=1.1
-  - freetype=2.10
-  - hmmer==3.3
-  - icu=64.2
-  - idna=2.9
-  - imbalanced-learn=0.6
-  - joblib=0.14
-  - jpeg=9c
-  - kiwisolver=1.2
-  - last=1060
-  - ld_impl_linux-64=2.34
-  - libblas=3.8
-  - libcblas=3.8
-  - libffi=3.2
-  - libgcc-ng=9.2
-  - libgfortran-ng=7.3
-  - liblapack=3.8
-  - liblapacke=3.8
-  - libopenblas=0.3
-  - libpng=1.6
-  - libstdcxx-ng=9.2
-  - libtiff=4.1
-  - libwebp-base=1.1
-  - llvm-openmp=10.0
-  - lz4-c=1.9
-  - matplotlib-base=3.2
-  - ncbi-genome-download=0.2
-  - ncurses=6.1
-  - numpy=1.18
-  - olefile=0.46
-  - openssl=1.1
-  - pandas=1.0
-  - parallel=20170422
-  - patsy=0.5
-  - perl=5.22
-  - pillow=7.1
-  - pip=20.1
+  - click
+  - last
+  - ncbi-genome-download
+  - ruamel.yaml
   - prodigal=2.6
-  - pycparser=2.20
-  - pyopenssl=19.1
-  - pyparsing=2.4
-  - pysocks=1.7
   - python=3.8
-  - python-dateutil=2.8
-  - python_abi=3.8
-  - pytz=2020.1
-  - readline=8.0
-  - requests=2.23
-  - ruamel.yaml=0.16
-  - ruamel.yaml.clib=0.2
+  - screed=1
+  - hmmer!=3.3.1
   - scikit-learn=0.22.1
-  - scipy=1.4
-  - screed=1.0
-  - seaborn=0.10
-  - setuptools=46.2
-  - six=1.14
-  - sqlite=3.30
-  - statsmodels=0.11
-  - tk=8.6
-  - tornado=6.0
-  - urllib3=1.25
-  - wheel=0.34
-  - xz=5.2
-  - zlib=1.2
-  - zstd=1.4
-
+  - imbalanced-learn
+  - pandas
+  - seaborn
