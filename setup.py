@@ -22,7 +22,7 @@ def get_version(relpath):
 
 setup(
     name='virsorter',
-    version='2.2.1',
+    version='2.2.2',
     url='https://github.com/jiarong/VirSorter2',
     license='GPL-2',
     author='Jiarong Guo',

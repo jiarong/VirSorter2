@@ -4,10 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
-- Make genbank file with pfam annotation: desc field has format "tax:viral||anno:XXXX 
+- Make genbank file with pfam annotation: desc field has format "tax:viral||anno:XXXX" 
 - Check "suspicious" words in each contig: methyltransferase, epimerase, endonuclease
 - Mark short jobs as local_rules to optimaize for `virsorter run` --cluster mode
 - Add "all" in --include-groups
+
+## [2.2.2] - 2021-04-20
+- Fix bug with --seqname-suffix-off causing error with DRAMv
+
+## [2.2.1] - 2021-03-31
+- Fix minor bugs
 
 ## [2.2] - 2021-03-30
 - Add --viral-gene-enrich-off option
