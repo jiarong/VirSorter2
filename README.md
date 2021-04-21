@@ -25,15 +25,15 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 # Important updates
 
-- The newest stable version is 2.2.1. 
+- The newest stable version is 2.2.2. 
 - A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w).
 - A few new options are added to accommodate the SOP (see details in [change log](Changelog.md)).
-- The default --include-groups is changed from all viral groups to dsDNAphage and ssDNA since this should be used for what most people interested in phage.
-- A new FAQ section is available at the bottom of this doc.
+- The default --include-groups is changed from all viral groups to dsDNAphage and ssDNA since this should be used for most people interested in phage.
+- A new [FAQ](#FAQ) section is available at the bottom of this doc.
 
 # Installation (tested on CentOS linux; should work in all linux; MacOS is not supported at the moment)
 
-## Option 1 (bioconda: virsorter version 2.2.1)
+## Option 1 (bioconda version)
 
 Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
 
@@ -42,7 +42,7 @@ conda create -n vs2 -c conda-forge -c bioconda virsorter=2
 conda activate vs2
 ```
 
-## Option 2
+## Option 2 (development version)
 
 The development version is most updated and recommended. To install the development version:
 
@@ -90,7 +90,7 @@ Due to the large HMM database that VirSorter2 uses, this small dataset takes a f
 
 - `final-viral-combined.fa`:  identified viral sequences
 - `final-viral-score.tsv`:    table with score of each viral sequences across groups and a few more key features, which can be used for further filtering
-- `final-viral-boundary.tsv`: table with boundary information (might have extra records compared to other two files)
+- `final-viral-boundary.tsv`: table with boundary information (might have extra records compared to other two files and should be ignored)
 
 More details about each of these output files can be found [here](#detailed-description-on-output-files).
 
