@@ -911,7 +911,7 @@ def config(show, show_source, init_source, db_dir, set, get):
                         mes = f'{var} is supposed to be an integer'
                         logging.critical(mes)
                         sys.exit(1)
-                if isinstance(old_val, float):
+                elif isinstance(old_val, float):
                     val = float(val)
                     try:
                         val = float(val)
@@ -921,7 +921,7 @@ def config(show, show_source, init_source, db_dir, set, get):
                         sys.exit(1)
                 # only convert to abspath when the old one exists
                 #   since sometimes just want to set relative path
-                if os.path.exists(old_val):
+                elif os.path.exists(old_val):
                     val = os.path.abspath(val)
                 temp[last_key] = val
             except KeyError as e:
