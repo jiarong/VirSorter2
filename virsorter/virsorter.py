@@ -23,6 +23,8 @@ def log_exception(msg):
                     'https://github.com/jiarong/VirSorter2')
     logging.info('Issues can be raised at: '
                     'https://github.com/jiarong/VirSorter2/issues')
+    logging.info('Or send an email to '
+                    'virsorter2 at gmail.com if you do not use GitHub')
     sys.exit(1)
 
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
