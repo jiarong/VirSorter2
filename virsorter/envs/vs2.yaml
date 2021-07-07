@@ -14,5 +14,5 @@ dependencies:
   - hmmer!=3.3.1
   - scikit-learn=0.22.1
   - imbalanced-learn
-  - pandas
+  - pandas=1.2
   - seaborn
