@@ -21,6 +21,7 @@ from virsorter.utils import (
 )
 
 DEFAULT_CONFIG = get_default_config() 
+GFF_FEATURE_LIST = list(GFF_FEATURE_LIST)
 
 set_logger()
 

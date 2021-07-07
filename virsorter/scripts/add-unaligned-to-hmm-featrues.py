@@ -13,6 +13,7 @@ pkg_dir = os.path.dirname(snakefile_dir)
 sys.path.append(pkg_dir)
 from virsorter.utils import TAXON_LIST
 
+TAXON_LIST = list(TAXON_LIST)
 #TAXON_LIST = ['arc', 'bac', 'euk', 'vir', 'mixed']
 
 @click.command()
