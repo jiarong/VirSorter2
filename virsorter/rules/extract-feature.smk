@@ -87,14 +87,17 @@ rule hmmsearch:
             fi
         fi
 
+        hmmsearch -h | grep '^# HMMER' > {output}.log
         if [ "$To_scratch" = false ]; then
             # local scratch not set or not enough space in local scratch
-            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input}
+            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali $Hmmdb {input} > /dev/null 2>> {output}.log || {{ echo "See error details in {Wkdir}/{output}.log" | python {Scriptdir}/echo.py --level error; exit 1; }}
         else
             # when To_scratch is true, Tmp and Bname should have been defined successfully
-            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname
+            hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali $Hmmdb $Tmp/$Bname > /dev/null 2>> {output}.log || {{ echo "See error details in {Wkdir}/{output}.log" | python {Scriptdir}/echo.py --level error; exit 1; }}
+
             rm -f $Tmp/$Bname && rmdir $Tmp
         fi
+        rm -f {output}.log
         """
 
 def merge_split_hmmtbl_input_agg(wildcards):
@@ -201,12 +204,13 @@ rule hmmsearch_by_group:
                 fi
             fi
 
+            hmmsearch -h | grep '^# HMMER' > {output}.log
             if [ "$To_scratch" = false ]; then
                 # local scratch not set or not enough space in local scratch
-                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb {input}
+                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali $Hmmdb {input} > /dev/null 2>> {output}.log || {{ echo "See error details in {Wkdir}/{output}.log" | python {Scriptdir}/echo.py --level error; exit 1; }}
             else
                 # when To_scratch is true, Tmp and Bname should have been defined successfully
-                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali -o /dev/null $Hmmdb $Tmp/$Bname
+                hmmsearch -T {Hmmsearch_score_min} --tblout {output} --cpu {threads} --noali $Hmmdb $Tmp/$Bname > /dev/null 2>> {output}.log || {{ echo "See error details in {Wkdir}/{output}.log" | python {Scriptdir}/echo.py --level error; exit 1; }}
                 rm -f $Tmp/$Bname && rmdir $Tmp
             fi
         else
