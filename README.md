@@ -25,7 +25,7 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 # Important updates
 
-- The newest stable version is 2.2.2. 
+- The newest stable version is 2.2.3. 
 - A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w).
 - A few new options are added to accommodate the SOP (see details in [change log](Changelog.md)).
 - The default --include-groups is changed from all viral groups to dsDNAphage and ssDNA since this should be used for most people interested in phage.
@@ -109,7 +109,7 @@ The default score cutoff (0.5) works well known viruses (RefSeq). For the real e
 
 ## choosing viral groups (`--include-groups`)
 
-The available options are ssDNAphage, NCLDV , RNA, ssDNA virus, and *lavidaviridae*. The default is dsDNAphage and ssDNA (changed from all groups since version 2.2), suitable for those only interested in phage. If you are only interested in RNA virus, you can run:
+The available options are dsDNAphage, NCLDV, RNA, ssDNA virus, and *lavidaviridae*. The default is dsDNAphage and ssDNA (changed from all groups since version 2.2), suitable for those only interested in phage. If you are only interested in RNA virus, you can run:
 
 ```bash
 rm -rf test.out
