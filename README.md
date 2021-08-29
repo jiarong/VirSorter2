@@ -21,7 +21,7 @@ VirSorter2 applies a multi-classifier, expert-guided approach to detect diverse 
 - apply machine learning to estimate viralness using genomic features including structural/functional/taxonomic annotation and viral hallmark genes;
 - train with high quality virus genomes from metagenomes or other sources.
 
-See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
+See more details in [the publication](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 # Important updates
 
