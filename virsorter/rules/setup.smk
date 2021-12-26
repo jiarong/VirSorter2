@@ -186,6 +186,7 @@ rule setup:
         mv Pfam-A-*.hmm hmm/pfam
         mv Pfam-A-acc2desc.tsv hmm/pfam
         cat combined.hmm.gz.split_* | gunzip -c > hmm/viral/combined.hmm
+        chmod -R 755 .
         """
         )
         if md5('db.tgz') != D_FILE2MD5['db.tgz']:

@@ -71,6 +71,7 @@ rule setup:
         tar -xzf db.tgz
         mv db/group db/hmm db/rbs .
         rm -rf db
+        chmod -R 755 .
         echo "All setup finished.." | python {Scriptdir}/echo.py
         """
         )
