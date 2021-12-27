@@ -374,6 +374,9 @@ if Provirus:
                 - cellular gene %% (cellular)
             The "group" field in {Label}final-viral-score.tsv should NOT be used
                 as reliable taxonomy info
+            We recommend this SOP/tutorial for quality control 
+                (make sure to use the lastest version):
+                https://dx.doi.org/10.17504/protocols.io.bwm5pc86
 
             <====
             " | python {Scriptdir}/echo.py
@@ -571,6 +574,9 @@ else:
                 - cellular gene %% (cellular)
             The "group" field in {output.score} should NOT be used
                 as reliable taxonomy info
+            We recommend this SOP/tutorial for quality control 
+                (make sure to use the lastest version):
+                https://dx.doi.org/10.17504/protocols.io.bwm5pc86
 
             <====
             " | python {Scriptdir}/echo.py
