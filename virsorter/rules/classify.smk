@@ -565,6 +565,7 @@ else:
             {output.fa}    ==> all viral seqs
             $Dramv_notes
             $Suffix_notes
+
             NOTES: 
             Users can further screen the results based on the 
                 following columns in {output.score}
