@@ -44,7 +44,7 @@ conda activate vs2
 
 ## Option 2 (development version)
 
-The development version is most updated and recommended. To install the development version:
+The development version is most updated. To install the development version:
 
 ```bash
 conda create -n vs2 -c conda-forge -c bioconda "python>=3.6" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer==3.3 prodigal screed ruamel.yaml "snakemake>=5.18,<=5.26" click mamba
@@ -53,6 +53,16 @@ git clone https://github.com/jiarong/VirSorter2.git
 cd VirSorter2
 pip install -e .
 ```
+
+## Option 3
+
+If you have singularity installed (typical in HPC clusters), the following is the most convenient. Also use the option if you have issues with conda. 
+
+```bash
+singularity build virsorter2.sif docker://jiarong/virsorter:latest
+```
+
+You will get a file `virsorter2.sif`, which is a singularity image that can be run like a binary executable file. You can use the **absolute path** of this file to replace `virsorter` in commands for the rest of the tutorial. Also this image has the database and dependencies included, so you can skip the [Download database and dependencies step](#download-database-and-dependencies) below.
 
 # Download database and dependencies
 
