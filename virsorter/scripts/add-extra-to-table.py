@@ -47,7 +47,7 @@ def main():
 
     df = pd.read_csv(score_f, sep='\t', header=0)
     if len(df) == 0:
-        cols = df.columns.values.tolist() + ['max_score_group', 
+        cols = df.columns.values.tolist() + ['max_score', 'max_score_group', 
                 'length', 'hallmark', 'viral', 'cellular']
         with open(outfile, 'w') as fw:
             fw.write('{}\n'.format('\t'.join(cols)))
