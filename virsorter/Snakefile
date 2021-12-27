@@ -116,5 +116,7 @@ onerror:
         sys.stderr.write(
                 'Issues can be raised at: '
                 'https://github.com/jiarong/VirSorter2/issues\n'
+                'Or send an email to virsorter2 near gmail.com if '
+                'you do not use GitHub\n\n'
         )
 
