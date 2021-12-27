@@ -49,6 +49,7 @@ def main():
     if len(df) == 0:
         cols = df.columns.values.tolist() + ['max_score', 'max_score_group', 
                 'length', 'hallmark', 'viral', 'cellular']
+
         with open(outfile, 'w') as fw:
             fw.write('{}\n'.format('\t'.join(cols)))
             sys.exit(0)
