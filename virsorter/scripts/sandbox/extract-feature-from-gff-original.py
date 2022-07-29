@@ -184,7 +184,7 @@ def main():
                     _s = '\t'.join(['{:.1f}'.format(i) for i in _l])
                     fw.write('{}\t{}\n'.format(seqname, _s))
                 else:
-                    mes = ('Conitg removed due to < 2 total genes or '
+                    mes = ('Contig removed due to < 2 total genes or '
                             'has no full gene: {}')
                     logging.info(mes.format(seqname))
                     cnt3 += 1
