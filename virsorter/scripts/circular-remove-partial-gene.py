@@ -67,7 +67,7 @@ def main():
                 elif cnt_gene >= 2:
                     fw.write(''.join(lines)) 
                 else:
-                    mes = 'Conitg removed due to < 2 genes: {}'
+                    mes = 'Contig removed due to < 2 genes: {}'
                     logging.info(mes.format(seqname))
                     cnt3 += 1
 
@@ -166,7 +166,7 @@ def main():
         if cnt_gene >= 2:
             fw.write(''.join(lines)) 
         else:
-            mes = 'Conitg removed due to < 2 genes: {}'
+            mes = 'Contig removed due to < 2 genes: {}'
             logging.info(mes.format(seqname))
             cnt3 += 1
 
