@@ -66,6 +66,7 @@ PROVIRUS_CHECK_MAX_FULLSEQ_PROBA: 0.8  # max fullseq proba for provirus check
 PROVIRUS_MIN_PEAK_PROBA: 0.9  # minimal peak proba required 
 MIN_FRAC_OF_PEAK_SCORE: 0.9 # stop extension when score fall below
 END_TRIM_OFF: false
+PROVIRUS_MIN_HALLMARK_CNT: 1
 
 RANDOM_STATE: 99
 

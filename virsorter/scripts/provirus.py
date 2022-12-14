@@ -38,6 +38,7 @@ END_TRIM_OFF = DEFAULT_CONFIG['END_TRIM_OFF']
 PROVIRUS_CHECK_MAX_FULLSEQ_PROBA = \
         DEFAULT_CONFIG['PROVIRUS_CHECK_MAX_FULLSEQ_PROBA']
 PROVIRUS_MIN_PEAK_PROBA = DEFAULT_CONFIG['PROVIRUS_MIN_PEAK_PROBA']
+PROVIRUS_MIN_HALLMARK_CNT = DEFAULT_CONFIG['PROVIRUS_MIN_HALLMARK_CNT']
 
 
 set_logger()
@@ -489,7 +490,7 @@ class provirus(object):
                         df_tax_sel = df_tax.loc[sel,:]
                         partial = 1
                         # require hallmark gene for provirus
-                        if (hallmark_cnt > 0 and 
+                        if (hallmark_cnt >= PROVIRUS_MIN_HALLMARK_CNT and 
                                 pr_max >= PROVIRUS_MIN_PEAK_PROBA):
                             provirus_cnt += 1
                             self.trim_ends(df_gff_sel, df_tax_sel, 
@@ -523,7 +524,7 @@ class provirus(object):
                 df_tax_sel = df_tax.loc[sel,:]
                 partial = 1
                 # require hallmark gene for provirus
-                if hallmark_cnt > 0 and pr_max >= PROVIRUS_MIN_PEAK_PROBA:
+                if hallmark_cnt >= PROVIRUS_MIN_HALLMARK_CNT and pr_max >= PROVIRUS_MIN_PEAK_PROBA:
                     provirus_cnt += 1
                     self.trim_ends(df_gff_sel, df_tax_sel,
                             sel_index_w_hallmark, seqname,

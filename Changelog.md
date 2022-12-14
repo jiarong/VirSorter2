@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Check "suspicious" words in each contig: methyltransferase, epimerase, endonuclease
 - Mark short jobs as local_rules to optimaize for `virsorter run` --cluster mode
 - Add "all" in --include-groups
+- Add new cols: final_group, final_score in `final-boundary.tsv`
+- Remove records in `final-boundary.tsv` but not in `final-score.tsv`
+- Add "PROVIRUS_MIN_HALLMARK_CNT" in `template-config-original.yaml` for tuning prophage search in `provirus.py`.
 
 ## [2.2.3] - 2021-04-20
 - Fix `--seqname-suffix-off` regex issues
