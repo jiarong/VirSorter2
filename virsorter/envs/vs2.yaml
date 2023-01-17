@@ -16,3 +16,4 @@ dependencies:
   - imbalanced-learn
   - pandas=1.2
   - seaborn
+  - numpy<1.24
