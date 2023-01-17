@@ -100,7 +100,7 @@ Due to the large HMM database that VirSorter2 uses, this small dataset takes a f
 
 - `final-viral-combined.fa`:  identified viral sequences
 - `final-viral-score.tsv`:    table with score of each viral sequences across groups and a few more key features, which can be used for further filtering
-- `final-viral-boundary.tsv`: table with boundary information (might have extra records compared to other two files and should be ignored)
+- `final-viral-boundary.tsv`: table with boundary information; This is a intermediate file that 1) might have extra records compared to other two files and should be ignored; 2) do not include the viral sequences w/ < 2 gene but have >= 1 hallmark gene; 3) the `group` and `trim_pr` are intermediate results and might not match the `max_group` and `max_score` respectively in `final-viral-score.tsv`
 
 More details about each of these output files can be found [here](#detailed-description-on-output-files).
 
