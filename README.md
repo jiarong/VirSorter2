@@ -56,10 +56,10 @@ pip install -e .
 
 ## Option 3
 
-If you have singularity installed (typical in HPC clusters), the following is the most convenient. Also use the option if you have issues with conda. 
+If you have **apptainer** (formerly known as **singularity**) [installed](https://apptainer.org/) (typical in HPC clusters), the following is the most convenient. Also use the option if you have issues with conda. 
 
 ```bash
-singularity build virsorter2.sif docker://jiarong/virsorter:latest
+apptainer build virsorter2.sif docker://jiarong/virsorter:latest
 ```
 
 You will get a file `virsorter2.sif`, which is a singularity image that can be run like a binary executable file. You can use the **absolute path** of this file to replace `virsorter` in commands for the rest of the tutorial. Also this image has the database and dependencies included, so you can skip the [Download database and dependencies step](#download-database-and-dependencies) below.
