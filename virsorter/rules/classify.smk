@@ -305,8 +305,10 @@ if Provirus:
             python {Scriptdir}/add-extra-to-table.py {Tmpdir}/viral-combined-proba.tsv {Tmpdir}/viral-combined.fa {Tmpdir}/viral-combined-proba-more-cols.tsv
             python {Scriptdir}/filter-score-table.py config.yaml {Tmpdir}/viral-combined-proba-more-cols.tsv {Tmpdir}/viral-combined.fa {output.score} {output.fa}.trim
             python {Scriptdir}/keep-original-seq.py {output.fa}.trim {Seqfile} > {output.fa}.original
-            cp {Tmpdir}/viral-fullseq.tsv {output.boundary}
-            tail -n +2 {Tmpdir}/viral-partseq.tsv >> {output.boundary} 
+            cp {Tmpdir}/viral-fullseq.tsv {output.boundary}.tmp
+            tail -n +2 {Tmpdir}/viral-partseq.tsv >> {output.boundary}.tmp 
+            python {Scriptdir}/finalize-boundary-file.py {output.boundary}.tmp {output.score} > {output.boundary}
+	    rm -f {output.boundary}.tmp
 
             if [ {Keep_original_seq} = "True" ]; then
                 cp {output.fa}.original {output.fa}
