@@ -8,9 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Check "suspicious" words in each contig: methyltransferase, epimerase, endonuclease
 - Mark short jobs as local_rules to optimaize for `virsorter run` --cluster mode
 - Add "all" in --include-groups
-- Add new cols: final_group, final_score in `final-boundary.tsv`
-- Remove records in `final-boundary.tsv` but not in `final-score.tsv`
-- Add "PROVIRUS_MIN_HALLMARK_CNT" in `template-config-original.yaml` for tuning prophage search in `provirus.py`.
+- Change initial slide window to gene number based (4 genes) from bp size; apply the minimal prophage size at the end.
+
+## [2.2.4] - 2022-01-18
+- Fix issues with numpy v1.24 by limiting numpy version <1.24
+- Change "singularity" to "apptainer" in `README`
+- Add "PROVIRUS_MIN_HALLMARK_CNT" in `template-config-original.yaml` for tuning prophage search in `provirus.py`
+- Add new cols: "final_max_score_group" and "final_max_score" in `final-viral-boundary.tsv` to be consistent with "max_score_group" and "max_score" in `final-viral-score.tsv`
+- Remove records in `final-viral-boundary.tsv` but not in `final-viral-score.tsv`
 
 ## [2.2.3] - 2021-04-20
 - Fix `--seqname-suffix-off` regex issues
