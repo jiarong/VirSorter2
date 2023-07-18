@@ -25,7 +25,7 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 # Important updates
 
-- The newest stable version is 2.2.3. 
+- The newest stable version is 2.2.4. 
 - A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w).
 - A few new options are added to accommodate the SOP (see details in [change log](Changelog.md)).
 - The default --include-groups is changed from all viral groups to dsDNAphage and ssDNA since this should be used for most people interested in phage.
@@ -35,11 +35,11 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 ## Option 1 (bioconda version)
 
-Conda is the easiest way to install VirSorter2. If you do not have conda installed, it can be installed following [this link](https://docs.conda.io/projects/conda/en/latest/user-guide/install/).
+Mamba is the easiest way to install VirSorter2. If you do not have mamba installed, it can be installed following [this link](https://mamba.readthedocs.io/en/latest/installation.html).
 
 ```bash
-conda create -n vs2 -c conda-forge -c bioconda virsorter=2
-conda activate vs2
+mamba create -n vs2 -c conda-forge -c bioconda virsorter=2
+mamba activate vs2
 ```
 
 ## Option 2 (development version)
@@ -47,8 +47,8 @@ conda activate vs2
 The development version is most updated. To install the development version:
 
 ```bash
-conda create -n vs2 -c conda-forge -c bioconda "python>=3.6" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer==3.3 prodigal screed ruamel.yaml "snakemake>=5.18,<=5.26" click mamba
-conda activate vs2
+mamba create -n vs2 -c conda-forge -c bioconda "python>=3.6,<=3.10" scikit-learn=0.22.1 imbalanced-learn pandas seaborn hmmer==3.3 prodigal screed ruamel.yaml "snakemake>=5.18,<=5.26" click "conda-package-handling<=1.9"
+mamba activate vs2
 git clone https://github.com/jiarong/VirSorter2.git
 cd VirSorter2
 pip install -e .
