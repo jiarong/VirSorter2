@@ -47,7 +47,18 @@ setup(
     include_package_data=True,  # include all files in MANIFEST.in
     data_files=[],
     zip_safe=False,
-    install_requires= [], # install via conda instead
+    install_requires= [
+        "ruamel.yaml",
+        "click",
+        "ete3",
+        "screed",
+        "numpy<1.24",
+        "pandas",
+        "scikit-learn==0.22.1",
+        "snakemake>=5.18,<=5.26",
+        "seaborn",
+        "imbalanced-learn",
+    ],
     entry_points={
           'console_scripts': [
               'virsorter = virsorter.virsorter:cli'
