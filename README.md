@@ -6,7 +6,7 @@
     #####################################################################
 
 
-# VirSorter 2 
+# VirSorter 2
 
 [![Bioconda](https://img.shields.io/conda/vn/bioconda/virsorter.svg?color=43b02a)](https://anaconda.org/bioconda/virsorter)
 [![Build Status](https://travis-ci.org/jiarong/VirSorter2.svg?branch=master)](https://travis-ci.org/jiarong/VirSorter2)
@@ -132,7 +132,7 @@ Note that suffix `||full`, `||lt2gene` and `||{i}_partial` (`{i}` can be numbers
 
 The default score cutoff (0.5) works well known viruses (RefSeq). For the real environmental data, we can expect to get false positives (non-viral) with the default cutoff. Generally, samples with more host (e.g. bulk metaG) and unknown sequences (e.g. soil) tends to have more false positives. We find a score cutoff of 0.9 work well as a cutoff for high confidence hits, but there are also many viral hits with score <0.9. It's difficult to separate the viral and non-viral hits by score alone. So we recommend using the default score cutoff (0.5) for maximal sensitivity and then applying a quality checking step using checkV. Here is a tutorial of [viral identification SOP](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w) used in Sullivan Lab.
 
-# More options  
+# More options
 
 ## choosing viral groups (`--include-groups`)
 
@@ -157,7 +157,7 @@ The above overwrites the previous final output files. If you want to keep previo
 virsorter run -w test.out -i test.fa --include-groups "dsDNAphage,ssDNA" -j 4 --min-score 0.9 --label rerun classify
 ```
 
-## speed up a run (`--provirus-off`) 
+## speed up a run (`--provirus-off`)
 
 In case you need to have some results quickly, there are two options: 1) turn off provirus step with `--provirus-off`; this reduces sensitivity on sequences that are only partially viral; 2) subsample ORFs from each sequence with `--max-orf-per-seq`; This option subsamples ORFs if a sequence has more ORFs than the number provided. Note that this option is only availale when `--provirus-off` is used. 
 
