@@ -33,6 +33,23 @@ See more details in [the publication](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 # Installation (tested on CentOS linux; should work in all linux; MacOS is not supported at the moment)
 
+## Requirements
+### Software requirements
+* prodigal 2.6.3
+* hmmer 3.3.2
+
+### Python requirements
+* ruamel.yaml
+* click
+* ete3
+* screed
+* numpy<1.24
+* pandas
+* scikit-learn==0.22.1
+* snakemake>=5.18,<=5.26
+* seaborn
+* imbalanced-learn
+
 ## Option 1 (bioconda version)
 
 Mamba is the easiest way to install VirSorter2. If you do not have mamba installed, it can be installed following [this link](https://mamba.readthedocs.io/en/latest/installation.html).
