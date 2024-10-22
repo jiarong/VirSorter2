@@ -26,7 +26,7 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 # Important updates
 
 - The newest stable version is 2.2.4. 
-- A tutorial/SOP on how to quality control VirSorter2 results is avaiable [here](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w).
+- A tutorial/SOP on how to quality control VirSorter2 results is available [here](https://www.protocols.io/view/viral-sequence-identification-sop-with-virsorter2-btv8nn9w).
 - A few new options are added to accommodate the SOP (see details in [change log](Changelog.md)).
 - The default --include-groups is changed from all viral groups to dsDNAphage and ssDNA since this should be used for most people interested in phage.
 - A new [FAQ](#FAQ) section is available at the bottom of this doc.
