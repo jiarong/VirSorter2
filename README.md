@@ -35,7 +35,7 @@ See more details in [the publicaiton](https://pubmed.ncbi.nlm.nih.gov/33522966).
 
 ## Option 1 (bioconda version)
 
-Mamba is the easiest way to install VirSorter2. If you do not have mamba installed, it can be installed following [this link](https://mamba.readthedocs.io/en/latest/installation.html).
+Mamba is the easiest way to install VirSorter2. If you do not have mamba installed, it can be installed following [this link](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html).
 
 ```bash
 mamba create -n vs2 -c conda-forge -c bioconda virsorter=2
