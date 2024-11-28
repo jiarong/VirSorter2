@@ -32,6 +32,6 @@ jobs:
       - name: Run tests
         run: |
           virsorter --help
-					virsorter --version
-					virsorter setup -d db -j 4
-					virsorter run -w test/test.out -i test/8seq.fa all --dryrun
+          virsorter --version
+          virsorter setup -d db -j 4
+          virsorter run -w test/test.out -i test/8seq.fa all --dryrun
