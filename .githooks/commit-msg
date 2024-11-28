@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+commit_re="^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-zA-Z 0-9 \-_]+\))?!?: .+$"
+commit_message=$(cat "$1")
+
+if [[ "$commit_message" =~ $commit_re ]]; then
+   exit 0
+fi
+
+echo "The commit message does not meet the Conventional Commit standard."
+echo "An example of a valid message is: "
+echo "    feat(login): add the 'remember me' button"
+echo "Details: https://www.conventionalcommits.org/en/v1.0.0/#summary"
+exit 1
