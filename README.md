@@ -9,8 +9,7 @@
 # VirSorter 2 
 
 [![Bioconda](https://img.shields.io/conda/vn/bioconda/virsorter.svg?color=43b02a)](https://anaconda.org/bioconda/virsorter)
-[![Build Status](https://travis-ci.org/jiarong/VirSorter2.svg?branch=master)](https://travis-ci.org/jiarong/VirSorter2)
-[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/jiarong/virsorter/main.yml?label=tests)](https://github.com/jiarong/virsorter/actions?query=branch%3Amain++)
+[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/jiarong/VirSorter2/test.yaml?label=tests)](https://github.com/jiarong/VirSorter2/actions?query=branch%3Amaster++)
 <!--
 [![Bioconda](https://img.shields.io/conda/dn/bioconda/virsorter.svg?label=Bioconda )](https://anaconda.org/bioconda/virsorter)
 -->
