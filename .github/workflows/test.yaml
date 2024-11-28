@@ -1,0 +1,37 @@
+name: Test VirSorter2
+on: [push, pull_request]
+
+jobs:
+  miniconda:
+    name: Miniconda ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+        matrix:
+            python-version: ["3.10"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up environment with Python ${{ matrix.python-version }}
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: test
+          environment-file: vs2-external-deps.yaml
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+          channels: conda-forge,bioconda
+          channel-priority: true
+      - run: |
+          conda info
+          conda list
+          conda config --set channel_priority strict
+      - name: Install VirSorter2
+        run: |
+          pip install -e .
+      - name: Run tests
+        run: |
+          virsorter --help
+					virsorter --version
+					virsorter setup -d db -j 4
+					virsorter run -w test/test.out -i test/8seq.fa all --dryrun
